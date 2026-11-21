@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useLibrary } from "../../store/LibraryProvider";
-import { MAX_EBOOK_BYTES } from "../../lib/format";
+import { MAX_EBOOK_BYTES, MAX_IMAGE_BYTES } from "../../lib/format";
 import { dateMillis, formatDate } from "../../lib/format";
 
 const prettySize = bytes => bytes < 1024 * 1024 ? Math.max(1, Math.round(bytes / 1024)) + " KB" : (bytes / (1024 * 1024)).toFixed(1) + " MB";
@@ -21,6 +21,13 @@ export function EbooksTab({ active }) {
     if (file.size > MAX_EBOOK_BYTES) {
       window.alert("Choose an e-book smaller than 30 MB for this frontend preview.");
       return;
+    }
+    const coverFile = form.get("cover");
+    if (coverFile instanceof File && coverFile.size) {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(coverFile.type) || coverFile.size > MAX_IMAGE_BYTES) {
+        window.alert("Cover images must be JPEG, PNG or WebP and no larger than 5 MB.");
+        return;
+      }
     }
     setBusy(true);
     const ok = await uploadEbook({
