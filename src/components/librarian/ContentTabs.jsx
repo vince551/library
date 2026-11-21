@@ -48,8 +48,10 @@ export function EbooksTab({ active }) {
   };
 
   const open = async book => {
+    const preview = window.open("about:blank", "_blank");
     const url = await resolveEbookUrl(book);
-    if (url) window.open(url, "_blank", "noopener,noreferrer");
+    if (url && preview) preview.location.href = url;
+    else if (preview) preview.close();
   };
 
   return (
