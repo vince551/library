@@ -62,7 +62,7 @@ export function Hero({ active, onNavigate, onOpenAuth, books, ebooks = [], posts
         <div className="hero-gallery" ref={galleryRef} aria-label="Learning at AMG Library">
           <img src="/images/learn.jpg" alt="Learners discovering new knowledge" fetchPriority="high" onError={event => { event.currentTarget.style.display = "none"; }} />
           <img src="/images/soma.jpg" alt="Reading and study resources" loading="lazy" onError={event => { event.currentTarget.style.display = "none"; }} />
-          <img src="/images/toto.jpg" alt="Learning for young readers" loading="lazy" />
+          <img src="/images/toto.jpg" alt="Learning for young readers" loading="lazy" onError={event => { event.currentTarget.style.display = "none"; }} />
           <div className="hero-image-note">
             <span className="hero-note-icon" aria-hidden="true">✦</span>
             <span><strong>Every page opens a possibility.</strong><small>Learn · Discover · Grow</small></span>
