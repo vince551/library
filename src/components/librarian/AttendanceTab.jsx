@@ -47,11 +47,11 @@ export function AttendanceTab({ active }) {
     busyRef.current = true;
     const hadMember = Boolean(memberRef.current);
     try {
-      await processUnifiedCode(value, currentMode);
+      const processed = await processUnifiedCode(value, currentMode);
+      if (processed && (currentMode !== "issue-book" || hadMember)) setScanning(false);
     } finally {
       busyRef.current = false;
     }
-    if (currentMode !== "issue-book" || hadMember) setScanning(false);
   }, [processUnifiedCode]);
 
   const handlerRef = useRef(scanHandler);

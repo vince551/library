@@ -6,7 +6,8 @@ import {
   issueBook,
   getLoans,
   returnBook,
-  getMemberLoans
+  getMemberLoans,
+  getActiveLoanByBarcode
 } from "../controllers/loan.controller.js";
 
 
@@ -29,5 +30,6 @@ router.get("/", getLoans);
 router.post("/issue", issueBook);
 router.post("/return", returnBook);
 router.get("/member/:memberId", getMemberLoans);
+router.get("/copy/:barcode/active", getActiveLoanByBarcode);
 
 export default router;

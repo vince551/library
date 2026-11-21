@@ -34,6 +34,7 @@ export function CardModal({ member, onClose }) {
   const normalized = {
     ...member,
     fullName: member.full_name ?? member.fullName ?? "",
+    role: member.role ?? "member",
     libraryNumber: member.membership_number ?? member.library_number ?? member.libraryNumber ?? "",
     photoURL: member.photo_url ?? member.photoURL ?? "",
     eduLevel: member.edu_level ?? member.eduLevel ?? "",

@@ -14,6 +14,9 @@ export const MemberCard = forwardRef(function MemberCard({ profile, className = 
   const libraryNumber = profile?.libraryNumber || "AMG-000000";
   const photoURL = profile?.photoURL || avatarUrl(libraryNumber);
   const issueDate = formatCardDate(profile?.approvedAt || profile?.decisionAt);
+  const accountRole = String(profile?.role || "member").toLowerCase();
+  const isStaff = accountRole === "librarian" || accountRole === "admin";
+  const roleLabel = accountRole === "admin" ? "ADMIN" : "LIBRARIAN";
 
   return (
     <div ref={ref} className={className}>
@@ -21,12 +24,12 @@ export const MemberCard = forwardRef(function MemberCard({ profile, className = 
         <div className="amg-id-brand-panel">
           <div className="amg-id-bookmark" aria-hidden="true">▤</div>
           <div className="amg-id-brand-name">AMG LIBRARY</div>
-          <div className="amg-id-tagline">YOUR LEARNING PARTNER</div>
+          <div className="amg-id-tagline">{isStaff ? "LIBRARY STAFF" : "YOUR LEARNING PARTNER"}</div>
           <div className="amg-id-stripes" aria-hidden="true"></div>
         </div>
         <div className="amg-id-front-content">
           <div className="amg-id-qr-block">
-            <span>SCAN MEMBER ID</span>
+            <span>{isStaff ? "SCAN STAFF ID" : "SCAN MEMBER ID"}</span>
             <QrCode value={libraryNumber} />
           </div>
           <div className="amg-id-person">
@@ -34,10 +37,10 @@ export const MemberCard = forwardRef(function MemberCard({ profile, className = 
             <div className="amg-id-details">
               <h3>{profile?.fullName || "Learner Name"}</h3>
               <div className="amg-id-pills">
-                <span>{profile?.eduLevel || "Learner"}</span>
-                <span>{profile?.studyLevel || "Study level"}</span>
+                <span>{isStaff ? roleLabel : (profile?.eduLevel || "Learner")}</span>
+                <span>{isStaff ? "Library Staff" : (profile?.studyLevel || "Study level")}</span>
               </div>
-              <small>MEMBER NO.</small>
+              <small>{isStaff ? "STAFF NO." : "MEMBER NO."}</small>
               <strong>{libraryNumber}</strong>
               <small>{profile?.school || "School"}</small>
             </div>
@@ -49,7 +52,7 @@ export const MemberCard = forwardRef(function MemberCard({ profile, className = 
       </article>
 
       <article className="amg-id-card amg-id-back">
-        <header>AMG LIBRARY <span>•</span> LEARNER ID — BACK</header>
+        <header>AMG LIBRARY <span>•</span> {isStaff ? `${roleLabel} ID — BACK` : "LEARNER ID — BACK"}</header>
         <div className="amg-id-back-content">
           <section>
             <h3>LIBRARY RULES</h3>

@@ -418,3 +418,31 @@ export async function getMemberLoans(req, res, next) {
     next(error);
   }
 }
+
+// Find the current open loan for a scanned physical-copy barcode.
+export async function getActiveLoanByBarcode(req, res, next) {
+  try {
+    const barcode = String(req.params.barcode || "").trim();
+    if (barcode.length < 3 || barcode.length > 100) {
+      return res.status(400).json({ success: false, message: "Invalid book-copy barcode." });
+    }
+    const result = await pool.query(
+      `SELECT l.id AS "loanId", l.status, bc.barcode, b.title AS "bookTitle",
+              u.full_name AS "memberName", mp.membership_number AS "libraryNumber"
+       FROM loans l
+       JOIN book_copies bc ON bc.id = l.copy_id
+       JOIN books b ON b.id = bc.book_id
+       JOIN users u ON u.id = l.member_id
+       LEFT JOIN member_profiles mp ON mp.user_id = u.id
+       WHERE bc.barcode = $1 AND l.status IN ('active', 'overdue')
+       ORDER BY l.issued_at DESC LIMIT 1`,
+      [barcode]
+    );
+    if (!result.rowCount) {
+      return res.status(404).json({ success: false, message: "No active loan was found for that book-copy barcode." });
+    }
+    return res.json({ success: true, loan: result.rows[0] });
+  } catch (error) {
+    next(error);
+  }
+}

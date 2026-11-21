@@ -10,6 +10,7 @@ function toProfile(user) {
 
   return {
     fullName: user.full_name || user.fullName || "",
+    role: user.role || "member",
     email: user.email || "",
     libraryNumber: user.membership_number || user.membershipNumber || "",
     eduLevel: user.edu_level || user.eduLevel || "Member",
