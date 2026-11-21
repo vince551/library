@@ -1,0 +1,248 @@
+/* AMG Library — final premium responsive layer.
+   Presentation-only overrides. Existing components, data and workflows stay intact. */
+
+:root {
+  --amg-ink: #17372d;
+  --amg-muted: #687d73;
+  --amg-green: #087f5b;
+  --amg-green-dark: #075b43;
+  --amg-line: rgba(205, 223, 212, .88);
+  --amg-radius: 18px;
+  --amg-shadow: 0 12px 34px rgba(22, 56, 43, .075);
+  --amg-shadow-strong: 0 22px 60px rgba(22, 56, 43, .14);
+}
+
+html { scroll-padding-top: 88px; }
+body { -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid rgba(8, 127, 91, .24);
+  outline-offset: 3px;
+}
+.container { width: min(1220px, calc(100% - 48px)); }
+.navbar {
+  min-height: 72px;
+  padding: 11px clamp(22px, 4.5vw, 72px);
+  border-bottom: 1px solid rgba(255,255,255,.76);
+}
+.nav-brand { gap: 12px; font-size: 16px; letter-spacing: -.035em; }
+.brand-mark { width: 43px; height: 43px; border: 1px solid rgba(8,127,91,.08); }
+.nav-btn { padding: 10px 15px; font-size: 12px; }
+.nav-links { gap: 4px; }
+.btn { min-height: 44px; letter-spacing: -.01em; }
+.btn-primary { box-shadow: 0 7px 18px rgba(8,127,91,.17); }
+.section-header { margin-bottom: 26px; }
+.panel, .home-featured-section, .home-intro, .home-services, .home-journey,
+.home-levels, .home-values, .home-cta {
+  border-color: rgba(255,255,255,.84);
+  box-shadow: 0 12px 32px rgba(22,56,43,.045), inset 0 1px 0 rgba(255,255,255,.65);
+}
+.hero { min-height: 440px; }
+.hero-gallery img { box-shadow: 0 16px 34px rgba(22,56,43,.12); }
+.featured-book-card, .book-card {
+  border-color: rgba(207,224,213,.9);
+  box-shadow: 0 8px 24px rgba(22,56,43,.045);
+}
+.featured-book-card:hover, .book-card:hover {
+  border-color: rgba(8,127,91,.28);
+  box-shadow: 0 18px 38px rgba(22,56,43,.10);
+}
+input, select, textarea {
+  min-width: 0;
+  border-color: #d4e2d9;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+input:hover, select:hover, textarea:hover { border-color: #b4d1c0; }
+input:focus, select:focus, textarea:focus {
+  border-color: #278b68;
+  outline: 0;
+  box-shadow: 0 0 0 4px rgba(8,127,91,.09);
+}
+.table-responsive { max-width: 100%; overscroll-behavior-x: contain; }
+.data-table { min-width: 620px; }
+.site-footer { padding: 22px 24px; }
+
+/* Librarian workspace: keep dense tools readable without changing their behavior. */
+#librarianSection, #profileSection, #newsSection, #libShelfSection { min-width: 0; }
+#librarianSection .admin-overview-grid,
+#librarianSection .admin-quick-grid,
+#librarianSection .admin-stats-grid,
+#librarianSection #statisticsSummary,
+#librarianSection .form-grid,
+#librarianSection .form-stack { min-width: 0; }
+#librarianSection .tabs {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+#librarianSection .tabs > * { flex: 0 0 auto; }
+#librarianSection .tab-content,
+#librarianSection .chart-panel,
+#librarianSection .admin-overview-panel { min-width: 0; }
+#librarianSection .admin-welcome,
+#librarianSection .admin-overview-panel,
+#librarianSection .tab-content { border-radius: 20px; }
+#librarianSection .data-table { min-width: 680px; }
+#attendanceTab video { max-width: 100%; }
+
+/* Medium screens and tablets */
+@media (max-width: 900px) {
+  .container { width: min(100% - 36px, 760px); }
+  .navbar { padding-inline: 22px; }
+  .hero { gap: 28px; }
+  .featured-books-grid, .book-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .profile-layout { grid-template-columns: minmax(0,1fr); }
+  #librarianSection .admin-quick-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
+/* Phones */
+@media (max-width: 680px) {
+  html { scroll-padding-top: 74px; }
+  body { background-attachment: scroll; }
+  .navbar {
+    min-height: 66px;
+    padding: 9px 15px;
+    gap: 10px;
+    background: rgba(247,252,248,.91);
+    box-shadow: 0 7px 24px rgba(22,65,47,.075);
+  }
+  .nav-brand { min-width: 0; gap: 9px; font-size: 13px; }
+  .nav-brand span { overflow: hidden; text-overflow: ellipsis; }
+  .brand-mark { width: 38px; height: 38px; flex: 0 0 38px; }
+  .mobile-nav-toggle {
+    min-width: 74px;
+    min-height: 40px;
+    justify-content: center;
+    border: 1px solid rgba(8,127,91,.16);
+    border-radius: 12px;
+    color: var(--amg-green-dark);
+    background: rgba(255,255,255,.88);
+    box-shadow: 0 4px 12px rgba(22,56,43,.045);
+    font-size: 12px;
+  }
+  .nav-links {
+    top: calc(100% + 8px);
+    left: 10px;
+    right: 10px;
+    max-height: min(72dvh, 560px);
+    overflow-y: auto;
+    gap: 4px;
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,.92);
+    border-radius: 17px;
+    background: rgba(250,253,250,.97);
+    box-shadow: 0 18px 48px rgba(13,53,36,.16);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+  }
+  .liquid-nav-indicator { display: none !important; }
+  .nav-btn {
+    min-height: 44px;
+    padding: 11px 13px;
+    border-radius: 11px;
+    font-size: 13px;
+  }
+  .nav-btn.active { background: rgba(8,127,91,.11); }
+  .nav-links .dropdown, .nav-links #userBadge { width: 100%; }
+  .nav-links .dropdown > .btn { width: 100%; min-height: 44px; border-radius: 11px; }
+  .dropdown-content {
+    position: static;
+    width: 100%;
+    margin-top: 6px;
+    border-radius: 11px;
+    background: rgba(245,250,246,.98);
+    box-shadow: none;
+  }
+  .dropdown-content button { min-height: 42px; }
+  .user-badge {
+    flex-wrap: wrap;
+    gap: 9px;
+    padding: 10px 8px 4px;
+    border-top: 1px solid #e5eee8;
+    font-size: 12px;
+  }
+  .user-badge > span { min-width: 0; overflow-wrap: anywhere; }
+  .container { width: calc(100% - 28px); padding: 18px 0 38px; }
+  .section-header { margin-bottom: 18px; }
+  .hero { min-height: 0; gap: 22px; padding: 24px 18px; border-radius: 19px; }
+  .hero h1 { font-size: clamp(35px, 10.5vw, 48px); line-height: 1.06; }
+  .hero-description { font-size: 14px; line-height: 1.7; }
+  .hero-actions { display: grid; grid-template-columns: 1fr; gap: 9px; }
+  .hero-actions .btn { width: 100%; }
+  .hero-gallery { grid-template-rows: 132px 108px; gap: 8px; }
+  .hero-gallery img { border-radius: 12px; }
+  .hero-image-note { max-width: 220px; right: 5px; bottom: 5px; padding: 8px 10px; }
+  .hero-image-note strong { font-size: 10px; }
+  .hero-image-note small { font-size: 9px; }
+  .hero-proof { gap: 8px 12px; margin-top: 19px; }
+  .hero-proof span { font-size: 11px; }
+  .hero-bottom-line { gap: 7px; padding-top: 15px; font-size: 8px; }
+  .amg-counter-strip { grid-template-columns: 1fr; gap: 8px; margin: 14px 0 30px; }
+  .amg-counter { padding: 12px 14px; border-radius: 13px; }
+  .amg-counter strong { font-size: 23px; }
+  .home-featured-section, .home-intro, .home-services, .home-journey,
+  .home-levels, .home-values, .home-cta, .panel {
+    margin-bottom: 13px;
+    padding: 18px 15px;
+    border-radius: 16px;
+  }
+  .featured-heading, .home-cta { align-items: stretch; flex-direction: column; gap: 12px; }
+  .featured-books-grid, .book-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+  .book-card { border-radius: 13px; }
+  .book-cover { min-height: 120px; }
+  .book-cover img { height: 140px; }
+  .book-card .book-details { gap: 7px; padding: 10px; }
+  .book-card .book-title { font-size: 13px; line-height: 1.35; }
+  .book-card .book-author, .book-card .book-stock { font-size: 10px; }
+  .book-card .book-description { font-size: 10px; line-height: 1.5; }
+  .book-card .book-actions { flex-direction: column; gap: 6px; }
+  .book-card .book-actions .btn { width: 100%; min-height: 38px; padding: 8px 7px; font-size: 10px; }
+  .home-purpose-grid, .home-feature-grid, .values-grid, .journey-grid { grid-template-columns: 1fr; gap: 9px; }
+  .purpose-card, .home-feature, .values-grid article, .journey-grid article { padding: 17px; border-radius: 13px; }
+  .toolbar, .form-grid { grid-template-columns: minmax(0,1fr); }
+  .inline-form { align-items: stretch; flex-direction: column; }
+  .inline-form label, .inline-form button { width: 100%; }
+  input, select, textarea { font-size: 16px; } /* prevents iOS input zoom; also comfortable on Android */
+  .btn { min-height: 44px; }
+  .stats-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+  .profile-layout { gap: 12px; }
+  .card-preview-wrapper { padding: 9px; }
+  .card-actions { grid-template-columns: 1fr; }
+  .card-actions .btn { width: 100%; }
+  .site-footer { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; padding: 18px 14px; text-align: center; font-size: 11px; }
+  #librarianSection .admin-welcome { border-radius: 17px; }
+  #librarianSection .admin-quick-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+  #librarianSection .admin-overview-grid { grid-template-columns: minmax(0,1fr); gap: 9px; }
+  #librarianSection .tabs { display: flex; flex-wrap: nowrap; gap: 6px; padding: 5px; }
+  #librarianSection .tabs > * { min-height: 40px; white-space: nowrap; }
+  #librarianSection .tab-content { padding: 14px 11px; border-radius: 15px; }
+  #librarianSection .form-grid, #librarianSection .form-stack { grid-template-columns: minmax(0,1fr); }
+  #librarianSection .data-table { min-width: 650px; }
+  #attendanceTab .scanner-box { max-width: 100%; }
+  #attendanceTab video { width: 100%; height: auto; }
+}
+
+/* Small phones: prioritise legibility over squeezing two cards into a row. */
+@media (max-width: 380px) {
+  .container { width: calc(100% - 22px); }
+  .nav-brand { font-size: 12px; }
+  .mobile-nav-toggle { min-width: 66px; padding-inline: 9px; }
+  .featured-books-grid, .book-grid { grid-template-columns: minmax(0,1fr); }
+  .book-cover { min-height: 160px; }
+  .book-cover img { height: 180px; }
+  .hero-gallery { grid-template-rows: 118px 96px; }
+  #librarianSection .admin-quick-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  #librarianSection .admin-welcome-actions { grid-template-columns: 1fr; }
+  #librarianSection .admin-quick-card { min-width: 0; }
+}
+
+/* Respect device accessibility settings and avoid costly motion on low-power phones. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
