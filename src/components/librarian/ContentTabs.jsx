@@ -10,7 +10,6 @@ export function EbooksTab({ active }) {
   const formRef = useRef(null);
   const [busy, setBusy] = useState(false);
   const [fileName, setFileName] = useState("");
-  const [coverName, setCoverName] = useState("");
 
   const submit = async event => {
     event.preventDefault();
@@ -19,7 +18,7 @@ export function EbooksTab({ active }) {
     const file = form.get("file");
     if (!(file instanceof File) || !file.size) return;
     if (file.size > MAX_EBOOK_BYTES) {
-      window.alert("Choose an e-book smaller than 30 MB for this frontend preview.");
+      window.alert("Choose an e-book no larger than 30 MB.");
       return;
     }
     const coverFile = form.get("cover");
@@ -34,19 +33,18 @@ export function EbooksTab({ active }) {
       title:String(form.get("title") || "").trim(),
       category:String(form.get("category") || "").trim(),
       description:String(form.get("description") || "").trim(),
-      coverFile:form.get("cover") instanceof File && form.get("cover").size ? form.get("cover") : null,
+      coverFile:coverFile instanceof File && coverFile.size ? coverFile : null,
       file
     });
     setBusy(false);
     if (ok) {
       formRef.current?.reset();
       setFileName("");
-      setCoverName("");
     }
   };
 
   const remove = book => {
-    if (window.confirm("Remove “" + book.title + "” from the demo catalogue?")) void removeEbook(book);
+    if (window.confirm("Permanently remove “" + book.title + "” from the AMG Library catalogue?")) void removeEbook(book);
   };
 
   const open = async book => {
@@ -57,8 +55,8 @@ export function EbooksTab({ active }) {
   return (
     <div id="ebooksTab" className={"tab-content" + (active ? " active" : "")}>
       <h3>Add an e-book</h3>
-      <p className="muted">Publish PDF and EPUB reading resources for members. E-books appear automatically in Find Your Next Read.</p>
-      <div className="notice notice-info">Frontend preview only: selected files stay in this browser session. The Express API and Cloudflare R2 will handle permanent uploads when the backend is built.</div>
+      <p className="muted">Publish PDF and EPUB reading resources for members. E-books and their cover images are saved to the connected AMG Library database.</p>
+      <div className="notice notice-success">Uploads are stored persistently in PostgreSQL, not on Render's temporary filesystem. Files remain available after a redeploy or restart.</div>
       <form id="ebookForm" ref={formRef} className="form-grid" onSubmit={submit}>
         <label>Book title<input name="title" required maxLength="160" placeholder="Enter the e-book title" /></label>
         <label>Category<input name="category" required maxLength="80" placeholder="e.g. Primary, Science, Fiction" /></label>
@@ -68,7 +66,12 @@ export function EbooksTab({ active }) {
           <input name="file" type="file" accept=".pdf,.epub,application/pdf,application/epub+zip" required onChange={event => setFileName(event.target.files?.[0]?.name || "")} />
           <small>{fileName ? "Selected: " + fileName : "Maximum 30 MB · PDF or EPUB"}</small>
         </label>
-        <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Adding e-book…" : "Add e-book to catalogue"}</button>
+        <label className="full-span ebook-file-picker">
+          <span>Cover image (optional)</span>
+          <input name="cover" type="file" accept="image/jpeg,image/png,image/webp" />
+          <small>JPEG, PNG or WebP · maximum 5 MB</small>
+        </label>
+        <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Uploading to library…" : "Upload e-book"}</button>
       </form>
 
       <div id="ebooksList" className="stack-list top-gap">
