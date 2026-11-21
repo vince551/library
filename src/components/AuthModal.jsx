@@ -194,8 +194,8 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
 
           {registerMode ? null : (
             <p className="muted auth-help">
-              Librarian: enter the librarian email address and password.
-              Members: enter the email address linked to your account.
+              Frontend preview: use an email containing “librarian” or “admin” and any non-empty password to preview the Librarian Desk. This is not production authentication.
+              Members: use any valid email and a non-empty password to preview the member interface.
             </p>
           )}
 
