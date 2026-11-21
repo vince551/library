@@ -10,6 +10,7 @@ export function EbooksTab({ active }) {
   const formRef = useRef(null);
   const [busy, setBusy] = useState(false);
   const [fileName, setFileName] = useState("");
+  const [coverName, setCoverName] = useState("");
 
   const submit = async event => {
     event.preventDefault();
@@ -26,12 +27,14 @@ export function EbooksTab({ active }) {
       title:String(form.get("title") || "").trim(),
       category:String(form.get("category") || "").trim(),
       description:String(form.get("description") || "").trim(),
+      coverFile:form.get("cover") instanceof File && form.get("cover").size ? form.get("cover") : null,
       file
     });
     setBusy(false);
     if (ok) {
       formRef.current?.reset();
       setFileName("");
+      setCoverName("");
     }
   };
 
