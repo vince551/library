@@ -12,7 +12,7 @@ import { Desk } from "./components/librarian/Desk";
 
 function Shell() {
   const { user, librarian } = useAuth();
-  const { books, publicPosts } = useLibrary();
+  const { books, ebooks, publicPosts } = useLibrary();
   const { showToast } = useToast();
   const [section, setSection] = useState("heroSection");
   const [authOpen, setAuthOpen] = useState(false);
@@ -43,7 +43,7 @@ function Shell() {
   return <>
     <Navbar section={section} onNavigate={showSection} onOpenAuth={openAuth} />
     <main className="container">
-      <Hero active={section === "heroSection"} onNavigate={showSection} onOpenAuth={openAuth} books={books} posts={publicPosts} />
+      <Hero active={section === "heroSection"} onNavigate={showSection} onOpenAuth={openAuth} books={books} ebooks={ebooks} posts={publicPosts} />
       <LibShelf active={section === "libShelfSection"} onOpenAuth={openAuth} />
       <MemberProfile active={section === "profileSection"} />
       <NewsSection active={section === "newsSection"} posts={publicPosts} />
