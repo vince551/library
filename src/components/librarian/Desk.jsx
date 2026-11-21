@@ -41,10 +41,7 @@ export function Desk({ active }) {
   }, [active, refreshAdmin]);
 
   const pendingRequests = requests.filter(request => request.status === "Pending").length;
-  const pendingMembers = members.filter(member =>
-    !(member.isApproved ?? member.is_approved) &&
-    (member.membershipStatus ?? member.membership_status) !== "Denied"
-  ).length;
+  const pendingMembers = members.filter(member => member.status === "pending").length;
   const lowStock = books.filter(book => Number(book.available || 0) <= 1).length;
   const inside = attendance.filter(record => record.status === "In library").length;
   const places = Math.max(1, Number(capacity) || 100);
