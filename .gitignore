@@ -1,5 +1,18 @@
-node_modules
-dist
-.vercel
-.env*
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Vercel
+.vercel/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Operating system files
 .DS_Store
+Thumbs.db

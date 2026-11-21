@@ -194,8 +194,7 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
 
           {registerMode ? null : (
             <p className="muted auth-help">
-              Frontend preview: use an email containing “librarian” or “admin” and any non-empty password to preview the Librarian Desk. This is not production authentication.
-              Members: use any valid email and a non-empty password to preview the member interface.
+              Sign in with your registered AMG Library account. New membership applications must be approved by a librarian before members can access their accounts.
             </p>
           )}
 
