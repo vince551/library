@@ -2,158 +2,153 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../store/AuthProvider";
 import { useLibrary } from "../store/LibraryProvider";
 import { BOOK_CATEGORIES } from "../lib/format";
-import { DEMO_BOOKS } from "../lib/demoBooks";
 
-const starKey = (uid) => "amg_starred_" + (uid || "guest");
-
+const starKey = uid => "amg_starred_" + (uid || "guest");
 function readStars(uid) {
-  try {
-    return JSON.parse(localStorage.getItem(starKey(uid)) || "[]");
-  } catch (_) {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem(starKey(uid)) || "[]"); }
+  catch (_) { return []; }
 }
+const formatSize = bytes => {
+  if (!bytes) return "Digital resource";
+  if (bytes < 1024 * 1024) return Math.max(1, Math.round(bytes / 1024)) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+};
 
 export function LibShelf({ active, onOpenAuth }) {
   const { user, profile } = useAuth();
   const { books, ebooks, requestBook, resolveEbookUrl } = useLibrary();
-  // Until the librarian registers real books, the shelf previews its layout with
-  // clearly marked sample cards. DEMO_BOOKS is never written to Firestore.
-  const demoMode = books.length === 0;
-  const catalogue = demoMode ? DEMO_BOOKS : books;
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
+  const [format, setFormat] = useState("All");
   const [stars, setStars] = useState(() => readStars(user?.uid));
+  const [selected, setSelected] = useState(null);
 
-  useEffect(() => {
-    setStars(readStars(user?.uid));
-  }, [user?.uid]);
+  useEffect(() => setStars(readStars(user?.uid)), [user?.uid]);
 
-  const toggleStar = (bookId) => {
-    setStars(current => {
-      const next = current.includes(bookId) ? current.filter(id => id !== bookId) : [...current, bookId];
-      localStorage.setItem(starKey(user?.uid), JSON.stringify(next));
-      return next;
+  const toggleStar = id => setStars(current => {
+    const next = current.includes(id) ? current.filter(value => value !== id) : [...current, id];
+    try { localStorage.setItem(starKey(user?.uid), JSON.stringify(next)); } catch (_) {}
+    return next;
+  });
+
+  const items = useMemo(() => [
+    ...books.map(book => ({ ...book, catalogueType:"physical", formatLabel:"Physical book" })),
+    ...ebooks.map(book => ({ ...book, catalogueType:"ebook", formatLabel:"E-book" }))
+  ], [books, ebooks]);
+
+  const visible = useMemo(() => {
+    const needle = search.trim().toLowerCase();
+    return items.filter(item => {
+      const text = [item.title, item.author, item.category, item.description, item.isbn].join(" ").toLowerCase();
+      const matchesSearch = !needle || text.includes(needle);
+      const matchesCategory = category === "All" || category === "Starred" || item.category === category;
+      const matchesStar = category !== "Starred" || stars.includes(item.id);
+      const matchesFormat = format === "All" || item.catalogueType === format;
+      return matchesSearch && matchesCategory && matchesStar && matchesFormat;
     });
-  };
+  }, [items, search, category, stars, format]);
 
-  // The catalogue is public; the file behind it is only served to signed-in users.
-  const openEbook = async (book) => {
+  const openEbook = async book => {
+    if (!user) { onOpenAuth?.("login"); return; }
     const url = await resolveEbookUrl(book);
     if (url) window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  const visible = useMemo(() => {
-    const needle = search.trim().toLowerCase();
-    return catalogue.filter(book => {
-      const haystack = [book.title, book.author, book.category, book.description].join(" ").toLowerCase();
-      const matchesSearch = !needle || haystack.includes(needle);
-      const matchesCategory = category === "All" || category === "Starred" || book.category === category;
-      const matchesStar = category !== "Starred" || stars.includes(book.id);
-      return matchesSearch && matchesCategory && matchesStar;
-    });
-  }, [catalogue, search, category, stars]);
+  const requestPhysical = book => {
+    if (!user) { onOpenAuth?.("login"); return; }
+    if (!(profile?.isApproved ?? profile?.is_approved)) {
+      onOpenAuth?.("login");
+      return;
+    }
+    void requestBook(book.id);
+  };
 
   return (
     <section id="libShelfSection" className={"section" + (active ? " active" : "")}>
-      <div className="section-header">
-        <h2>Lib Shelf</h2>
-        <p>Search the catalogue, star favourites and request available books.</p>
+      <div className="section-header catalogue-heading">
+        <p className="eyebrow">AMG LIBRARY CATALOGUE</p>
+        <h2>Find Your Next Read</h2>
+        <p>Explore physical books and digital reading resources curated by the AMG Library team.</p>
+        <div className="catalogue-summary" aria-live="polite">
+          <span><strong>{books.length}</strong> physical titles</span>
+          <span><strong>{ebooks.length}</strong> e-books</span>
+          <span><strong>{items.length}</strong> resources</span>
+        </div>
       </div>
 
-      {demoMode ? (
-        <p className="notice notice-info">
-          <strong>Sample catalogue.</strong> The librarian has not registered any books yet, so these
-          cards only show how the shelf looks. Search and filters work; borrowing is disabled.
-        </p>
-      ) : null}
-
-      <div className="toolbar">
-        <input
-          id="searchInput"
-          className="search-input"
-          type="search"
-          placeholder="Search by book title, author or category…"
-          aria-label="Search books"
-          value={search}
-          onChange={event => setSearch(event.target.value)}
-        />
-        <select
-          id="categoryFilter"
-          aria-label="Filter by category"
-          value={category}
-          onChange={event => setCategory(event.target.value)}
-        >
-          <option value="All">All categories</option>
-          <option value="Starred">Starred</option>
-          {BOOK_CATEGORIES.map(name => <option key={name} value={name}>{name}</option>)}
-        </select>
+      <div className="catalogue-toolbar">
+        <label className="catalogue-search">
+          <span className="sr-only">Search the catalogue</span>
+          <span aria-hidden="true">⌕</span>
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="Search title, author, ISBN or topic…"
+            value={search}
+            onChange={event => setSearch(event.target.value)}
+          />
+        </label>
+        <label className="catalogue-filter">
+          <span className="sr-only">Filter by category</span>
+          <select id="categoryFilter" value={category} onChange={event => setCategory(event.target.value)}>
+            <option value="All">All categories</option>
+            <option value="Starred">Saved favourites</option>
+            {BOOK_CATEGORIES.map(name => <option key={name} value={name}>{name}</option>)}
+          </select>
+        </label>
+        <div className="catalogue-format-filter" role="group" aria-label="Filter by format">
+          {[
+            ["All", "All resources"],
+            ["physical", "Print books"],
+            ["ebook", "E-books"]
+          ].map(([value, label]) => (
+            <button key={value} type="button" className={format === value ? "active" : ""} aria-pressed={format === value} onClick={() => setFormat(value)}>{label}</button>
+          ))}
+        </div>
       </div>
 
-      <div id="bookGrid" className="book-grid">
+      <div className="catalogue-results-line">
+        <span>{visible.length} {visible.length === 1 ? "resource" : "resources"} found</span>
+        {(search || category !== "All" || format !== "All") ? (
+          <button type="button" onClick={() => { setSearch(""); setCategory("All"); setFormat("All"); }}>Clear filters</button>
+        ) : <span>Updated by the librarian</span>}
+      </div>
+
+      <div id="bookGrid" className="book-grid catalogue-grid">
         {visible.length === 0 ? (
-          <div className="empty-state">
-            {catalogue.length
-              ? "No books match your search."
-              : "The library catalogue is empty. The librarian can register books from the Librarian Desk."}
+          <div className="catalogue-empty">
+            <span className="catalogue-empty-mark" aria-hidden="true">AMG</span>
+            <h3>{items.length ? "No matching resources" : "Your next read is on its way"}</h3>
+            <p>{items.length ? "Try another title, author, category or format." : "The librarian has not published any books or e-books yet. Once resources are added to the catalogue, they will appear here."}</p>
+            {(search || category !== "All" || format !== "All") ? <button className="btn btn-outline" type="button" onClick={() => { setSearch(""); setCategory("All"); setFormat("All"); }}>Reset filters</button> : null}
           </div>
-        ) : visible.map(book => {
-          const available = Math.max(0, Number(book.available || 0));
-          const starred = stars.includes(book.id);
-          const borrowDisabled = Boolean(book.demo) || !user || !(profile?.isApproved ?? profile?.is_approved) || available < 1;
-          const borrowHint = book.demo
-            ? "Sample card — the librarian has not registered this book yet"
-            : !user
-              ? "Log in to request a book"
-              : !(profile?.isApproved ?? profile?.is_approved) ? "Await librarian approval" : "Request this book";
+        ) : visible.map(item => {
+          const isEbook = item.catalogueType === "ebook";
+          const available = Math.max(0, Number(item.available || 0));
+          const starred = stars.includes(item.id);
+          const approved = Boolean(profile?.isApproved ?? profile?.is_approved);
           return (
-            <article key={book.id} className="book-card">
-              <div className="book-cover">
-                {book.coverUrl ? (
-                  <img src={book.coverUrl} alt={"Cover of " + book.title} loading="lazy" />
-                ) : book.demo ? (
-                  <span className="demo-cover" style={{ "--demo-hue": String(book.hue) }}>
-                    <span className="demo-cover-code">{book.code}</span>
-                  </span>
-                ) : (
-                  <span>{book.icon || "BOOK"}</span>
+            <article key={item.id} className={"book-card catalogue-card" + (isEbook ? " is-ebook" : "")}>
+              <div className="book-cover catalogue-cover">
+                {item.coverUrl ? <img src={item.coverUrl} alt={"Cover of " + item.title} loading="lazy" /> : (
+                  <span className="catalogue-cover-placeholder"><b>{isEbook ? "E-BOOK" : "AMG"}</b><small>{(item.title || "Library resource").slice(0, 42)}</small></span>
                 )}
-                {book.demo ? (
-                  <span className="book-demo-badge">Sample</span>
-                ) : (
-                  <button
-                    className="star-btn"
-                    type="button"
-                    aria-label={starred ? "Remove from starred books" : "Star book"}
-                    onClick={() => toggleStar(book.id)}
-                  >
-                    {starred ? "★" : "☆"}
-                  </button>
-                )}
+                <span className="catalogue-format-badge">{isEbook ? "DIGITAL" : "PRINT"}</span>
+                <button className="star-btn" type="button" aria-label={starred ? "Remove favourite" : "Save to favourites"} aria-pressed={starred} onClick={() => toggleStar(item.id)}>{starred ? "★" : "☆"}</button>
               </div>
               <div className="book-details">
-                <h3 className="book-title">{book.title}</h3>
-                <p className="book-author">by {book.author || "Unknown author"}</p>
-                <span className="book-category">{book.category || "Other"}</span>
-                <p className="book-description">{book.description}</p>
-                <p className="book-stock">
-                  {book.demo
-                    ? "Sample preview"
-                    : available + " available of " + Math.max(0, Number(book.quantity || 0))}
-                </p>
+                <span className="book-category">{item.category || "General reading"}</span>
+                <h3 className="book-title">{item.title}</h3>
+                <p className="book-author">{isEbook ? "Digital edition" : "by " + (item.author || "Unknown author")}</p>
+                <p className="book-description">{item.description || (isEbook ? "A digital reading resource from AMG Library." : "A physical title in the AMG Library collection.")}</p>
+                <p className="book-stock">{isEbook ? "PDF / EPUB · " + formatSize(item.fileSize) : available + " of " + Number(item.quantity || 0) + " copies available"}</p>
                 <div className="book-actions">
-                  <button
-                    className="btn btn-primary"
-                    type="button"
-                    disabled={borrowDisabled}
-                    title={borrowHint}
-                    onClick={() => { if (!book.demo) requestBook(book.id); }}
-                  >
-                    Borrow
-                  </button>
-                  {book.ebookUrl ? (
-                    <a className="btn btn-outline" href={book.ebookUrl} target="_blank" rel="noopener noreferrer">E-book</a>
-                  ) : null}
+                  <button className="btn btn-primary" type="button" onClick={() => setSelected(item)}>Details</button>
+                  {isEbook ? (
+                    <button className="btn btn-outline" type="button" onClick={() => void openEbook(item)}>{user ? "Open e-book" : "Sign in to read"}</button>
+                  ) : (
+                    <button className="btn btn-outline" type="button" disabled={available < 1 || (user && !approved)} title={!user ? "Sign in to request this book" : !approved ? "Await librarian approval" : available < 1 ? "No copies currently available" : "Request this book"} onClick={() => requestPhysical(item)}>Request book</button>
+                  )}
                 </div>
               </div>
             </article>
@@ -161,34 +156,27 @@ export function LibShelf({ active, onOpenAuth }) {
         })}
       </div>
 
-      <section className="panel">
-        <div className="section-header">
-          <h2>Digital library</h2>
-          <p>E-books shared by the librarian.</p>
+      {selected ? (
+        <div className="catalogue-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setSelected(null); }}>
+          <section className="catalogue-detail-modal" role="dialog" aria-modal="true" aria-labelledby="catalogueDetailTitle">
+            <button className="catalogue-modal-close" type="button" aria-label="Close details" onClick={() => setSelected(null)}>×</button>
+            <p className="eyebrow">{selected.catalogueType === "ebook" ? "DIGITAL RESOURCE" : "PHYSICAL COLLECTION"}</p>
+            <h2 id="catalogueDetailTitle">{selected.title}</h2>
+            <p className="catalogue-detail-author">{selected.author ? "by " + selected.author : selected.fileName || "AMG Library resource"}</p>
+            <p>{selected.description || "A resource selected for the AMG Library community."}</p>
+            <dl>
+              <div><dt>Category</dt><dd>{selected.category || "General"}</dd></div>
+              <div><dt>Format</dt><dd>{selected.catalogueType === "ebook" ? "E-book" : "Physical book"}</dd></div>
+              {selected.isbn ? <div><dt>ISBN</dt><dd>{selected.isbn}</dd></div> : null}
+              {selected.catalogueType === "physical" ? <div><dt>Available copies</dt><dd>{selected.available} / {selected.quantity}</dd></div> : <div><dt>File</dt><dd>{selected.fileName || "Digital resource"}</dd></div>}
+            </dl>
+            <div className="book-actions">
+              {selected.catalogueType === "ebook" ? <button className="btn btn-primary" type="button" onClick={() => void openEbook(selected)}>Open e-book</button> : <button className="btn btn-primary" type="button" disabled={Number(selected.available) < 1} onClick={() => requestPhysical(selected)}>Request book</button>}
+              <button className="btn btn-outline" type="button" onClick={() => setSelected(null)}>Close</button>
+            </div>
+          </section>
         </div>
-        {!user && ebooks.length > 0 ? (
-          <p className="muted">Browse freely — sign in to download the files.</p>
-        ) : null}
-        <div id="publicEbooks" className="announcement-grid">
-          {ebooks.length === 0 ? (
-            <p className="muted">No e-books have been uploaded yet.</p>
-          ) : ebooks.map(book => (
-            <article key={book.id} className="announcement-card">
-              <h3>{book.title}</h3>
-              <p>{book.category || "Digital resource"}</p>
-              {user ? (
-                <button className="btn btn-sm btn-outline" type="button" onClick={() => void openEbook(book)}>
-                  Open / download
-                </button>
-              ) : (
-                <button className="btn btn-sm btn-outline" type="button" onClick={() => onOpenAuth?.("login")}>
-                  Sign in to download
-                </button>
-              )}
-            </article>
-          ))}
-        </div>
-      </section>
+      ) : null}
     </section>
   );
 }
