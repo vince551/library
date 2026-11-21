@@ -30,7 +30,7 @@ const VALUES = [
   { title: "Responsibility and care", body: "Members and staff share responsibility for respecting books, people and library spaces." }
 ];
 
-export function Hero({ active, onNavigate, onOpenAuth, books, posts }) {
+export function Hero({ active, onNavigate, onOpenAuth, books, ebooks = [], posts }) {
   const galleryRef = useRef(null);
   useHeroParallax(galleryRef);
   useRevealTargets(`${books.length}-${posts.length}`);
@@ -92,7 +92,7 @@ export function Hero({ active, onNavigate, onOpenAuth, books, posts }) {
             Browse all books <span aria-hidden="true">↗</span>
           </button>
         </div>
-        <FeaturedBooks books={books} onBrowse={browse} />
+        <FeaturedBooks books={books} ebooks={ebooks} onBrowse={browse} />
       </section>
 
       <section className="home-intro panel" aria-labelledby="aboutAmgTitle">
