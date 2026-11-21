@@ -13,7 +13,9 @@ import attendanceRoutes from "./routes/attendance.routes.js";
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || "http://localhost:5173"
