@@ -36,6 +36,8 @@ export function LibShelf({ active, onOpenAuth }) {
     ...ebooks.map(book => ({ ...book, catalogueType:"ebook", formatLabel:"E-book" }))
   ], [books, ebooks]);
 
+  const categoryOptions = useMemo(() => [...new Set([...BOOK_CATEGORIES, ...items.map(item => item.category).filter(Boolean)])], [items]);
+
   const visible = useMemo(() => {
     const needle = search.trim().toLowerCase();
     return items.filter(item => {
@@ -93,7 +95,7 @@ export function LibShelf({ active, onOpenAuth }) {
           <select id="categoryFilter" value={category} onChange={event => setCategory(event.target.value)}>
             <option value="All">All categories</option>
             <option value="Starred">Saved favourites</option>
-            {BOOK_CATEGORIES.map(name => <option key={name} value={name}>{name}</option>)}
+            {categoryOptions.map(name => <option key={name} value={name}>{name}</option>)}
           </select>
         </label>
         <div className="catalogue-format-filter" role="group" aria-label="Filter by format">
