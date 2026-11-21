@@ -162,11 +162,11 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
         <button className="close-btn" type="button" onClick={onClose} aria-label="Close">×</button>
 
         <aside className="auth-art">
-          <img className="auth-logo" src="https://raw.githubusercontent.com/vince551/AMG/main/AMG.images/logo.jpg" alt="AMG Library logo" />
+          <img className="auth-logo" src="/images/logo.png" alt="AMG Library logo" />
           <p className="auth-kicker">YOUR LEARNING PARTNER</p>
           <h2>Welcome to AMG Library</h2>
           <p>Find books, explore learning resources and manage your membership in one place.</p>
-          <img className="auth-photo" src="https://raw.githubusercontent.com/vince551/AMG/main/AMG.images/learn.jpg" alt="Learners reading together" loading="lazy" />
+          <img className="auth-photo" src="/images/learn.jpg" alt="Learners reading together" loading="lazy" />
           <div className="auth-art-footer"><span></span> Learn. Discover. Grow.</div>
         </aside>
 
