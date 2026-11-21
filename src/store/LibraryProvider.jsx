@@ -101,7 +101,7 @@ export function LibraryProvider({ children }) {
     return true;
   }, [showToast]);
 
-  const uploadEbook = useCallback(async ({ title, category, file }) => {
+  const uploadEbook = useCallback(async ({ title, category, description, file }) => {
     if (!file) {
       showToast("Choose a PDF or EPUB file first.", "error");
       return false;
@@ -116,7 +116,7 @@ export function LibraryProvider({ children }) {
       return false;
     }
     const entry = {
-      id:makeId("ebook"), title, category, format:"E-book", type:"ebook",
+      id:makeId("ebook"), title, category, description, format:"E-book", type:"ebook",
       fileName:file.name, fileSize:file.size, fileType:file.type,
       localUrl:URL.createObjectURL(file), createdAt:new Date().toISOString()
     };
