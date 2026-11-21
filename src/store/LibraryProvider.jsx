@@ -1,7 +1,7 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useToast } from "./ToastProvider";
 import { useAuth } from "./AuthProvider";
-import { apiRequest } from "../lib/api";
+import { apiRequest, apiFileRequest, apiUrl } from "../lib/api";
 
 const LibraryContext = createContext(null);
 export const useLibrary = () => useContext(LibraryContext);
@@ -13,11 +13,32 @@ const initialPosts = [
 
 const makeId = (prefix) => prefix + "-" + Date.now() + "-" + Math.random().toString(36).slice(2,7);
 
+function fileToBase64(file) {
+  return file.arrayBuffer().then(buffer => {
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+    const chunkSize = 0x8000;
+    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+      binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+    }
+    return btoa(binary);
+  });
+}
+
+function mapEbook(book) {
+  return {
+    ...book,
+    fileName: book.fileName || book.file_name || "E-book",
+    fileSize: Number(book.fileSize ?? book.file_size ?? 0),
+    fileType: book.fileType || book.file_mime_type || "",
+    createdAt: book.createdAt || book.created_at,
+    coverUrl: book.coverUrl ? (book.coverUrl.startsWith("http") ? book.coverUrl : apiUrl(book.coverUrl)) : ""
+  };
+}
+
 export function LibraryProvider({ children }) {
   const { showToast } = useToast();
   const { token } = useAuth();
-  // Empty catalogue by default: the sample site never pretends that demo titles
-  // are real inventory. Librarian-created entries appear immediately in this session.
   const [books, setBooks] = useState([]);
   const [members, setMembers] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -32,48 +53,48 @@ export function LibraryProvider({ children }) {
   const [scanMemberId, setScanMemberId] = useState("");
 
   const refreshPublic = useCallback(async () => {
-    try {
-      const data = await apiRequest("/books");
-      setBooks(data.books || []);
-      return true;
-    } catch (error) {
-      showToast(error.message || "Could not load the book catalogue.", "error");
-      return false;
-    }
+    const [bookResult, ebookResult] = await Promise.allSettled([
+      apiRequest("/books"),
+      apiRequest("/ebooks")
+    ]);
+
+    if (bookResult.status === "fulfilled") setBooks(bookResult.value.books || []);
+    else showToast(bookResult.reason?.message || "Could not load the book catalogue.", "error");
+
+    if (ebookResult.status === "fulfilled") setEbooks((ebookResult.value.ebooks || []).map(mapEbook));
+    else showToast(ebookResult.reason?.message || "Could not load e-books.", "error");
+
+    return bookResult.status === "fulfilled" || ebookResult.status === "fulfilled";
   }, [showToast]);
+
+  useEffect(() => {
+    void refreshPublic();
+  }, [refreshPublic]);
 
   const refreshMember = useCallback(async () => true, []);
 
   const refreshAdmin = useCallback(async () => {
     if (!token) return false;
 
-    const [memberResult, bookResult, loanResult, attendanceResult] = await Promise.allSettled([
+    const [memberResult, bookResult, loanResult, attendanceResult, ebookResult] = await Promise.allSettled([
       apiRequest("/members", { token }),
       apiRequest("/books/manage", { token }),
       apiRequest("/loans", { token }),
-      apiRequest("/attendance", { token })
+      apiRequest("/attendance", { token }),
+      apiRequest("/ebooks/manage", { token })
     ]);
 
-    if (memberResult.status === "fulfilled") {
-      setMembers(memberResult.value.members || []);
-    } else {
-      showToast(memberResult.reason?.message || "Could not load members.", "error");
-    }
+    if (memberResult.status === "fulfilled") setMembers(memberResult.value.members || []);
+    else showToast(memberResult.reason?.message || "Could not load members.", "error");
 
-    if (bookResult.status === "fulfilled") {
-      setBooks(bookResult.value.books || []);
-    }
-
-    if (loanResult.status === "fulfilled") {
-      setLoans(loanResult.value.loans || []);
-    }
-
-    if (attendanceResult.status === "fulfilled") {
-      setAttendance(attendanceResult.value.attendance || []);
-    }
+    if (bookResult.status === "fulfilled") setBooks(bookResult.value.books || []);
+    if (loanResult.status === "fulfilled") setLoans(loanResult.value.loans || []);
+    if (attendanceResult.status === "fulfilled") setAttendance(attendanceResult.value.attendance || []);
+    if (ebookResult.status === "fulfilled") setEbooks((ebookResult.value.ebooks || []).map(mapEbook));
 
     return memberResult.status === "fulfilled";
   }, [token, showToast]);
+
   const resetScanMember = useCallback(() => { setScanMemberCode(""); setScanMemberId(""); }, []);
 
   const requestBook = useCallback(async (id) => {
@@ -90,10 +111,18 @@ export function LibraryProvider({ children }) {
   }, [books, showToast]);
 
   const resolveEbookUrl = useCallback(async (book) => {
-    if (book?.localUrl) return book.localUrl;
-    showToast("This demo entry has no attached file. The backend will provide secure file links.", "error");
-    return "";
-  }, [showToast]);
+    if (!book?.id) {
+      showToast("This e-book is missing its saved file record.", "error");
+      return "";
+    }
+    try {
+      const blob = await apiFileRequest(`/ebooks/${book.id}/file`, { token });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      showToast(error.message || "Could not open this e-book.", "error");
+      return "";
+    }
+  }, [token, showToast]);
 
   const registerBook = useCallback(async (data) => {
     const quantity = Math.max(1, Math.min(400, Number(data.quantity) || 1));
@@ -197,26 +226,58 @@ export function LibraryProvider({ children }) {
       return false;
     }
     if (file.size > 30 * 1024 * 1024) {
-      showToast("The demo upload limit is 30 MB per e-book.", "error");
+      showToast("E-books are limited to 30 MB per file.", "error");
       return false;
     }
-    const coverUrl = coverFile ? URL.createObjectURL(coverFile) : "";
-    const entry = {
-      id:makeId("ebook"), title, category, description, coverUrl, format:"E-book", type:"ebook",
-      fileName:file.name, fileSize:file.size, fileType:file.type,
-      localUrl:URL.createObjectURL(file), createdAt:new Date().toISOString()
-    };
-    setEbooks(current => [entry, ...current]);
-    showToast("E-book added to the local demo catalogue. The file is not uploaded to a server.");
-    return true;
-  }, [showToast]);
+    if (coverFile && (coverFile.size > 5 * 1024 * 1024 || !["image/jpeg", "image/png", "image/webp"].includes(coverFile.type))) {
+      showToast("Cover images must be JPEG, PNG or WebP and no larger than 5 MB.", "error");
+      return false;
+    }
+    if (!token) {
+      showToast("Sign in with a librarian account to upload e-books.", "error");
+      return false;
+    }
+
+    try {
+      const [fileData, coverData] = await Promise.all([
+        fileToBase64(file),
+        coverFile ? fileToBase64(coverFile) : Promise.resolve("")
+      ]);
+      const result = await apiRequest("/ebooks", {
+        token,
+        method: "POST",
+        body: {
+          title: String(title || "").trim(),
+          category: String(category || "").trim(),
+          description: String(description || "").trim(),
+          fileName: file.name,
+          fileType: file.type || (/\.epub$/i.test(file.name) ? "application/epub+zip" : "application/pdf"),
+          fileData,
+          coverType: coverFile?.type || "",
+          coverData
+        }
+      });
+      const entry = mapEbook(result.ebook);
+      setEbooks(current => [entry, ...current.filter(item => item.id !== entry.id)]);
+      showToast(result.message || "E-book uploaded and saved.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not upload this e-book.", "error");
+      return false;
+    }
+  }, [token, showToast]);
 
   const removeEbook = useCallback(async (book) => {
-    if (book?.localUrl?.startsWith("blob:")) URL.revokeObjectURL(book.localUrl);
-    if (book?.coverUrl?.startsWith("blob:")) URL.revokeObjectURL(book.coverUrl);
-    setEbooks(current => current.filter(item => item.id !== book.id));
-    showToast("E-book removed from this demo session.");
-  }, [showToast]);
+    try {
+      await apiRequest(`/ebooks/${book.id}`, { token, method: "DELETE" });
+      setEbooks(current => current.filter(item => item.id !== book.id));
+      showToast("E-book permanently removed from the catalogue.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not remove this e-book.", "error");
+      return false;
+    }
+  }, [token, showToast]);
 
   const publishNews = useCallback(async ({ type, title, body, date }) => {
     setPosts(current => [{ id:makeId("post"), type, announcementKind:type === "event" ? "Event" : "Announcement", title, body, date:date || new Date().toISOString(), createdAt:new Date().toISOString() }, ...current]);
