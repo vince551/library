@@ -29,6 +29,7 @@ export function LibraryProvider({ children }) {
   const [myRequests, setMyRequests] = useState([]);
   const [myLoans, setMyLoans] = useState([]);
   const [scanMemberCode, setScanMemberCode] = useState("");
+  const [scanMemberId, setScanMemberId] = useState("");
 
   const refreshPublic = useCallback(async () => {
     try {
@@ -46,10 +47,11 @@ export function LibraryProvider({ children }) {
   const refreshAdmin = useCallback(async () => {
     if (!token) return false;
 
-    const [memberResult, bookResult, loanResult] = await Promise.allSettled([
+    const [memberResult, bookResult, loanResult, attendanceResult] = await Promise.allSettled([
       apiRequest("/members", { token }),
       apiRequest("/books/manage", { token }),
-      apiRequest("/loans", { token })
+      apiRequest("/loans", { token }),
+      apiRequest("/attendance", { token })
     ]);
 
     if (memberResult.status === "fulfilled") {
@@ -66,9 +68,13 @@ export function LibraryProvider({ children }) {
       setLoans(loanResult.value.loans || []);
     }
 
+    if (attendanceResult.status === "fulfilled") {
+      setAttendance(attendanceResult.value.attendance || []);
+    }
+
     return memberResult.status === "fulfilled";
   }, [token, showToast]);
-  const resetScanMember = useCallback(() => setScanMemberCode(""), []);
+  const resetScanMember = useCallback(() => { setScanMemberCode(""); setScanMemberId(""); }, []);
 
   const requestBook = useCallback(async (id) => {
     const book = books.find(item => String(item.id) === String(id));
@@ -117,12 +123,62 @@ export function LibraryProvider({ children }) {
     return true;
   }, [showToast]);
 
-  const processUnifiedCode = useCallback(async (code, mode) => {
-    if (!code) return;
-    setAttendance(current => [{ id:makeId("attendance"), member_name:code, library_number:code, status:mode === "check-in" ? "In library" : "Checked out", action:mode, created_at:new Date().toISOString() }, ...current]);
-    setScanMemberCode("");
-    showToast("Scan recorded in this demo session.");
-  }, [showToast]);
+  const processUnifiedCode = useCallback(async (rawCode, mode) => {
+    const code = String(rawCode || "").trim();
+    if (!code) return false;
+
+    try {
+      if (mode === "issue-book" && !scanMemberId) {
+        const result = await apiRequest(`/loans/members/search?search=${encodeURIComponent(code)}`, { token });
+        const member = (result.members || []).find(item =>
+          String(item.membership_number || "").toUpperCase() === code.toUpperCase()
+        );
+        if (!member || member.status !== "active") {
+          throw new Error("No active approved learner matches that membership barcode.");
+        }
+        setScanMemberId(member.id);
+        setScanMemberCode(member.membership_number);
+        showToast(`Verified ${member.full_name}. Now scan the book-copy barcode.`);
+        return true;
+      }
+
+      if (mode === "issue-book") {
+        const result = await apiRequest("/loans/issue", {
+          token,
+          method: "POST",
+          body: { barcode: code, memberId: scanMemberId, dueDays: 14 }
+        });
+        resetScanMember();
+        await refreshAdmin();
+        showToast(result.message || "Book issued successfully.");
+        return true;
+      }
+
+      if (mode === "return-book") {
+        const lookup = await apiRequest(`/loans/copy/${encodeURIComponent(code)}/active`, { token });
+        const result = await apiRequest("/loans/return", {
+          token,
+          method: "POST",
+          body: { loanId: lookup.loan.loanId }
+        });
+        await refreshAdmin();
+        showToast(result.message || "Book returned successfully.");
+        return true;
+      }
+
+      const result = await apiRequest("/attendance/scan", {
+        token,
+        method: "POST",
+        body: { code, action: mode }
+      });
+      setAttendance(current => [result.attendance, ...current.filter(item => item.id !== result.attendance.id)]);
+      showToast(result.message || "Attendance recorded.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not process this scan.", "error");
+      return false;
+    }
+  }, [token, scanMemberId, resetScanMember, refreshAdmin, showToast]);
 
   const updateCapacity = useCallback(async (value) => {
     setCapacity(Math.max(1, Number(value) || 1));
