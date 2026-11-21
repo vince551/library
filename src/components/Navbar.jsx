@@ -91,7 +91,7 @@ export function Navbar({ section, onNavigate, onOpenAuth }) {
   return (
     <header className={"navbar" + (scrolled ? " amg-scrolled" : "") + (mobileOpen ? " mobile-nav-open" : "")}>
       <button className="nav-brand" type="button" onClick={() => navigate("heroSection")} aria-label="AMG Library home">
-        <img src="/images/logo.png" alt="" className="brand-mark" />
+        <img src="/images/logo.png" alt="" className="brand-mark" onError={event => { event.currentTarget.style.display = "none"; }} />
         <span>AMG <b>LIBRARY KIBRA</b></span>
       </button>
 
