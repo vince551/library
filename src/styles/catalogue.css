@@ -1,0 +1,55 @@
+/* AMG catalogue completion — retains the existing green/white visual system. */
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.catalogue-heading{padding:clamp(22px,4vw,38px);border:1px solid #e0ebe4;border-radius:22px;background:radial-gradient(circle at 92% 5%,rgba(8,127,91,.09),transparent 32%),linear-gradient(135deg,#fff,#f7fbf8)}
+.catalogue-heading h2{margin:0 0 8px;color:#173d30;font-size:clamp(30px,4.2vw,46px);letter-spacing:-.055em}
+.catalogue-heading>p:not(.eyebrow){max-width:680px;color:#64766d;line-height:1.7}
+.catalogue-summary{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.catalogue-summary span{display:inline-flex;gap:6px;align-items:center;padding:8px 12px;border:1px solid #e0ebe4;border-radius:999px;background:#fff;color:#60756a;font-size:11px}
+.catalogue-summary strong{color:#087f5b;font-size:13px}
+.catalogue-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) minmax(170px,220px) auto;gap:10px;align-items:center;margin:22px 0 12px}
+.catalogue-search{display:flex;align-items:center;gap:10px;min-width:0;min-height:48px;padding:0 15px;border:1px solid #dce8e0;border-radius:13px;background:#fff;color:#087f5b}
+.catalogue-search>span{font-size:23px;line-height:1}
+.catalogue-search input{width:100%;min-width:0;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important}
+.catalogue-filter select{width:100%;min-height:48px;border:1px solid #dce8e0;border-radius:13px;background:#fff}
+.catalogue-format-filter{display:flex;gap:4px;padding:4px;border:1px solid #e0ebe4;border-radius:13px;background:#f5f9f6}
+.catalogue-format-filter button{min-height:38px;padding:7px 10px;border:0;border-radius:9px;background:transparent;color:#64766d;font-size:10px;font-weight:750;white-space:nowrap;cursor:pointer}
+.catalogue-format-filter button.active{background:#087f5b;color:#fff;box-shadow:0 3px 9px rgba(8,127,91,.16)}
+.catalogue-results-line{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px 2px 16px;color:#84938b;font-size:11px}
+.catalogue-results-line button{border:0;background:transparent;color:#087f5b;font-size:11px;font-weight:800;cursor:pointer}
+.catalogue-grid{align-items:stretch}
+.catalogue-card{border-color:#e0eae3;border-radius:17px;box-shadow:0 7px 22px rgba(20,55,40,.035)}
+.catalogue-card:hover{border-color:#c5ddce}
+.catalogue-cover{position:relative;display:grid;place-items:center;aspect-ratio:4/3;min-height:170px;overflow:hidden;background:linear-gradient(145deg,#eef6f0,#e3eee7)}
+.catalogue-cover img{width:100%;height:100%;object-fit:cover}
+.catalogue-cover-placeholder{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;width:100%;height:100%;padding:22px;background:radial-gradient(circle at 80% 12%,rgba(255,255,255,.9),transparent 28%),linear-gradient(145deg,#e9f3ec,#dcebe1);color:#225b43;text-align:center}
+.catalogue-cover-placeholder b{font-size:12px;letter-spacing:.2em}
+.catalogue-cover-placeholder small{max-width:190px;color:#547365;font-size:13px;font-weight:800;line-height:1.45}
+.catalogue-format-badge,.featured-format-tag{position:absolute;left:10px;top:10px;padding:6px 9px;border:1px solid rgba(255,255,255,.75);border-radius:999px;background:rgba(255,255,255,.92);color:#087f5b;font-size:9px;font-weight:900;letter-spacing:.1em}
+.catalogue-card .book-details{gap:9px}
+.catalogue-card .book-title{font-size:16px}
+.catalogue-card .book-stock{font-size:10px}
+.catalogue-card .book-actions{display:flex;gap:7px}
+.catalogue-card .book-actions .btn{flex:1;min-width:0;padding-inline:9px;font-size:10px}
+.catalogue-empty{grid-column:1/-1;display:grid;justify-items:center;gap:10px;min-height:260px;padding:42px 24px;border:1px dashed #cbded1;border-radius:19px;background:linear-gradient(145deg,#fbfdfb,#f2f8f4);text-align:center}
+.catalogue-empty-mark{display:grid;place-items:center;width:58px;height:58px;border:1px solid #d8e9de;border-radius:17px;background:#eaf5ee;color:#087f5b;font-size:12px;font-weight:900;letter-spacing:.08em}
+.catalogue-empty h3{margin:4px 0 0;color:#244638;font-size:19px}
+.catalogue-empty p{max-width:470px;margin:0;color:#718078;font-size:12px;line-height:1.75}
+.catalogue-modal-backdrop{position:fixed;z-index:1000;inset:0;display:grid;place-items:center;padding:20px;background:rgba(12,34,25,.58);backdrop-filter:blur(8px)}
+.catalogue-detail-modal{position:relative;width:min(100%,560px);max-height:min(82vh,720px);overflow:auto;padding:clamp(22px,4vw,34px);border:1px solid #e0ebe4;border-radius:22px;background:#fff;box-shadow:0 25px 80px rgba(0,0,0,.2)}
+.catalogue-detail-modal h2{margin:0 32px 8px 0;color:#173d30;font-size:clamp(24px,4vw,32px);line-height:1.2}
+.catalogue-detail-modal>p:not(.eyebrow){color:#65776e;font-size:13px;line-height:1.75}
+.catalogue-detail-author{font-weight:700}
+.catalogue-modal-close{position:absolute;right:16px;top:13px;width:36px;height:36px;border:1px solid #e2ebe5;border-radius:50%;background:#f7faf8;color:#315b48;font-size:23px;cursor:pointer}
+.catalogue-detail-modal dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:20px 0}
+.catalogue-detail-modal dl div{min-width:0;padding:12px;border:1px solid #e7eee9;border-radius:11px;background:#f9fbf9}
+.catalogue-detail-modal dt{margin-bottom:5px;color:#84938b;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.catalogue-detail-modal dd{margin:0;color:#274b39;font-size:12px;font-weight:750;overflow-wrap:anywhere}
+.featured-book-cover{position:relative;overflow:hidden}
+.featured-format-tag{left:8px;top:8px}
+.ebook-admin-item{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.ebook-admin-item>div:first-child{min-width:0}
+.ebook-admin-item .book-actions{flex-wrap:wrap}
+.ebook-file-picker small{display:block;margin-top:6px;color:#7b8a82;font-size:11px}
+@media(max-width:980px){.catalogue-toolbar{grid-template-columns:minmax(0,1fr) minmax(160px,220px)}.catalogue-format-filter{grid-column:1/-1;justify-self:start}}
+@media(max-width:680px){.catalogue-heading{padding:23px 18px;border-radius:17px}.catalogue-heading h2{font-size:32px}.catalogue-summary{gap:6px}.catalogue-summary span{padding:7px 9px;font-size:9px}.catalogue-toolbar{grid-template-columns:1fr;gap:8px;margin-top:16px}.catalogue-format-filter{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.catalogue-format-filter button{padding:7px 4px;font-size:9px}.catalogue-cover{min-height:130px;aspect-ratio:3/2}.catalogue-card .book-details{padding:11px}.catalogue-card .book-title{font-size:14px}.catalogue-card .book-description{font-size:10px}.catalogue-card .book-actions{flex-direction:column}.catalogue-card .book-actions .btn{width:100%;min-height:36px}.catalogue-detail-modal dl{grid-template-columns:1fr 1fr}.ebook-admin-item{align-items:flex-start;flex-direction:column}.ebook-admin-item .book-actions{width:100%}.ebook-admin-item .book-actions .btn{flex:1}}
+@media(prefers-reduced-motion:reduce){.catalogue-card,.catalogue-card:hover{transition:none;transform:none}}
