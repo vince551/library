@@ -9,6 +9,7 @@ import bookRoutes from "./routes/book.routes.js";
 import copyRoutes from "./routes/copy.routes.js";
 import loanRoutes from "./routes/loan.routes.js";
 import memberRoutes from "./routes/member.routes.js";
+import attendanceRoutes from "./routes/attendance.routes.js";
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use("/api/books", bookRoutes);
 app.use("/api/copies", copyRoutes);
 app.use("/api/loans", loanRoutes);
 app.use("/api/members", memberRoutes);
+app.use("/api/attendance", attendanceRoutes);
 
 app.use((err, req, res, next) => {
   console.error("API error:", err);
