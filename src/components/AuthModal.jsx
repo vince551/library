@@ -162,7 +162,7 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
         <button className="close-btn" type="button" onClick={onClose} aria-label="Close">×</button>
 
         <aside className="auth-art">
-          <img className="auth-logo" src="/images/logo.png" alt="AMG Library logo" />
+          <img className="auth-logo" src="/images/logo.png" alt="AMG Library logo" onError={event => { event.currentTarget.style.display = "none"; }} />
           <p className="auth-kicker">YOUR LEARNING PARTNER</p>
           <h2>Welcome to AMG Library</h2>
           <p>Find books, explore learning resources and manage your membership in one place.</p>
