@@ -1,67 +1,131 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useToast } from "./ToastProvider";
+import { apiRequest } from "../lib/api";
 
 const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
 
+function toProfile(user) {
+  if (!user) return null;
+
+  return {
+    fullName: user.full_name || user.fullName || "",
+    email: user.email || "",
+    libraryNumber: user.membership_number || user.membershipNumber || "",
+    eduLevel: user.edu_level || user.eduLevel || "Member",
+    studyLevel: user.study_level || user.studyLevel || "Library member",
+    school: user.school || "",
+    phone: user.phone || "",
+    isApproved: user.status === "active",
+    approvedAt: user.approved_at || user.approvedAt || null,
+    membershipStatus: user.status || "pending"
+  };
+}
+
 export function AuthProvider({ children }) {
   const { showToast } = useToast();
+  const [token, setToken] = useState(() => localStorage.getItem("amg_auth_token"));
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  const librarian = user?.role === "librarian";
-  const ready = true;
+  const [ready, setReady] = useState(() => !localStorage.getItem("amg_auth_token"));
+
+  const librarian = user?.role === "librarian" || user?.role === "admin";
+
+  useEffect(() => {
+    if (!token) {
+      setReady(true);
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    apiRequest("/auth/me", { token })
+      .then(data => {
+        if (cancelled) return;
+        const currentUser = data.user || data;
+        setUser(currentUser);
+        setProfile(toProfile(currentUser));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        localStorage.removeItem("amg_auth_token");
+        setToken(null);
+        setUser(null);
+        setProfile(null);
+      })
+      .finally(() => {
+        if (!cancelled) setReady(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const login = useCallback(async (email, password) => {
     if (!email || !password) {
       showToast("Enter your email and password.", "error");
       return false;
     }
-    // Demo-only role switch. A real backend must derive this role from a verified
-    // server-side session/JWT, never from the email address.
-    const isLibrarian = /librarian|admin/i.test(email);
-    const nextUser = { uid:"demo-" + Date.now(), email, role:isLibrarian ? "librarian" : "member" };
-    setUser(nextUser);
-    setProfile({
-      fullName:isLibrarian ? "AMG Librarian" : email.split("@")[0],
-      libraryNumber:"AMG-20481",
-      eduLevel:"Member",
-      studyLevel:"Library member",
-      isApproved:true,
-      approvedAt:new Date().toISOString(),
-      email,
-      membershipStatus:"Approved"
-    });
-    showToast(isLibrarian ? "Demo librarian session started." : "Demo member session started. No account was created.");
-    return true;
+
+    try {
+      const data = await apiRequest("/auth/login", {
+        method: "POST",
+        body: { email: email.trim().toLowerCase(), password }
+      });
+
+      if (!data.token || !data.user) {
+        throw new Error("The server returned an incomplete sign-in response.");
+      }
+
+      localStorage.setItem("amg_auth_token", data.token);
+      setToken(data.token);
+      setUser(data.user);
+      setProfile(toProfile(data.user));
+      setReady(true);
+      showToast("Welcome back, " + (data.user.full_name || "AMG Library member") + ".");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Unable to sign in.", "error");
+      return false;
+    }
   }, [showToast]);
 
   const register = useCallback(async (form) => {
-    const fullName = String(form.get("fullName") || "New Member");
-    const email = String(form.get("email") || "");
-    setUser({ uid:"demo-" + Date.now(), email, role:"member" });
-    setProfile({
-      fullName, email,
-      libraryNumber:"AMG-" + String(Math.floor(10000 + Math.random() * 89999)),
-      eduLevel:String(form.get("eduLevel") || "Learner"),
-      studyLevel:String(form.get("studyLevel") || "Learner"),
-      school:String(form.get("school") || ""),
-      photoURL:"",
-      isApproved:false,
-      approvedAt:null,
-      membershipStatus:"Pending"
-    });
-    showToast("Demo registration saved in this browser session only.");
-    return true;
+    const fullName = String(form.get("fullName") || "").trim();
+    const email = String(form.get("email") || "").trim().toLowerCase();
+    const password = String(form.get("password") || "");
+
+    try {
+      const data = await apiRequest("/auth/register", {
+        method: "POST",
+        body: { fullName, email, password }
+      });
+
+      showToast(data.message || "Registration submitted. Your account is awaiting approval.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Unable to submit your registration.", "error");
+      return false;
+    }
   }, [showToast]);
 
   const logout = useCallback(() => {
+    localStorage.removeItem("amg_auth_token");
+    setToken(null);
     setUser(null);
     setProfile(null);
-    showToast("Demo session ended.");
+    setReady(true);
+    showToast("You have been signed out.");
   }, [showToast]);
 
   const resetPassword = useCallback(async (email) => {
-    showToast(email ? "Password reset is unavailable in frontend-only demo mode." : "Enter your email address first.", "error");
+    showToast(
+      email
+        ? "Password reset is not available yet. Please contact the library administrator."
+        : "Enter your email address first.",
+      "error"
+    );
     return false;
   }, [showToast]);
 
@@ -73,11 +137,29 @@ export function AuthProvider({ children }) {
     return true;
   }, [showToast]);
 
-  const refreshProfile = useCallback(async () => profile, [profile]);
+  const refreshProfile = useCallback(async () => {
+    if (!token) return null;
+
+    try {
+      const data = await apiRequest("/auth/me", { token });
+      const currentUser = data.user || data;
+      setUser(currentUser);
+      const nextProfile = toProfile(currentUser);
+      setProfile(nextProfile);
+      return nextProfile;
+    } catch (error) {
+      showToast(error.message || "Could not refresh your profile.", "error");
+      return null;
+    }
+  }, [token, showToast]);
+
   const value = useMemo(() => ({
-    user, profile, librarian, ready, login, register, logout,
+    user, profile, token, librarian, ready, login, register, logout,
     resetPassword, updatePhoto, refreshProfile, setProfile
-  }), [user, profile, librarian, login, register, logout, resetPassword, updatePhoto, refreshProfile]);
+  }), [
+    user, profile, token, librarian, ready, login, register, logout,
+    resetPassword, updatePhoto, refreshProfile
+  ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
