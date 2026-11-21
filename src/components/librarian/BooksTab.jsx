@@ -57,6 +57,7 @@ export function BooksTab({ active }) {
     const result = await registerBook({
       title,
       author: String(form.get("author") || "").trim(),
+      isbn: String(form.get("isbn") || "").trim(),
       category: String(form.get("category") || ""),
       quantity,
       description: String(form.get("description") || "").trim(),
@@ -76,10 +77,13 @@ export function BooksTab({ active }) {
 
   return (
     <div id="booksAdminTab" className={"tab-content" + (active ? " active" : "")}>
-      <h3>Register a book</h3>
+      <h3>Add a physical book</h3>
+      <p className="muted">Add print titles and manage the number of copies available to borrow.</p>
+      <div className="notice notice-info">Frontend preview only: book details and cover previews are held in this browser session. Permanent records and image storage will be connected to Express and Cloudflare R2 later.</div>
       <form id="bookForm" ref={formRef} className="form-grid" onSubmit={submit}>
         <label>Book title<input name="title" required maxLength="160" /></label>
         <label>Author<input name="author" required maxLength="120" /></label>
+        <label>ISBN (optional)<input name="isbn" maxLength="32" placeholder="ISBN-13 or ISBN-10" /></label>
         <label>
           Category
           <select name="category" required defaultValue={BOOK_CATEGORIES[0]}>
@@ -125,7 +129,7 @@ export function BooksTab({ active }) {
 
         <label>Short description (optional)<input name="description" maxLength="500" /></label>
         <button className="btn btn-primary" type="submit" disabled={busy}>
-          Register book &amp; generate barcode
+          Add book &amp; generate copy labels
         </button>
       </form>
 
@@ -151,7 +155,7 @@ export function BooksTab({ active }) {
         ) : null}
       </div>
 
-      <h3 className="top-gap">Current inventory</h3>
+      <h3 className="top-gap">Published physical books</h3>
       <div className="table-responsive">
         <table className="data-table">
           <thead>
