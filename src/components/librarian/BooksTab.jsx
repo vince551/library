@@ -79,7 +79,7 @@ export function BooksTab({ active }) {
     <div id="booksAdminTab" className={"tab-content" + (active ? " active" : "")}>
       <h3>Add a physical book</h3>
       <p className="muted">Add print titles and manage the number of copies available to borrow.</p>
-      <div className="notice notice-info">Frontend preview only: book details and cover previews are held in this browser session. Permanent records and image storage will be connected to Express and Cloudflare R2 later.</div>
+      <div className="notice notice-info">Physical print-book inventory is still a separate local-only workflow. The new persistent upload service currently covers digital PDF/EPUB e-books and their cover images.</div>
       <form id="bookForm" ref={formRef} className="form-grid" onSubmit={submit}>
         <label>Book title<input name="title" required maxLength="160" /></label>
         <label>Author<input name="author" required maxLength="120" /></label>
