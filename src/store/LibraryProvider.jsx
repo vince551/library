@@ -1,13 +1,10 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { useToast } from "./ToastProvider";
+import { useAuth } from "./AuthProvider";
+import { apiRequest } from "../lib/api";
 
 const LibraryContext = createContext(null);
 export const useLibrary = () => useContext(LibraryContext);
-
-const initialMembers = [
-  { id:"m-01", fullName:"Amina Hassan", full_name:"Amina Hassan", email:"amina@example.com", libraryNumber:"AMG-12041", library_number:"AMG-12041", eduLevel:"Primary", edu_level:"Primary", studyLevel:"Grade 6", school:"Kibera Primary", isApproved:true, is_approved:true, membershipStatus:"Approved", approvedAt:new Date().toISOString() },
-  { id:"m-02", fullName:"Brian Otieno", full_name:"Brian Otieno", email:"brian@example.com", libraryNumber:"AMG-12042", library_number:"AMG-12042", eduLevel:"Junior Secondary", edu_level:"Junior Secondary", studyLevel:"Grade 8", school:"AMG Learning Centre", isApproved:false, is_approved:false, membershipStatus:"Pending" }
-];
 
 const initialPosts = [
   { id:"n-01", type:"announcement", announcementKind:"Announcement", title:"Welcome to the AMG Library digital portal", body:"Explore the catalogue, discover learning resources and stay connected with library activities.", date:new Date().toISOString(), createdAt:new Date().toISOString() },
@@ -18,16 +15,13 @@ const makeId = (prefix) => prefix + "-" + Date.now() + "-" + Math.random().toStr
 
 export function LibraryProvider({ children }) {
   const { showToast } = useToast();
+  const { token } = useAuth();
   // Empty catalogue by default: the sample site never pretends that demo titles
   // are real inventory. Librarian-created entries appear immediately in this session.
   const [books, setBooks] = useState([]);
-  const [members, setMembers] = useState(initialMembers);
-  const [requests, setRequests] = useState([
-    { id:"r-01", user_name:"Amina Hassan", book_title:"Mwangaza Readers, Book 1", book_category:"Primary", status:"Pending", created_at:new Date().toISOString() }
-  ]);
-  const [loans, setLoans] = useState([
-    { id:"l-01", user_name:"Amina Hassan", book_title:"Kiswahili Made Simple", status:"Borrowed", created_at:new Date().toISOString() }
-  ]);
+  const [members, setMembers] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [loans, setLoans] = useState([]);
   const [attendance, setAttendance] = useState([]);
   const [ebooks, setEbooks] = useState([]);
   const [posts, setPosts] = useState(initialPosts);
@@ -36,9 +30,44 @@ export function LibraryProvider({ children }) {
   const [myLoans, setMyLoans] = useState([]);
   const [scanMemberCode, setScanMemberCode] = useState("");
 
-  const refreshPublic = useCallback(async () => true, []);
+  const refreshPublic = useCallback(async () => {
+    try {
+      const data = await apiRequest("/books");
+      setBooks(data.books || []);
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not load the book catalogue.", "error");
+      return false;
+    }
+  }, [showToast]);
+
   const refreshMember = useCallback(async () => true, []);
-  const refreshAdmin = useCallback(async () => true, []);
+
+  const refreshAdmin = useCallback(async () => {
+    if (!token) return false;
+
+    const [memberResult, bookResult, loanResult] = await Promise.allSettled([
+      apiRequest("/members", { token }),
+      apiRequest("/books/manage", { token }),
+      apiRequest("/loans", { token })
+    ]);
+
+    if (memberResult.status === "fulfilled") {
+      setMembers(memberResult.value.members || []);
+    } else {
+      showToast(memberResult.reason?.message || "Could not load members.", "error");
+    }
+
+    if (bookResult.status === "fulfilled") {
+      setBooks(bookResult.value.books || []);
+    }
+
+    if (loanResult.status === "fulfilled") {
+      setLoans(loanResult.value.loans || []);
+    }
+
+    return memberResult.status === "fulfilled";
+  }, [token, showToast]);
   const resetScanMember = useCallback(() => setScanMemberCode(""), []);
 
   const requestBook = useCallback(async (id) => {
@@ -145,9 +174,37 @@ export function LibraryProvider({ children }) {
   }, [showToast]);
 
   const reviewLearner = useCallback(async (id, decision) => {
-    setMembers(current => current.map(member => member.id === id ? { ...member, isApproved:decision === "Approved", is_approved:decision === "Approved", membershipStatus:decision } : member));
-    showToast("Demo membership marked " + decision.toLowerCase() + ".");
-  }, [showToast]);
+    try {
+      const action = decision === "Approved" ? "approve" : "reject";
+      const result = await apiRequest(`/members/${id}/${action}`, {
+        token,
+        method: "PATCH"
+      });
+      await refreshAdmin();
+      showToast(result.message || "Membership updated successfully.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not update this membership.", "error");
+      return false;
+    }
+  }, [token, refreshAdmin, showToast]);
+
+  const changeMemberStatus = useCallback(async (member) => {
+    const action = member.status === "suspended" ? "reactivate" : "suspend";
+
+    try {
+      const result = await apiRequest(`/members/${member.id}/${action}`, {
+        token,
+        method: "PATCH"
+      });
+      await refreshAdmin();
+      showToast(result.message || "Member status updated.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not update member status.", "error");
+      return false;
+    }
+  }, [token, refreshAdmin, showToast]);
 
   const processRequest = useCallback(async (id, status) => {
     setRequests(current => current.map(request => request.id === id ? { ...request, status } : request));
@@ -167,14 +224,14 @@ export function LibraryProvider({ children }) {
     books, announcements, events, ebooks, members, requests, loans, attendance, capacity,
     myRequests, myLoans, publicPosts, scanMemberCode,
     refreshPublic, refreshMember, refreshAdmin, resetScanMember, requestBook,
-    reviewLearner, processRequest, returnLoan, registerBook, deleteBook,
+    reviewLearner, changeMemberStatus, processRequest, returnLoan, registerBook, deleteBook,
     processUnifiedCode, updateCapacity, uploadEbook, removeEbook, resolveEbookUrl,
     publishNews, deletePost
   }), [
     books, announcements, events, ebooks, members, requests, loans, attendance, capacity,
     myRequests, myLoans, publicPosts, scanMemberCode,
     refreshPublic, refreshMember, refreshAdmin, resetScanMember, requestBook,
-    reviewLearner, processRequest, returnLoan, registerBook, deleteBook,
+    reviewLearner, changeMemberStatus, processRequest, returnLoan, registerBook, deleteBook,
     processUnifiedCode, updateCapacity, uploadEbook, removeEbook, resolveEbookUrl,
     publishNews, deletePost
   ]);
