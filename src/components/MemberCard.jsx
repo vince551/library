@@ -29,7 +29,7 @@ export const MemberCard = forwardRef(function MemberCard({ profile, className = 
         </div>
         <div className="amg-id-front-content">
           <div className="amg-id-qr-block">
-            <span>SCAN MEMBER ID</span>
+            <span>{isStaff ? "SCAN STAFF ID" : "SCAN MEMBER ID"}</span>
             <QrCode value={libraryNumber} />
           </div>
           <div className="amg-id-person">
@@ -40,7 +40,7 @@ export const MemberCard = forwardRef(function MemberCard({ profile, className = 
                 <span>{isStaff ? roleLabel : (profile?.eduLevel || "Learner")}</span>
                 <span>{isStaff ? "Library Staff" : (profile?.studyLevel || "Study level")}</span>
               </div>
-              <small>MEMBER NO.</small>
+              <small>{isStaff ? "STAFF NO." : "MEMBER NO."}</small>
               <strong>{libraryNumber}</strong>
               <small>{profile?.school || "School"}</small>
             </div>
