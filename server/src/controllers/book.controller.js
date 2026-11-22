@@ -63,13 +63,30 @@ export async function getBooks(req, res, next) {
         b.description,
         b.category_id,
         c.name AS category_name,
+        c.name AS category,
         b.publication_year,
         b.publisher,
         b.cover_image_key,
         b.is_published,
-        b.created_at
+        b.created_at,
+        COALESCE(copy_stats.quantity, 0)::int AS quantity,
+        COALESCE(copy_stats.available, 0)::int AS available,
+        first_copy.barcode
        FROM books b
        LEFT JOIN categories c ON c.id = b.category_id
+       LEFT JOIN LATERAL (
+         SELECT COUNT(*) AS quantity,
+                COUNT(*) FILTER (WHERE status = 'available') AS available
+         FROM book_copies
+         WHERE book_id = b.id
+       ) copy_stats ON TRUE
+       LEFT JOIN LATERAL (
+         SELECT barcode
+         FROM book_copies
+         WHERE book_id = b.id
+         ORDER BY created_at ASC
+         LIMIT 1
+       ) first_copy ON TRUE
        WHERE b.is_published = TRUE
          AND ($1 = '' OR b.title ILIKE $1 OR b.author ILIKE $1)
          AND ($2::uuid IS NULL OR b.category_id = $2)
@@ -96,9 +113,26 @@ export async function getManageBooks(req, res, next) {
     const result = await pool.query(
       `SELECT
         b.*,
-        c.name AS category_name
+        c.name AS category_name,
+        c.name AS category,
+        COALESCE(copy_stats.quantity, 0)::int AS quantity,
+        COALESCE(copy_stats.available, 0)::int AS available,
+        first_copy.barcode
        FROM books b
        LEFT JOIN categories c ON c.id = b.category_id
+       LEFT JOIN LATERAL (
+         SELECT COUNT(*) AS quantity,
+                COUNT(*) FILTER (WHERE status = 'available') AS available
+         FROM book_copies
+         WHERE book_id = b.id
+       ) copy_stats ON TRUE
+       LEFT JOIN LATERAL (
+         SELECT barcode
+         FROM book_copies
+         WHERE book_id = b.id
+         ORDER BY created_at ASC
+         LIMIT 1
+       ) first_copy ON TRUE
        WHERE NOT EXISTS (SELECT 1 FROM ebooks e WHERE e.book_id = b.id)
        ORDER BY b.created_at DESC`
     );
