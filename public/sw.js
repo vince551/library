@@ -27,8 +27,7 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
 
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith("/api/")) return;
+  if (url.origin !== self.location.origin || url.pathname.startsWith("/api/")) return;
 
   if (request.mode === "navigate") {
     event.respondWith(
@@ -48,13 +47,15 @@ self.addEventListener("fetch", (event) => {
   if (["script", "style", "image", "font"].includes(request.destination)) {
     event.respondWith(
       caches.match(request).then((cached) => {
-        const fresh = fetch(request).then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(ASSET_CACHE).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        });
+        const fresh = fetch(request)
+          .then((response) => {
+            if (response.ok) {
+              const copy = response.clone();
+              caches.open(ASSET_CACHE).then((cache) => cache.put(request, copy));
+            }
+            return response;
+          })
+          .catch(() => cached || Response.error());
         return cached || fresh;
       })
     );
