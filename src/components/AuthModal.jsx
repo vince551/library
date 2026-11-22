@@ -166,7 +166,6 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
           <p className="auth-kicker">YOUR LEARNING PARTNER</p>
           <h2>Welcome to AMG Library</h2>
           <p>Find books, explore learning resources and manage your membership in one place.</p>
-          <img className="auth-photo" src="/images/learn.jpg" alt="Learners reading together" loading="lazy" onError={event => { event.currentTarget.style.display = "none"; }} />
           <div className="auth-art-footer"><span></span> Learn. Discover. Grow.</div>
         </aside>
 
