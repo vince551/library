@@ -125,25 +125,50 @@ export function LibraryProvider({ children }) {
   }, [token, showToast]);
 
   const registerBook = useCallback(async (data) => {
-    const quantity = Math.max(1, Math.min(400, Number(data.quantity) || 1));
-    const id = makeId("book");
-    const barcodeBase = "AMG" + Date.now().toString().slice(-8);
-    const copies = Array.from({ length:quantity }, (_, index) => ({
-      id:makeId("copy"),
-      copyNumber:index + 1,
-      barcode:barcodeBase + String(index + 1).padStart(2, "0")
-    }));
-    const coverUrl = data.coverFile ? URL.createObjectURL(data.coverFile) : "";
-    const item = {
-      ...data, id, format:"Physical", type:"physical",
-      quantity, available:quantity, coverUrl, barcode:copies[0]?.barcode,
-      libraryNumber:barcodeBase, copies, createdAt:new Date().toISOString()
-    };
-    delete item.coverFile;
-    setBooks(current => [item, ...current]);
-    showToast("Physical book added to the local catalogue. Changes are temporary.");
-    return { title:item.title, copies };
-  }, [showToast]);
+    if (!token) {
+      showToast("Sign in with a librarian account to register physical books.", "error");
+      return false;
+    }
+    try {
+      const result = await apiRequest("/books/register", {
+        token,
+        method: "POST",
+        body: {
+          title: String(data.title || "").trim(),
+          author: String(data.author || "").trim(),
+          isbn: String(data.isbn || "").trim(),
+          category: String(data.category || "").trim(),
+          quantity: Math.max(1, Math.min(400, Number(data.quantity) || 1)),
+          description: String(data.description || "").trim()
+        }
+      });
+      const saved = result.book;
+      const copies = (saved.copies || []).map((copy, index) => ({
+        ...copy,
+        copyNumber: copy.copyNumber || index + 1
+      }));
+      const item = {
+        ...saved,
+        format: "Physical",
+        type: "physical",
+        category: saved.category || data.category,
+        quantity: Number(saved.quantity ?? copies.length),
+        available: Number(saved.available ?? copies.length),
+        barcode: saved.barcode || copies[0]?.barcode || "",
+        libraryNumber: saved.libraryNumber || copies[0]?.barcode || "",
+        copies,
+        createdAt: saved.created_at || saved.createdAt
+      };
+      setBooks(current => [item, ...current.filter(book => book.id !== item.id)]);
+      showToast(result.message || "Physical book saved successfully.");
+      await refreshPublic();
+      await refreshAdmin();
+      return { title: item.title, copies };
+    } catch (error) {
+      showToast(error.message || "Could not save the physical book.", "error");
+      return false;
+    }
+  }, [token, refreshPublic, refreshAdmin, showToast]);
 
   const deleteBook = useCallback(async (book) => {
     if (book?.coverUrl?.startsWith("blob:")) URL.revokeObjectURL(book.coverUrl);
