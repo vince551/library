@@ -5,6 +5,7 @@ import {
   getBooks,
   getManageBooks,
   createBook,
+  registerPhysicalBook,
   updateBook,
   deleteBook
 } from "../controllers/book.controller.js";
@@ -27,6 +28,7 @@ router.get("/", getBooks);
 // Librarian management
 router.get("/manage", ...librarianAccess, getManageBooks);
 router.post("/", ...librarianAccess, createBook);
+router.post("/register", ...librarianAccess, registerPhysicalBook);
 router.patch("/:id", ...librarianAccess, updateBook);
 router.delete("/:id", ...librarianAccess, deleteBook);
 
