@@ -1,0 +1,138 @@
+/* Catalogue card fit and responsive layout — visual-only overrides. */
+#libShelfSection .catalogue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 255px), 1fr));
+  align-items: stretch;
+  gap: clamp(12px, 1.8vw, 20px);
+}
+#libShelfSection .catalogue-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+#libShelfSection .catalogue-cover {
+  position: relative;
+  width: 100%;
+  height: clamp(168px, 20vw, 230px);
+  min-height: 0;
+  aspect-ratio: auto;
+  padding: 12px;
+  overflow: hidden;
+  isolation: isolate;
+}
+#libShelfSection .catalogue-cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+#libShelfSection .catalogue-format-badge {
+  z-index: 2;
+  max-width: calc(100% - 64px);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+#libShelfSection .catalogue-card .star-btn {
+  z-index: 2;
+  flex: 0 0 auto;
+}
+#libShelfSection .catalogue-card .book-details {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  padding: clamp(12px, 1.4vw, 17px);
+  gap: 9px;
+}
+#libShelfSection .catalogue-card .book-category,
+#libShelfSection .catalogue-card .book-title,
+#libShelfSection .catalogue-card .book-author,
+#libShelfSection .catalogue-card .book-description,
+#libShelfSection .catalogue-card .book-stock {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+#libShelfSection .catalogue-card .book-category {
+  white-space: normal;
+  line-height: 1.45;
+}
+#libShelfSection .catalogue-card .book-title {
+  margin: 0;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+#libShelfSection .catalogue-card .book-author,
+#libShelfSection .catalogue-card .book-stock {
+  line-height: 1.5;
+}
+#libShelfSection .catalogue-card .book-description {
+  display: block;
+  margin: 0;
+  line-height: 1.55;
+  white-space: normal;
+}
+#libShelfSection .catalogue-card .book-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+  margin-top: auto;
+  padding-top: 4px;
+}
+#libShelfSection .catalogue-card .book-actions .btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 8px;
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+@media (max-width: 680px) {
+  #libShelfSection .catalogue-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+  }
+  #libShelfSection .catalogue-cover {
+    height: clamp(132px, 34vw, 190px);
+    padding: 8px;
+  }
+  #libShelfSection .catalogue-card .book-details {
+    padding: 11px;
+    gap: 8px;
+  }
+  #libShelfSection .catalogue-card .book-title { font-size: 14px; }
+  #libShelfSection .catalogue-card .book-description { font-size: 11px; }
+  #libShelfSection .catalogue-card .book-actions {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px;
+  }
+}
+@media (max-width: 420px) {
+  #libShelfSection .catalogue-grid { grid-template-columns: minmax(0, 1fr); }
+  #libShelfSection .catalogue-cover { height: 210px; }
+  #libShelfSection .catalogue-card .book-details { padding: 14px; }
+  #libShelfSection .catalogue-card .book-title { font-size: 16px; }
+  #libShelfSection .catalogue-card .book-description { font-size: 12px; }
+  #libShelfSection .catalogue-card .book-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 340px) {
+  #libShelfSection .catalogue-card .book-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
