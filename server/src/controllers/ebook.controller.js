@@ -295,20 +295,43 @@ export async function streamEbookCover(req, res, next) {
 }
 
 export async function deleteEbook(req, res, next) {
+  let deleted;
   try {
     const id = z.string().uuid().safeParse(req.params.id);
     if (!id.success) return res.status(400).json({ success: false, message: "Invalid e-book ID." });
 
-    const result = await pool.query(
-      `DELETE FROM ebooks WHERE id = $1
-       RETURNING id, book_id, file_key`,
-      [id.data]
-    );
-    if (!result.rowCount) return res.status(404).json({ success: false, message: "E-book not found." });
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const result = await client.query(
+        `SELECT e.id, e.book_id, e.file_key, b.cover_image_key
+         FROM ebooks e
+         JOIN books b ON b.id = e.book_id
+         WHERE e.id = $1
+         FOR UPDATE OF e, b`,
+        [id.data]
+      );
+      if (!result.rowCount) {
+        await client.query("ROLLBACK");
+        return res.status(404).json({ success: false, message: "E-book not found." });
+      }
 
-    const coverResult = await pool.query("SELECT cover_image_key FROM books WHERE id = $1", [result.rows[0].book_id]);
-    const keys = [result.rows[0].file_key, coverResult.rows[0]?.cover_image_key].filter(Boolean);
-    await removeObjects(keys);
+      deleted = result.rows[0];
+      await client.query("DELETE FROM ebooks WHERE id = $1", [id.data]);
+      // Each uploaded e-book creates its own catalogue metadata row.
+      // Remove that row too, so it cannot reappear as a physical print book.
+      await client.query("DELETE FROM books WHERE id = $1", [deleted.book_id]);
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => {});
+      throw error;
+    } finally {
+      client.release();
+    }
+
+    await removeObjects([deleted.file_key, deleted.cover_image_key].filter(Boolean))
+      .catch(error => console.error("E-book storage cleanup failed:", error.message));
+
     return res.json({ success: true, message: "E-book file removed from the catalogue." });
   } catch (error) {
     next(error);
