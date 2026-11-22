@@ -284,3 +284,114 @@
   #librarianSection .workspace-module,
   #librarianSection .workspace-module-arrow { transition: none; }
 }
+
+
+/* Statistics dashboard */
+#librarianSection .insight-dashboard { display: grid; gap: 18px; }
+#librarianSection .insight-header,
+#librarianSection .insight-panel-heading,
+#librarianSection .attendance-header,
+#librarianSection .attendance-card-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+#librarianSection .insight-header h3,
+#librarianSection .attendance-header h3 { margin:4px 0 6px; color:#173d30; font-size:26px; }
+#librarianSection .insight-header p,
+#librarianSection .attendance-header p,
+#librarianSection .attendance-card-heading p { margin:0; color:#7b8981; font-size:12px; }
+#librarianSection .insight-kicker,
+#librarianSection .attendance-kicker { color:#16805b; font-size:9px; font-weight:800; letter-spacing:.15em; }
+#librarianSection .insight-live,
+#librarianSection .attendance-live { display:inline-flex; align-items:center; gap:8px; padding:9px 12px; border:1px solid #dcece2; border-radius:99px; color:#28704f; background:#f3faf5; font-size:10px; font-weight:700; white-space:nowrap; }
+#librarianSection .insight-live i,
+#librarianSection .attendance-live i { width:7px; height:7px; border-radius:50%; background:#25a66b; box-shadow:0 0 0 4px rgba(37,166,107,.12); }
+#librarianSection .insight-summary-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+#librarianSection .insight-summary-card { display:grid; gap:5px; min-width:0; padding:16px; border:1px solid #e4ece6; border-radius:15px; background:linear-gradient(145deg,#fff,#fbfdfb); }
+#librarianSection .insight-summary-card > span { color:#718078; font-size:9px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+#librarianSection .insight-summary-card strong { color:#143f30; font-size:26px; line-height:1.1; letter-spacing:-.04em; }
+#librarianSection .insight-summary-card small { color:#718078; font-size:11px; }
+#librarianSection .insight-chart-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px; }
+#librarianSection .insight-panel { min-width:0; padding:19px; border:1px solid #e5ece7; border-radius:17px; background:#fff; box-shadow:0 8px 22px rgba(22,62,43,.035); }
+#librarianSection .insight-panel-heading { margin-bottom:17px; }
+#librarianSection .insight-panel-heading h4 { margin:4px 0 0; color:#1b4032; font-size:15px; }
+#librarianSection .insight-total { display:grid; width:34px; height:34px; place-items:center; border-radius:11px; color:#226747; background:#edf6f0; font-size:12px; font-weight:800; }
+#librarianSection .insight-donut-layout { display:grid; grid-template-columns: minmax(110px,.8fr) minmax(0,1.2fr); align-items:center; gap:16px; }
+#librarianSection .insight-donut { display:grid; width:min(100%,150px); aspect-ratio:1; place-items:center; margin:auto; border-radius:50%; }
+#librarianSection .insight-donut > div { display:grid; width:66%; aspect-ratio:1; align-content:center; justify-items:center; border-radius:50%; background:#fff; box-shadow:inset 0 0 0 1px #edf1ee; }
+#librarianSection .insight-donut strong { color:#173d30; font-size:24px; line-height:1.1; }
+#librarianSection .insight-donut small { color:#849189; font-size:9px; }
+#librarianSection .insight-legend { display:grid; gap:10px; min-width:0; }
+#librarianSection .insight-legend-row { display:grid; grid-template-columns:8px minmax(0,1fr) auto; align-items:center; gap:8px; color:#65766d; font-size:10px; }
+#librarianSection .insight-legend-row i { width:8px; height:8px; border-radius:3px; }
+#librarianSection .insight-legend-row strong { color:#254b3a; font-size:11px; }
+#librarianSection .insight-bars { display:grid; gap:13px; }
+#librarianSection .insight-bar-row { display:grid; grid-template-columns:minmax(80px, .75fr) minmax(60px,2fr) 28px; align-items:center; gap:10px; }
+#librarianSection .insight-bar-label { overflow:hidden; color:#66776e; font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
+#librarianSection .insight-bar-track { height:9px; overflow:hidden; border-radius:99px; background:#edf2ee; }
+#librarianSection .insight-bar-track span { display:block; height:100%; min-width:0; border-radius:inherit; }
+#librarianSection .insight-bar-row > strong { color:#294d3c; font-size:10px; text-align:right; }
+#librarianSection .insight-empty { margin:0; color:#8a9790; font-size:11px; }
+#librarianSection .insight-wide-panel { width:100%; }
+#librarianSection .insight-footnote { margin:0; color:#89958e; font-size:10px; line-height:1.6; }
+
+/* Attendance workspace */
+#librarianSection .attendance-workspace { display:grid; gap:15px; }
+#librarianSection .attendance-overview { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+#librarianSection .attendance-overview-card { display:grid; gap:5px; padding:15px; border:1px solid #e4ece6; border-radius:15px; background:#fff; }
+#librarianSection .attendance-overview-card > span { color:#748279; font-size:10px; font-weight:700; }
+#librarianSection .attendance-overview-card strong { color:#173d30; font-size:27px; line-height:1.1; letter-spacing:-.04em; }
+#librarianSection .attendance-overview-card small { color:#89958e; font-size:10px; }
+#librarianSection .attendance-overview-primary { border-color:#cfe7d8; background:linear-gradient(145deg,#f4fbf6,#fff); }
+#librarianSection .attendance-overview-primary strong { color:#087f5b; }
+#librarianSection .attendance-card { min-width:0; padding:20px; border:1px solid #e4ece6; border-radius:17px; background:#fff; box-shadow:0 8px 22px rgba(22,62,43,.03); }
+#librarianSection .attendance-card-heading { align-items:flex-start; margin-bottom:15px; }
+#librarianSection .attendance-card-heading h4 { margin:4px 0 5px; color:#1b4032; font-size:16px; }
+#librarianSection .attendance-step { display:grid; width:32px; height:32px; flex:0 0 auto; place-items:center; border-radius:10px; color:#347454; background:#edf6f0; font-size:11px; font-weight:800; }
+#librarianSection .scanner-method-hints { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:0 0 15px; }
+#librarianSection .scanner-method-hints > span { display:grid; gap:4px; padding:13px; border:1px solid #e8eee9; border-radius:12px; background:#f9fbf9; }
+#librarianSection .scanner-method-hints b { color:#315846; font-size:11px; }
+#librarianSection .scanner-method-hints small { color:#7b8981; font-size:10px; line-height:1.5; }
+#librarianSection .attendance-scan-form { display:grid; grid-template-columns:minmax(180px,.7fr) minmax(220px,1.4fr) auto; align-items:end; gap:10px; margin:0; }
+#librarianSection .attendance-scan-form label,
+#librarianSection .attendance-capacity-form label { min-width:0; color:#53675d; font-size:11px; }
+#librarianSection .attendance-scan-form input,
+#librarianSection .attendance-scan-form select,
+#librarianSection .attendance-capacity-form input { min-height:44px; font-size:12px; }
+#librarianSection .attendance-scan-form .btn { min-height:44px; white-space:nowrap; }
+#librarianSection .attendance-instruction { margin-top:12px; padding:11px 13px; border:1px solid #e1ece5; border-radius:10px; color:#527060; background:#f5faf6; font-size:11px; }
+#librarianSection .attendance-camera-button { min-height:39px; margin-top:12px; border-color:#d6e7dc; color:#286447; background:#fff; font-size:11px; }
+#librarianSection .attendance-camera-box { max-width:560px; margin-top:15px; padding:12px; border:1px solid #e5ece7; border-radius:13px; background:#f7faf8; }
+#librarianSection .attendance-capacity-visual { display:grid; grid-template-columns:auto minmax(80px,1fr) auto; align-items:center; gap:14px; padding:14px; border-radius:13px; background:#f7faf8; }
+#librarianSection .attendance-capacity-visual > div:first-child { display:grid; gap:2px; }
+#librarianSection .attendance-capacity-visual strong { color:#174c36; font-size:23px; line-height:1; }
+#librarianSection .attendance-capacity-visual strong small { color:#8a9890; font-size:13px; }
+#librarianSection .attendance-capacity-visual > div:first-child span { color:#7d8b83; font-size:9px; }
+#librarianSection .attendance-capacity-track { height:10px; overflow:hidden; border-radius:99px; background:#e4ece7; }
+#librarianSection .attendance-capacity-track span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#45a879,#087f5b); }
+#librarianSection .attendance-capacity-visual > b { color:#527361; font-size:10px; white-space:nowrap; }
+#librarianSection .attendance-capacity-form { display:flex; align-items:end; gap:10px; margin:13px 0 0; }
+#librarianSection .attendance-capacity-form label { flex:0 1 260px; }
+#librarianSection .attendance-history-card .table-responsive { margin-bottom:0; }
+#librarianSection .attendance-status { display:inline-flex; padding:4px 8px; border-radius:99px; font-size:10px; font-weight:700; white-space:nowrap; }
+#librarianSection .attendance-status.is-inside { color:#176746; background:#e9f6ed; }
+#librarianSection .attendance-status.is-outside { color:#6e7c74; background:#eff2f0; }
+#librarianSection .attendance-empty { padding:24px; color:#8a9790; text-align:center; }
+@media (max-width:760px) {
+  #librarianSection .insight-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #librarianSection .insight-chart-grid { grid-template-columns:minmax(0,1fr); }
+  #librarianSection .attendance-overview { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #librarianSection .attendance-scan-form { grid-template-columns:minmax(0,1fr); }
+  #librarianSection .attendance-scan-form .btn { width:100%; }
+}
+@media (max-width:520px) {
+  #librarianSection .insight-header,
+  #librarianSection .attendance-header { align-items:flex-start; flex-direction:column; }
+  #librarianSection .insight-donut-layout { grid-template-columns:110px minmax(0,1fr); gap:12px; }
+  #librarianSection .insight-donut { width:105px; }
+  #librarianSection .insight-donut strong { font-size:19px; }
+  #librarianSection .insight-panel { padding:15px; }
+  #librarianSection .attendance-card { padding:15px; }
+  #librarianSection .scanner-method-hints { grid-template-columns:minmax(0,1fr); }
+  #librarianSection .attendance-capacity-visual { grid-template-columns:1fr; gap:9px; }
+  #librarianSection .attendance-capacity-form { align-items:stretch; flex-direction:column; }
+  #librarianSection .attendance-capacity-form label { flex:1; }
+  #librarianSection .attendance-capacity-form .btn { width:100%; }
+}
