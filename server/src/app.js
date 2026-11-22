@@ -20,6 +20,8 @@ app.use(helmet({
 const allowedOrigins = new Set([
   "http://localhost:5173",
   "https://amg.free.je",
+  "https://libra-dusky.vercel.app",
+  "https://amg-library-frontend-r6egscyd3-v667225s-projects.vercel.app",
   ...(process.env.FRONTEND_URL || "")
     .split(",")
     .map(origin => origin.trim())
