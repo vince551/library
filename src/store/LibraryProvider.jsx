@@ -215,7 +215,7 @@ export function LibraryProvider({ children }) {
     return true;
   }, [showToast]);
 
-  const uploadEbook = useCallback(async ({ title, category, description, file, coverFile }) => {
+  const uploadEbook = useCallback(async ({ title, author, category, description, file, coverFile }) => {
     if (!file) {
       showToast("Choose a PDF or EPUB file first.", "error");
       return false;
@@ -233,6 +233,10 @@ export function LibraryProvider({ children }) {
       showToast("Cover images must be JPEG, PNG or WebP and no larger than 5 MB.", "error");
       return false;
     }
+    if (!String(author || "").trim()) {
+      showToast("Enter the e-book author.", "error");
+      return false;
+    }
     if (!token) {
       showToast("Sign in with a librarian account to upload e-books.", "error");
       return false;
@@ -248,6 +252,7 @@ export function LibraryProvider({ children }) {
         method: "POST",
         body: {
           title: String(title || "").trim(),
+          author: String(author || "").trim(),
           category: String(category || "").trim(),
           description: String(description || "").trim(),
           fileName: file.name,
