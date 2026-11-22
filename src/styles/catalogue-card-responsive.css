@@ -136,3 +136,32 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+
+/* Mobile book artwork should occupy the full cover frame, without side gutters. */
+@media (max-width: 680px) {
+  #libShelfSection .catalogue-card .catalogue-cover {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 3 / 4;
+    padding: 0;
+    overflow: hidden;
+    background: #edf3ef;
+  }
+  #libShelfSection .catalogue-card .catalogue-cover > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    padding: 0;
+    object-fit: cover;
+    object-position: center;
+  }
+}
+@media (max-width: 420px) {
+  #libShelfSection .catalogue-card .catalogue-cover {
+    height: auto;
+    aspect-ratio: 3 / 4;
+  }
+}
