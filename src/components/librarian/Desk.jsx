@@ -15,8 +15,7 @@ const MODULES = [
   { id: "booksAdminTab", title: "Book inventory", description: "Register print books and manage copies.", icon: "▤", tone: "amber", countKey: "books" },
   { id: "attendanceTab", title: "Attendance", description: "Check learners in and monitor occupancy.", icon: "⌁", tone: "rose", countKey: "inside" },
   { id: "ebooksTab", title: "Digital library", description: "Publish and manage PDF reading resources.", icon: "▧", tone: "violet", countKey: "ebooks" },
-  { id: "newsAdminTab", title: "News & events", description: "Keep the library community informed.", icon: "✳", tone: "slate", countKey: null },
-  { id: "statisticsTab", title: "Library insights", description: "Explore circulation, membership and usage.", icon: "▥", tone: "green", countKey: null }
+  { id: "newsAdminTab", title: "News & events", description: "Keep the library community informed.", icon: "✳", tone: "slate", countKey: null }
 ];
 
 const MODULE_TITLES = Object.fromEntries(MODULES.map(item => [item.id, item.title]));
@@ -74,6 +73,8 @@ export function Desk({ active }) {
             <div className="workspace-metric"><strong>{pendingRequests}</strong><span>Requests to review</span></div>
             <div className="workspace-metric"><strong>{availableCopies}</strong><span>Available copies</span></div>
           </div>
+
+          <StatisticsTab active={true} />
 
           <div className="workspace-section-heading">
             <div><span className="eyebrow">WORKSPACE</span><h3>What would you like to manage?</h3></div>
