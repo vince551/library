@@ -17,8 +17,23 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
+const allowedOrigins = new Set([
+  "http://localhost:5173",
+  "https://amg.free.je",
+  ...(process.env.FRONTEND_URL || "")
+    .split(",")
+    .map(origin => origin.trim())
+    .filter(Boolean)
+]);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5173"
+  origin(origin, callback) {
+    // Allow server-to-server and same-origin requests with no Origin header.
+    if (!origin || allowedOrigins.has(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error("This origin is not allowed by AMG Library CORS."));
+  }
 }));
 
 // Base64 file uploads are JSON-encoded. Keep the limit just above the
