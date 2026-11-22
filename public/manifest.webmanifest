@@ -1,0 +1,19 @@
+{
+  "name": "AMG Library",
+  "short_name": "AMG Library",
+  "description": "AMG Library — Learn. Discover. Grow.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f5faf7",
+  "theme_color": "#075b43",
+  "icons": [
+    {
+      "src": "/images/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
