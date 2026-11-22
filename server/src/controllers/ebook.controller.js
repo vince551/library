@@ -66,6 +66,7 @@ async function storageRequest(path, options = {}) {
       path
     });
     const error = new Error("File storage request failed" + (detail ? `: ${detail.slice(0, 300)}` : "."));
+    error.storageDetail = detail.slice(0, 500);
     error.storageStatus = response.status;
     error.status = response.status === 413 ? 413 : 502;
     throw error;
@@ -265,7 +266,8 @@ export async function uploadEbook(req, res, next) {
       return res.status(error.status).json({
         success: false,
         message: error.status === 503 ? error.message : "The file storage service could not complete the request.",
-        ...(error.storageStatus ? { storageStatus: error.storageStatus } : {})
+        ...(error.storageStatus ? { storageStatus: error.storageStatus } : {}),
+        ...(error.storageDetail ? { storageDetail: error.storageDetail } : {})
       });
     }
     if (error.message?.includes("file") || error.message?.includes("image")) {
