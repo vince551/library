@@ -357,3 +357,79 @@ html[data-theme="dark"] #authModal .auth-tabs {
   #authModal .auth-form-panel::before { height: 82px; }
   #authModal .auth-tabs { margin-top: 52px; }
 }
+
+
+/* Registration fit + single shared hero image. */
+#authModal .auth-modal {
+  grid-template-columns: minmax(280px, .9fr) minmax(0, 1.1fr);
+  max-height: min(92dvh, 860px);
+}
+#authModal .auth-art {
+  min-height: 100%;
+  background: linear-gradient(180deg, rgba(3,35,24,.08) 0%, rgba(2,31,21,.88) 100%), url("/images/learn.jpg") center center / cover no-repeat;
+}
+#authModal .auth-form-panel::before { display:none !important; content:none !important; }
+#authModal .auth-tabs { margin-top:0; margin-bottom:17px; }
+#authModal .auth-form-panel {
+  min-height:0; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin;
+  padding:clamp(22px, 3vw, 34px);
+}
+#authModal .registration-step {
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-content:start; gap:10px 13px;
+}
+#authModal .registration-step > .step-progress,
+#authModal .registration-step > h3,
+#authModal .registration-step > .avatar-fieldset,
+#authModal .registration-step > .registration-actions,
+#authModal #registrationStepOne > .btn { grid-column:1 / -1; }
+#authModal .registration-step > label { min-width:0; gap:5px; font-size:11px; }
+#authModal .registration-step input:not([type="file"]),
+#authModal .registration-step select,
+#authModal .registration-step .password-field { min-width:0; min-height:42px; font-size:13px; }
+#authModal .registration-step input:not([type="file"]),
+#authModal .registration-step select { padding:9px 11px; }
+#authModal .registration-step .password-field { padding-left:10px; }
+#authModal .registration-step .password-field input { padding:8px 2px; }
+#authModal .registration-step h3 { margin:0; font-size:16px; }
+#authModal .registration-step .step-progress { margin:0 0 2px; }
+#authModal .registration-step .avatar-fieldset {
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px 12px;
+  margin-top:0; padding:11px 12px;
+}
+#authModal .avatar-fieldset legend,
+#authModal .avatar-fieldset > p,
+#authModal .avatar-preview-row { grid-column:1 / -1; }
+#authModal .avatar-fieldset > p { font-size:11px; }
+#authModal .avatar-preview-row { padding:7px 9px; }
+#authModal .avatar-preview-row img { width:42px; height:42px; }
+#authModal .registration-actions { margin-top:0; }
+#authModal .registration-actions .btn,
+#authModal #registrationNextBtn { min-height:44px; }
+@media (max-width:760px) {
+  #authModal .auth-modal { max-height:none; }
+  #authModal .auth-art {
+    min-height:225px;
+    background:linear-gradient(180deg, rgba(3,35,24,.08) 0%, rgba(2,31,21,.88) 100%), url("/images/learn.jpg") center 44% / cover no-repeat;
+  }
+  #authModal .auth-form-panel { overflow:visible; padding:18px 20px 22px; }
+  #authModal .auth-tabs { margin-top:0; margin-bottom:15px; }
+  #authModal .registration-step { grid-template-columns:minmax(0,1fr); gap:10px; }
+  #authModal .registration-step > label,
+  #authModal .registration-step > .step-progress,
+  #authModal .registration-step > h3,
+  #authModal .registration-step > .avatar-fieldset,
+  #authModal .registration-step > .registration-actions,
+  #authModal #registrationStepOne > .btn { grid-column:1; }
+  #authModal .registration-step > label { gap:5px; }
+  #authModal .registration-step input:not([type="file"]),
+  #authModal .registration-step select,
+  #authModal .registration-step .password-field { min-height:44px; }
+  #authModal .registration-step .avatar-fieldset { grid-template-columns:minmax(0,1fr); }
+  #authModal .avatar-fieldset legend,
+  #authModal .avatar-fieldset > p,
+  #authModal .avatar-preview-row { grid-column:1; }
+}
+@media (max-width:390px) {
+  #authModal .auth-art { min-height:195px; }
+  #authModal .auth-form-panel { padding-inline:14px; }
+}
