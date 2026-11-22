@@ -320,3 +320,27 @@
   #homeFeaturedBooks .featured-book-link:hover,
   .home-featured-section .text-link-button:hover { transform:none; }
 }
+
+/* E-book and print cover fit: preserve full artwork inside the card frame. */
+.catalogue-card .catalogue-cover {
+  aspect-ratio: 3 / 4;
+  min-height: 0;
+  background: linear-gradient(145deg, #f3f7f4, #e8f0eb);
+}
+.catalogue-card .catalogue-cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  padding: 8px;
+}
+@media (max-width: 680px) {
+  .catalogue-card .catalogue-cover {
+    aspect-ratio: 3 / 4;
+    min-height: 0;
+  }
+  .catalogue-card .catalogue-cover img {
+    height: 100%;
+  }
+}
