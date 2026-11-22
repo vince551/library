@@ -525,3 +525,60 @@ input:focus, select:focus, textarea:focus {
     background-color: rgba(255,255,255,.96);
   }
 }
+
+
+/* AMG brand mark — refined presentation without replacing the official logo asset. */
+.nav-brand {
+  position: relative;
+  gap: 12px;
+  padding: 5px 12px 5px 5px;
+  border: 1px solid rgba(255,255,255,.82);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,.78), rgba(255,255,255,.36));
+  box-shadow: 0 7px 20px rgba(22,56,43,.055), inset 0 1px 0 rgba(255,255,255,.95);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.nav-brand:hover {
+  transform: translateY(-1px);
+  border-color: rgba(8,127,91,.22);
+  box-shadow: 0 11px 26px rgba(22,56,43,.09), inset 0 1px 0 rgba(255,255,255,.98);
+}
+.nav-brand .brand-mark {
+  display: block;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  padding: 4px;
+  border: 1px solid rgba(8,127,91,.15);
+  border-radius: 12px;
+  background: linear-gradient(145deg, #fff, #eaf5ee);
+  object-fit: contain;
+  box-shadow: 0 4px 12px rgba(8,86,59,.09), inset 0 1px 0 #fff;
+}
+.nav-brand > span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  color: #17372d;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -.045em;
+}
+.nav-brand > span b {
+  color: #087f5b;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .105em;
+}
+.nav-brand:focus-visible { outline: 3px solid rgba(8,127,91,.28); outline-offset: 4px; }
+@media (max-width: 680px) {
+  .nav-brand { gap: 8px; padding: 4px 9px 4px 4px; border-radius: 14px; }
+  .nav-brand .brand-mark { width: 39px; height: 39px; flex-basis: 39px; padding: 3px; border-radius: 11px; }
+  .nav-brand > span { gap: 5px; font-size: 13px; }
+  .nav-brand > span b { font-size: 9px; letter-spacing: .075em; }
+}
+@media (max-width: 380px) {
+  .nav-brand { gap: 7px; }
+  .nav-brand > span { font-size: 12px; }
+  .nav-brand > span b { font-size: 8px; }
+}
