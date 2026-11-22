@@ -36,9 +36,9 @@ The planned backend is Node.js + Express, PostgreSQL on Neon, and Cloudflare R2 
 
 - `books`: title, author, ISBN, category, description, cover key, publication metadata.
 - `book_copies`: book ID, barcode, copy number, availability/status.
-- `ebooks`: title, category, description, file key, file type, file size, cover key, publication status.
+- `ebooks`: book ID, file key, file format, file size, publication status. Title, author, category, description and cover key are stored in the related `books` row.
 - `members`, `borrow_requests`, `loans`, `attendance`, and `news_posts`.
 
-The Express API should authorize librarian-only mutations and issue short-lived signed upload/download URLs for private R2 objects. The browser should upload large e-book files directly to R2 using signed URLs rather than proxying file bytes through Express.
+The Express API authorizes librarian-only mutations and uses its private Supabase service credential to upload objects to the private `amg-library-files` bucket. It issues short-lived signed URLs for file access. Keep the Supabase secret key on the Render backend only; never expose it in Vercel frontend variables or source control.
 
 No Firebase, Firestore, Laravel or production backend integration is included.
