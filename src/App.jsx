@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { ToastProvider, useToast } from "./store/ToastProvider";
 import { AuthProvider, useAuth } from "./store/AuthProvider";
 import { LibraryProvider, useLibrary } from "./store/LibraryProvider";
@@ -9,6 +9,13 @@ import { MemberProfile } from "./components/MemberProfile";
 import { NewsSection } from "./components/NewsSection";
 import { AuthModal } from "./components/AuthModal";
 import { Desk } from "./components/librarian/Desk";
+
+const MemoNavbar = memo(Navbar);
+const MemoHero = memo(Hero);
+const MemoLibShelf = memo(LibShelf);
+const MemoMemberProfile = memo(MemberProfile);
+const MemoNewsSection = memo(NewsSection);
+const MemoDesk = memo(Desk);
 
 function Shell() {
   const { user, librarian } = useAuth();
@@ -41,13 +48,13 @@ function Shell() {
   }, []);
 
   return <>
-    <Navbar section={section} onNavigate={showSection} onOpenAuth={openAuth} />
+    <MemoNavbar section={section} onNavigate={showSection} onOpenAuth={openAuth} />
     <main className="container">
-      <Hero active={section === "heroSection"} onNavigate={showSection} onOpenAuth={openAuth} books={books} ebooks={ebooks} posts={publicPosts} />
-      <LibShelf active={section === "libShelfSection"} onOpenAuth={openAuth} />
-      <MemberProfile active={section === "profileSection"} />
-      <NewsSection active={section === "newsSection"} posts={publicPosts} />
-      <Desk active={section === "librarianSection" && librarian} />
+      <MemoHero active={section === "heroSection"} onNavigate={showSection} onOpenAuth={openAuth} books={books} ebooks={ebooks} posts={publicPosts} />
+      <MemoLibShelf active={section === "libShelfSection"} onOpenAuth={openAuth} />
+      <MemoMemberProfile active={section === "profileSection"} />
+      <MemoNewsSection active={section === "newsSection"} posts={publicPosts} />
+      <MemoDesk active={section === "librarianSection" && librarian} />
     </main>
     <footer className="site-footer">
       <span>© {new Date().getFullYear()} AMG Library</span>
