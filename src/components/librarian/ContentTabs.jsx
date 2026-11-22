@@ -31,6 +31,7 @@ export function EbooksTab({ active }) {
     setBusy(true);
     const ok = await uploadEbook({
       title:String(form.get("title") || "").trim(),
+      author:String(form.get("author") || "").trim(),
       category:String(form.get("category") || "").trim(),
       description:String(form.get("description") || "").trim(),
       coverFile:coverFile instanceof File && coverFile.size ? coverFile : null,
@@ -57,10 +58,11 @@ export function EbooksTab({ active }) {
   return (
     <div id="ebooksTab" className={"tab-content" + (active ? " active" : "")}>
       <h3>Add an e-book</h3>
-      <p className="muted">Publish PDF and EPUB reading resources for members. E-books and their cover images are saved to the connected AMG Library database.</p>
-      <div className="notice notice-success">Uploads are stored persistently in PostgreSQL, not on Render's temporary filesystem. Files remain available after a redeploy or restart.</div>
+      <p className="muted">Publish PDF and EPUB reading resources for members. Files are stored privately in Supabase Storage; catalogue details remain in Neon.</p>
+      <div className="notice notice-success">E-book files and optional covers are stored in the private AMG Library bucket. Secure, temporary links are generated when a reader opens a file.</div>
       <form id="ebookForm" ref={formRef} className="form-grid" onSubmit={submit}>
         <label>Book title<input name="title" required maxLength="160" placeholder="Enter the e-book title" /></label>
+        <label>Author<input name="author" required maxLength="255" placeholder="Enter the author's name" /></label>
         <label>Category<input name="category" required maxLength="80" placeholder="e.g. Primary, Science, Fiction" /></label>
         <label className="full-span">Description (optional)<textarea name="description" rows="3" maxLength="500" placeholder="A short description for readers" /></label>
         <label className="full-span ebook-file-picker">
@@ -83,7 +85,7 @@ export function EbooksTab({ active }) {
           <article key={book.id} className="stack-item ebook-admin-item">
             <div>
               <h4>{book.title}</h4>
-              <p>{(book.category || "General") + " · " + (book.fileName || "E-book") + " · " + prettySize(book.fileSize || 0)}</p>
+              <p>{(book.author || "Unknown author") + " · " + (book.category || "General") + " · " + (book.fileName || "E-book") + " · " + prettySize(book.fileSize || 0)}</p>
               {book.description ? <p>{book.description}</p> : null}
               <small>Added {formatDate(book.createdAt)}</small>
             </div>
