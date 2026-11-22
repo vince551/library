@@ -37,6 +37,9 @@ jobs:
       - name: Build production frontend
         run: npm run build
 
+      - name: Include Apache routing configuration
+        run: cp public/.htaccess dist/.htaccess
+
       - name: Upload InfinityFree-ready website files
         uses: actions/upload-artifact@v4
         with:
