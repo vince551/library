@@ -143,10 +143,16 @@ export function LibraryProvider({ children }) {
         }
       });
       const saved = result.book;
-      const copies = (saved.copies || []).map((copy, index) => ({
+      if (!result.success || !saved?.id || !Array.isArray(saved.copies) || saved.copies.length === 0) {
+        throw new Error("The server did not confirm that the physical book and its copy labels were saved.");
+      }
+      const copies = saved.copies.map((copy, index) => ({
         ...copy,
         copyNumber: copy.copyNumber || index + 1
       }));
+      if (copies.length !== Number(saved.quantity)) {
+        throw new Error("The server saved the book but returned an incomplete copy-label list. Refresh the catalogue before trying again.");
+      }
       const item = {
         ...saved,
         format: "Physical",
@@ -160,7 +166,7 @@ export function LibraryProvider({ children }) {
         createdAt: saved.created_at || saved.createdAt
       };
       setBooks(current => [item, ...current.filter(book => book.id !== item.id)]);
-      showToast(result.message || "Physical book saved successfully.");
+      showToast(result.message || "Physical book and copy barcodes saved to the AMG Library database.");
       await refreshPublic();
       await refreshAdmin();
       return { title: item.title, copies };
