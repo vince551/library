@@ -32,7 +32,7 @@ function mapEbook(book) {
     fileSize: Number(book.fileSize ?? book.file_size ?? 0),
     fileType: book.fileType || book.file_mime_type || "",
     createdAt: book.createdAt || book.created_at,
-    coverUrl: book.coverUrl ? (book.coverUrl.startsWith("http") ? book.coverUrl : apiUrl(book.coverUrl)) : ""
+    coverUrl: book.coverUrl ? (book.coverUrl.startsWith("http") ? book.coverUrl : apiUrl(book.coverUrl.replace(/^\/api(?=\/)/, ""))) : ""
   };
 }
 
