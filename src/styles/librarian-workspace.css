@@ -1,0 +1,286 @@
+/* Premium librarian workspace — scoped to the staff area only. */
+#librarianSection .workspace-home {
+  display: grid;
+  gap: 24px;
+}
+#librarianSection .workspace-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: center;
+  gap: 28px;
+  overflow: hidden;
+  min-height: 245px;
+  padding: clamp(28px,5vw,52px);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 26px;
+  color: #f5fff9;
+  background:
+    radial-gradient(circle at 82% 20%,rgba(155,225,190,.2),transparent 28%),
+    radial-gradient(circle at 95% 100%,rgba(56,160,120,.28),transparent 35%),
+    linear-gradient(125deg,#092f28 0%,#0d5541 56%,#147354 100%);
+  box-shadow: 0 22px 55px rgba(10,64,47,.16);
+}
+#librarianSection .workspace-hero::after {
+  content: "";
+  position: absolute;
+  width: 310px;
+  height: 310px;
+  right: 90px;
+  top: -205px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 50%;
+  box-shadow: 0 0 0 35px rgba(255,255,255,.035),0 0 0 70px rgba(255,255,255,.025);
+  pointer-events: none;
+}
+#librarianSection .workspace-hero-copy { position: relative; z-index: 1; max-width: 660px; }
+#librarianSection .workspace-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 17px;
+  color: #b8e8d0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+#librarianSection .workspace-eyebrow::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #83e1ae;
+  box-shadow: 0 0 0 5px rgba(131,225,174,.13);
+}
+#librarianSection .workspace-hero h2 {
+  max-width: 620px;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(30px,4.5vw,48px);
+  font-weight: 750;
+  letter-spacing: -.045em;
+  line-height: 1.08;
+}
+#librarianSection .workspace-hero p {
+  max-width: 540px;
+  margin: 14px 0 0;
+  color: rgba(241,255,247,.76);
+  font-size: 14px;
+  line-height: 1.75;
+}
+#librarianSection .workspace-hero-meta {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+  min-width: 150px;
+  color: rgba(241,255,247,.72);
+  font-size: 11px;
+  text-align: right;
+}
+#librarianSection .workspace-hero-meta strong {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 650;
+}
+#librarianSection .workspace-metrics {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 12px;
+}
+#librarianSection .workspace-metric {
+  display: grid;
+  gap: 5px;
+  padding: 17px 19px;
+  border: 1px solid #e5eee8;
+  border-radius: 16px;
+  background: linear-gradient(145deg,#fff,#fbfdfb);
+  box-shadow: 0 8px 24px rgba(22,62,43,.035);
+}
+#librarianSection .workspace-metric strong {
+  color: #123f31;
+  font-size: 25px;
+  font-weight: 750;
+  letter-spacing: -.04em;
+  line-height: 1.1;
+}
+#librarianSection .workspace-metric span {
+  color: #718078;
+  font-size: 11px;
+  font-weight: 600;
+}
+#librarianSection .workspace-section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 7px 0 0;
+}
+#librarianSection .workspace-section-heading h3 {
+  margin: 4px 0 0;
+  color: #173d30;
+  font-size: 21px;
+  letter-spacing: -.025em;
+}
+#librarianSection .workspace-section-heading p {
+  margin: 0;
+  color: #7b8981;
+  font-size: 11px;
+}
+#librarianSection .workspace-module-grid {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 13px;
+}
+#librarianSection .workspace-module {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 158px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 19px;
+  border: 1px solid #e4ece6;
+  border-radius: 17px;
+  color: #1c3b30;
+  background: #fff;
+  box-shadow: 0 7px 22px rgba(22,62,43,.035);
+  text-align: left;
+  cursor: pointer;
+  transition: transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+#librarianSection .workspace-module:hover {
+  transform: translateY(-3px);
+  border-color: #b8d8c5;
+  box-shadow: 0 15px 30px rgba(22,75,51,.09);
+}
+#librarianSection .workspace-module:focus-visible,
+#librarianSection .workspace-back:focus-visible {
+  outline: 3px solid rgba(31,139,93,.28);
+  outline-offset: 3px;
+}
+#librarianSection .workspace-module-top {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+#librarianSection .workspace-module-icon {
+  display: grid;
+  width: 39px;
+  height: 39px;
+  place-items: center;
+  border-radius: 12px;
+  color: #176447;
+  background: #eaf5ee;
+  font-size: 17px;
+  font-weight: 700;
+}
+#librarianSection .workspace-module-count {
+  color: #668074;
+  font-size: 11px;
+  font-weight: 700;
+}
+#librarianSection .workspace-module strong {
+  margin-top: 17px;
+  color: #183d30;
+  font-size: 13px;
+  font-weight: 750;
+}
+#librarianSection .workspace-module small {
+  margin-top: 5px;
+  color: #7c8982;
+  font-size: 11px;
+  line-height: 1.5;
+}
+#librarianSection .workspace-module-arrow {
+  position: absolute;
+  right: 18px;
+  bottom: 17px;
+  color: #398765;
+  font-size: 17px;
+  transition: transform .2s ease;
+}
+#librarianSection .workspace-module:hover .workspace-module-arrow { transform: translateX(3px); }
+#librarianSection .workspace-module--blue .workspace-module-icon { color: #28658b; background: #edf5fa; }
+#librarianSection .workspace-module--violet .workspace-module-icon { color: #66549a; background: #f2effa; }
+#librarianSection .workspace-module--amber .workspace-module-icon { color: #946c2b; background: #faf4e8; }
+#librarianSection .workspace-module--rose .workspace-module-icon { color: #9a5860; background: #fbf0f1; }
+#librarianSection .workspace-module--slate .workspace-module-icon { color: #526777; background: #eff3f5; }
+#librarianSection .workspace-panel {
+  display: grid;
+  gap: 18px;
+}
+#librarianSection .workspace-panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e8eee9;
+}
+#librarianSection .workspace-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 39px;
+  padding: 0 13px;
+  border: 1px solid #dce9e0;
+  border-radius: 11px;
+  color: #245b43;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+#librarianSection .workspace-panel-heading h2 {
+  margin: 0;
+  color: #183d30;
+  font-size: 22px;
+  letter-spacing: -.025em;
+}
+#librarianSection .workspace-panel-heading p {
+  margin: 3px 0 0;
+  color: #7b8981;
+  font-size: 11px;
+}
+#librarianSection .workspace-panel .tab-content { margin-top: 0; }
+@media (max-width: 900px) {
+  #librarianSection .workspace-module-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  #librarianSection .workspace-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 600px) {
+  #librarianSection .workspace-home { gap: 17px; }
+  #librarianSection .workspace-hero {
+    grid-template-columns: minmax(0,1fr);
+    min-height: 0;
+    gap: 20px;
+    padding: 25px 21px;
+    border-radius: 19px;
+  }
+  #librarianSection .workspace-hero h2 { font-size: clamp(29px,9vw,38px); }
+  #librarianSection .workspace-hero p { font-size: 12px; }
+  #librarianSection .workspace-hero-meta {
+    justify-items: start;
+    text-align: left;
+  }
+  #librarianSection .workspace-metric { padding: 14px; border-radius: 13px; }
+  #librarianSection .workspace-metric strong { font-size: 22px; }
+  #librarianSection .workspace-section-heading { align-items: flex-start; flex-direction: column; gap: 4px; }
+  #librarianSection .workspace-module-grid { gap: 9px; }
+  #librarianSection .workspace-module { min-height: 145px; padding: 14px; border-radius: 14px; }
+  #librarianSection .workspace-module strong { margin-top: 13px; font-size: 12px; }
+  #librarianSection .workspace-module small { font-size: 10px; }
+  #librarianSection .workspace-module-arrow { right: 13px; bottom: 12px; }
+  #librarianSection .workspace-panel-heading { align-items: flex-start; }
+  #librarianSection .workspace-panel-heading h2 { font-size: 18px; }
+}
+@media (max-width: 360px) {
+  #librarianSection .workspace-module-grid { grid-template-columns: minmax(0,1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #librarianSection .workspace-module,
+  #librarianSection .workspace-module-arrow { transition: none; }
+}
