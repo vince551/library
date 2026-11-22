@@ -6,13 +6,13 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#f5faf7",
+  "background_color": "#ffffff",
   "theme_color": "#075b43",
   "icons": [
     {
-      "src": "/images/logo.png",
+      "src": "/icons/amg-app-icon.svg",
       "sizes": "any",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]
