@@ -72,6 +72,7 @@ export async function getBooks(req, res, next) {
        WHERE b.is_published = TRUE
          AND ($1 = '' OR b.title ILIKE $1 OR b.author ILIKE $1)
          AND ($2::uuid IS NULL OR b.category_id = $2)
+         AND NOT EXISTS (SELECT 1 FROM ebooks e WHERE e.book_id = b.id)
        ORDER BY b.created_at DESC
        LIMIT $3 OFFSET $4`,
       [`%${search}%`, categoryId, limit, offset]
@@ -97,6 +98,7 @@ export async function getManageBooks(req, res, next) {
         c.name AS category_name
        FROM books b
        LEFT JOIN categories c ON c.id = b.category_id
+       WHERE NOT EXISTS (SELECT 1 FROM ebooks e WHERE e.book_id = b.id)
        ORDER BY b.created_at DESC`
     );
 
