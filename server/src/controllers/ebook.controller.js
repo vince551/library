@@ -42,17 +42,29 @@ function storageObjectPath(key) {
 
 async function storageRequest(path, options = {}) {
   const config = storageConfig();
-  const response = await fetch(`${config.baseUrl}/storage/v1/${path}`, {
-    ...options,
-    headers: {
-      apikey: config.key,
-      Authorization: `Bearer ${config.key}`,
-      ...(options.body && !(options.body instanceof Buffer) ? { "Content-Type": "application/json" } : {}),
-      ...options.headers
-    }
-  });
+  let response;
+  try {
+    response = await fetch(`${config.baseUrl}/storage/v1/${path}`, {
+      ...options,
+      headers: {
+        apikey: config.key,
+        Authorization: `Bearer ${config.key}`,
+        ...(options.body && !(options.body instanceof Buffer) ? { "Content-Type": "application/json" } : {}),
+        ...options.headers
+      }
+    });
+  } catch (error) {
+    console.error("Supabase Storage network request failed:", error.message);
+    throw error;
+  }
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
+    console.error("Supabase Storage rejected request:", {
+      status: response.status,
+      statusText: response.statusText,
+      detail: detail.slice(0, 1000),
+      path
+    });
     const error = new Error("File storage request failed" + (detail ? `: ${detail.slice(0, 300)}` : "."));
     error.status = response.status === 413 ? 413 : 502;
     throw error;
