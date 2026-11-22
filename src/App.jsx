@@ -9,6 +9,7 @@ import { MemberProfile } from "./components/MemberProfile";
 import { NewsSection } from "./components/NewsSection";
 import { AuthModal } from "./components/AuthModal";
 import { Desk } from "./components/librarian/Desk";
+import { FloatingThemeToggle } from "./components/FloatingThemeToggle";
 
 const MemoNavbar = memo(Navbar);
 const MemoHero = memo(Hero);
@@ -61,6 +62,7 @@ function Shell() {
       <span>Learn. Discover. Grow.</span>
     </footer>
     <AuthModal open={authOpen} mode={authMode} onClose={() => setAuthOpen(false)} onModeChange={setAuthMode} />
+    <FloatingThemeToggle />
   </>;
 }
 
