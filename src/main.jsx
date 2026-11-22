@@ -4,6 +4,7 @@ import "../amg-glassmorphism.css";
 import "./styles/catalogue.css";
 import "./styles/premium-responsive.css";
 import "./styles/librarian-workspace.css";
+import "./styles/theme-system.css";
 import App from "./App.jsx";
 
 createRoot(document.getElementById("root")).render(<App />);
