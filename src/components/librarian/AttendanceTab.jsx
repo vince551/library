@@ -164,102 +164,61 @@ export function AttendanceTab({ active }) {
     : DEFAULT_INSTRUCTION);
 
   return (
-    <div id="attendanceTab" className={"tab-content" + (active ? " active" : "")}>
-      <h3>Smart barcode &amp; QR scanner</h3>
-      <p className="muted">
-        Use a USB barcode scanner connected to a computer, or scan with the rear camera on a phone or tablet.
-        Both methods use the same attendance and circulation records.
-      </p>
-
-      <div className="scanner-method-hints">
-        <span><b>USB scanner</b><small>Click the code field and scan. Configure the scanner to send Enter after each scan.</small></span>
-        <span><b>Phone camera</b><small>Allow camera access and hold the barcode or QR code inside the frame.</small></span>
+    <div id="attendanceTab" className={"tab-content attendance-workspace" + (active ? " active" : "")}>
+      <header className="attendance-header">
+        <div><span className="attendance-kicker">AMG LIBRARY · VISITOR MANAGEMENT</span><h3>Attendance &amp; circulation</h3><p>Record visits, manage capacity and process book movement from one desk.</p></div>
+        <div className="attendance-live"><i /> Scanner workspace</div>
+      </header>
+      <div className="attendance-overview">
+        <article className="attendance-overview-card attendance-overview-primary"><span>Currently in library</span><strong>{inside}</strong><small>People checked in</small></article>
+        <article className="attendance-overview-card"><span>Maximum capacity</span><strong>{capacity}</strong><small>Configured library limit</small></article>
+        <article className="attendance-overview-card"><span>Available spaces</span><strong>{Math.max(0, capacity - inside)}</strong><small>Remaining capacity</small></article>
+        <article className="attendance-overview-card"><span>Attendance records</span><strong>{attendance.length}</strong><small>Recorded visits</small></article>
       </div>
-
-      <form id="attendanceForm" className="inline-form" onSubmit={submitCode}>
-        <label>
-          Scanner mode
-          <select name="action" value={mode} onChange={event => setMode(event.target.value)}>
-            {SCAN_MODES.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
-          </select>
-        </label>
-        <label>
-          Scan / enter barcode
-          <input
-            id="attendanceCodeInput"
-            ref={codeRef}
-            name="libraryNumber"
-            type="text"
-            required
-            autoComplete="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            placeholder="Click here, then scan CODE-128 or QR code"
-            value={code}
-            onChange={event => setCode(event.target.value)}
-          />
-        </label>
-        <button className="btn btn-primary" type="submit">Process scan</button>
-      </form>
-
-      <p id="scannerInstruction" className="muted">{instruction}</p>
-
-      <button
-        id="startScannerBtn"
-        className="btn btn-outline top-gap"
-        type="button"
-        onClick={() => setScanning(true)}
-        disabled={scanning}
-      >
-        Open phone camera scanner
-      </button>
-
-      <div id="scannerBox" className={"scanner-box" + (scanning ? "" : " hidden")}>
-        <video id="scannerVideo" ref={videoRef} playsInline muted></video>
-        <p className="scanner-camera-help">Position the code inside the camera view. The scanner will process it automatically.</p>
-        <button id="stopScannerBtn" className="btn btn-secondary" type="button" onClick={() => setScanning(false)}>
-          Stop scanner
-        </button>
-      </div>
-
-      <p id="currentCapacity" className="notice notice-info">
-        Library occupancy: {inside} / {capacity} · Remaining capacity: {Math.max(0, capacity - inside)}
-      </p>
-
-      <form id="capacityForm" className="inline-form" onSubmit={submitCapacity}>
-        <label>
-          Maximum capacity
-          <input
-            name="capacity"
-            type="number"
-            min="1"
-            max="10000"
-            required
-            value={capacityInput}
-            onChange={event => setCapacityInput(event.target.value)}
-          />
-        </label>
-        <button className="btn btn-outline" type="submit">Update capacity</button>
-      </form>
-
-      <div className="table-responsive">
-        <table className="data-table">
-          <thead>
-            <tr><th>Member</th><th>Library #</th><th>Check-in</th><th>Check-out</th><th>Status</th></tr>
-          </thead>
-          <tbody id="attendanceTable">
-            {attendance.map(item => (
-              <tr key={item.id}>
-                <td>{item.memberName}</td>
-                <td>{item.libraryNumber}</td>
-                <td>{formatDate(item.checkInAt)}</td>
-                <td>{formatDate(item.checkOutAt)}</td>
-                <td>{item.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <section className="attendance-card">
+        <div className="attendance-card-heading"><div><span className="attendance-kicker">01 · SCAN &amp; PROCESS</span><h4>Smart barcode &amp; QR scanner</h4><p>Use a USB barcode scanner or the rear camera on a phone or tablet.</p></div><span className="attendance-step">01</span></div>
+        <div className="scanner-method-hints">
+          <span><b>USB scanner</b><small>Focus the code field and scan. Configure the scanner to send Enter after each scan.</small></span>
+          <span><b>Phone camera</b><small>Allow camera access and hold the barcode or QR code inside the frame.</small></span>
+        </div>
+        <form id="attendanceForm" className="inline-form attendance-scan-form" onSubmit={submitCode}>
+          <label>Scanner mode<select name="action" value={mode} onChange={event => setMode(event.target.value)}>{SCAN_MODES.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
+          <label className="attendance-code-field">Scan / enter barcode<input id="attendanceCodeInput" ref={codeRef} name="libraryNumber" type="text" required autoComplete="off" autoCapitalize="off" spellCheck={false} placeholder="Click here, then scan CODE-128 or QR code" value={code} onChange={event => setCode(event.target.value)} /></label>
+          <button className="btn btn-primary" type="submit">Process scan</button>
+        </form>
+        <div className="attendance-instruction" role="status">{instruction}</div>
+        <button id="startScannerBtn" className="btn btn-outline attendance-camera-button" type="button" onClick={() => setScanning(true)} disabled={scanning}>Open phone camera scanner</button>
+        <div id="scannerBox" className={"scanner-box attendance-camera-box" + (scanning ? "" : " hidden")}>
+          <video id="scannerVideo" ref={videoRef} playsInline muted></video>
+          <p className="scanner-camera-help">Position the code inside the camera view. The scanner will process it automatically.</p>
+          <button id="stopScannerBtn" className="btn btn-secondary" type="button" onClick={() => setScanning(false)}>Stop scanner</button>
+        </div>
+      </section>
+      <section className="attendance-card attendance-capacity-card">
+        <div className="attendance-card-heading"><div><span className="attendance-kicker">02 · SPACE MANAGEMENT</span><h4>Library capacity</h4><p>Keep the occupancy limit aligned with the available seating and space.</p></div><span className="attendance-step">02</span></div>
+        <div className="attendance-capacity-visual">
+          <div><strong>{inside}<small> / {capacity}</small></strong><span>Current occupancy</span></div>
+          <div className="attendance-capacity-track"><span style={{ width: Math.min(100, capacity > 0 ? inside / capacity * 100 : 0) + "%" }} /></div>
+          <b>{Math.round(Math.min(100, capacity > 0 ? inside / capacity * 100 : 0))}% occupied</b>
+        </div>
+        <form id="capacityForm" className="inline-form attendance-capacity-form" onSubmit={submitCapacity}>
+          <label>Maximum library capacity<input name="capacity" type="number" min="1" max="10000" required value={capacityInput} onChange={event => setCapacityInput(event.target.value)} /></label>
+          <button className="btn btn-outline" type="submit">Save capacity</button>
+        </form>
+      </section>
+      <section className="attendance-card attendance-history-card">
+        <div className="attendance-card-heading"><div><span className="attendance-kicker">03 · ACTIVITY LOG</span><h4>Recent attendance</h4><p>Review member visits and check-in / check-out activity.</p></div><span className="attendance-step">03</span></div>
+        <div className="table-responsive">
+          <table className="data-table">
+            <thead><tr><th>Member</th><th>Library #</th><th>Check-in</th><th>Check-out</th><th>Status</th></tr></thead>
+            <tbody id="attendanceTable">
+              {attendance.length ? attendance.map(item => (
+                <tr key={item.id}><td>{item.memberName}</td><td>{item.libraryNumber}</td><td>{formatDate(item.checkInAt)}</td><td>{formatDate(item.checkOutAt)}</td><td><span className={"attendance-status " + (item.status === "In library" ? "is-inside" : "is-outside")}>{item.status}</span></td></tr>
+              )) : <tr><td colSpan="5" className="attendance-empty">No attendance records have been recorded yet.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }
