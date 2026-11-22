@@ -1,5 +1,6 @@
 
 import { z } from "zod";
+import { randomBytes } from "node:crypto";
 import { pool } from "../config/database.js";
 
 const bookSchema = z.object({
@@ -265,5 +266,78 @@ export async function deleteBook(req, res, next) {
     });
   } catch (error) {
     handleDatabaseError(error, res, next);
+  }
+}
+
+
+// Register a physical title and all its copies atomically.
+export async function registerPhysicalBook(req, res, next) {
+  const schema = z.object({
+    title: z.string().trim().min(1).max(255),
+    author: z.string().trim().min(1).max(255),
+    isbn: z.string().trim().max(20).optional().default(""),
+    description: z.string().trim().max(10000).optional().default(""),
+    category: z.string().trim().min(1).max(80),
+    quantity: z.number().int().min(1).max(400)
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({
+      success: false,
+      message: "Complete the required physical book details.",
+      errors: parsed.error.flatten().fieldErrors
+    });
+  }
+
+  const input = parsed.data;
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const slug = input.category.toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80) || "general";
+    const categoryResult = await client.query(
+      `INSERT INTO categories (name, slug)
+       VALUES ($1, $2)
+       ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
+       RETURNING id`,
+      [input.category, slug]
+    );
+    const bookResult = await client.query(
+      `INSERT INTO books (title, author, isbn, description, category_id, created_by, is_published)
+       VALUES ($1, $2, $3, $4, $5, $6, TRUE)
+       RETURNING id, title, author, isbn, description, category_id, is_published, created_at`,
+      [input.title, input.author, input.isbn || null, input.description || null, categoryResult.rows[0].id, req.user.id]
+    );
+    const createdBook = bookResult.rows[0];
+    const copies = [];
+    for (let index = 0; index < input.quantity; index += 1) {
+      const barcode = `AMG-${Date.now()}-${randomBytes(4).toString("hex").toUpperCase()}`;
+      const copyResult = await client.query(
+        `INSERT INTO book_copies (book_id, barcode, condition, status)
+         VALUES ($1, $2, 'good', 'available')
+         RETURNING id, book_id, barcode, shelf_location, condition, status, created_at`,
+        [createdBook.id, barcode]
+      );
+      copies.push({ ...copyResult.rows[0], copyNumber: index + 1 });
+    }
+    await client.query("COMMIT");
+    return res.status(201).json({
+      success: true,
+      message: "Physical book and copies saved to the AMG Library database.",
+      book: {
+        ...createdBook,
+        category: input.category,
+        quantity: copies.length,
+        available: copies.length,
+        barcode: copies[0]?.barcode || "",
+        libraryNumber: copies[0]?.barcode || "",
+        copies
+      }
+    });
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+    handleDatabaseError(error, res, next);
+  } finally {
+    client.release();
   }
 }
