@@ -1,6 +1,6 @@
 # AMG Library — Frontend
 
-This repository contains the AMG Library React + Vite frontend. It preserves the original AMG visual identity and page structure while preparing the catalogue and librarian workflows for a future API.
+This repository contains the AMG Library React + Vite frontend and its Node.js + Express API. The production frontend is hosted on Vercel, the API on Render, PostgreSQL metadata on Neon, and private e-book files in Supabase Storage.
 
 ## Run locally
 
@@ -22,17 +22,13 @@ npm run build
 - Librarians can add PDF and EPUB e-books with optional cover art and descriptions.
 - Published physical books and e-books appear in the same **Find Your Next Read** catalogue.
 - Members can search by title, author, ISBN or description; filter by category and format; save favourites; inspect resource details; and request available physical books.
-- E-books open from a temporary browser object URL during the demo session.
+- E-books are retrieved through short-lived signed URLs from the private Supabase Storage bucket.
 
-## Frontend-only demo
+## Production data architecture
 
-There is no production authentication, database or permanent file storage in this repository. Demo records are held in React state and reset when the page is reloaded. Selected files are previewed locally in the browser; they are not uploaded to a server.
+The backend uses the existing Neon schema. E-book title, author, description, category and cover key live in `books`; `ebooks` stores `book_id`, `file_key`, `file_format`, `file_size_bytes`, publication status and creation time. The API uploads files to the private `amg-library-files` Supabase Storage bucket and issues temporary signed URLs for access. The Supabase secret key belongs only in Render environment variables, never in frontend code or GitHub.
 
-To preview the Librarian Desk, use the demo login form with an email address containing `librarian` or `admin` and any non-empty password. This is only a UI demonstration. Never use this email-based role shortcut in production.
-
-## Planned backend contract
-
-The planned backend is Node.js + Express, PostgreSQL on Neon, and Cloudflare R2 for file objects. The frontend data model is intended to map to resources such as:
+The frontend data model maps to resources such as:
 
 - `books`: title, author, ISBN, category, description, cover key, publication metadata.
 - `book_copies`: book ID, barcode, copy number, availability/status.
