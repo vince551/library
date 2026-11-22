@@ -22,6 +22,7 @@ const allowedOrigins = new Set([
   "https://amg.free.je",
   "https://libra-dusky.vercel.app",
   "https://amg-library-frontend-r6egscyd3-v667225s-projects.vercel.app",
+  "https://amg-library-frontend-m221wcgcs-v667225s-projects.vercel.app",
   ...(process.env.FRONTEND_URL || "")
     .split(",")
     .map(origin => origin.trim())
