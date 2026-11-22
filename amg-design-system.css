@@ -1615,3 +1615,314 @@ label { display: grid; gap: 7px; color: #354b43; font-size: 13px; font-weight: 7
   #authModal *::before,
   #authModal *::after { transition: none !important; }
 }
+
+
+/* AMG membership cards — premium credential treatment */
+.profile-layout { align-items: start; gap: 26px; }
+.card-preview-wrapper {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(14px,2.2vw,24px);
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 8% 4%, rgba(255,255,255,.95), transparent 38%),
+    linear-gradient(145deg,#e6f1e9 0%,#f3f7f4 52%,#e6eef5 100%);
+  box-shadow: 0 18px 48px rgba(25,67,48,.08), inset 0 1px 0 #fff;
+}
+.amg-card-pair { gap: 18px; }
+.amg-id-card {
+  isolation: isolate;
+  min-height: 258px;
+  grid-template-columns: 31% minmax(0,1fr);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.82);
+  border-radius: 19px;
+  color: #18382d;
+  background: linear-gradient(135deg,#fff 0%,#f8fbf9 100%);
+  box-shadow: 0 16px 34px rgba(17,58,40,.14), inset 0 1px 0 rgba(255,255,255,.95);
+}
+.amg-id-card::after {
+  position: absolute;
+  z-index: -1;
+  right: -54px;
+  bottom: -92px;
+  width: 230px;
+  height: 230px;
+  border: 1px solid rgba(8,127,91,.09);
+  border-radius: 50%;
+  box-shadow: 0 0 0 18px rgba(8,127,91,.025),0 0 0 38px rgba(8,127,91,.02);
+  content: "";
+  pointer-events: none;
+}
+.amg-id-brand-panel {
+  position: relative;
+  isolation: isolate;
+  align-items: flex-start;
+  overflow: hidden;
+  gap: 7px;
+  padding: 25px 22px;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(255,255,255,.19),transparent 38%),
+    linear-gradient(155deg,#087f5b 0%,#075b43 65%,#064633 100%);
+}
+.amg-id-brand-panel::before,
+.amg-id-brand-panel::after {
+  position: absolute;
+  z-index: -1;
+  right: -56px;
+  width: 190px;
+  height: 190px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 50%;
+  content: "";
+}
+.amg-id-brand-panel::before { top: -82px; }
+.amg-id-brand-panel::after { right: -100px; bottom: -118px; width: 240px; height: 240px; }
+.amg-id-bookmark {
+  display: grid;
+  place-items: center;
+  width: 43px;
+  height: 43px;
+  margin-bottom: 13px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 13px;
+  color: #fff;
+  background: rgba(255,255,255,.14);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22);
+  font-size: 23px;
+}
+.amg-id-brand-name { font-size: clamp(16px,1.8vw,22px); line-height: 1.05; letter-spacing: -.055em; }
+.amg-id-tagline { max-width: 145px; margin-top: 3px; color: rgba(255,255,255,.75); font-size: 8px; font-weight: 800; letter-spacing: .15em; line-height: 1.5; }
+.amg-id-stripes {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 5px;
+  background: linear-gradient(90deg,#f2c66d 0 33%,#fff 33% 66%,#8dc9a4 66%);
+}
+.amg-id-front-content {
+  position: relative;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-content: center;
+  align-items: center;
+  gap: 13px;
+  padding: 23px clamp(15px,2.5vw,27px);
+}
+.amg-id-person { gap: 14px; }
+.amg-id-photo {
+  flex: 0 0 auto;
+  width: 76px;
+  height: 88px;
+  padding: 3px;
+  border: 1px solid #d6e8dd;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(18,72,48,.12);
+}
+.amg-id-details { min-width: 0; }
+.amg-id-details h3 {
+  margin: 0 0 8px;
+  color: #173d2e;
+  font-size: clamp(15px,1.6vw,20px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -.045em;
+  overflow-wrap: anywhere;
+}
+.amg-id-pills { gap: 5px; margin-bottom: 10px; }
+.amg-id-pills span {
+  padding: 4px 8px;
+  border: 1px solid #d9ebe0;
+  border-radius: 999px;
+  color: #08704f;
+  background: #edf7f0;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .035em;
+}
+.amg-id-details small {
+  margin-top: 7px;
+  color: #84968d;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+.amg-id-details strong {
+  margin-top: 2px;
+  color: #075b43;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.amg-id-qr-block {
+  align-self: center;
+  padding: 9px;
+  border: 1px solid #e1ebe5;
+  border-radius: 12px;
+  color: #648075;
+  background: rgba(255,255,255,.84);
+  font-size: 8px;
+  letter-spacing: .08em;
+}
+.amg-id-qr-block .qr-holder,
+.amg-id-qr-block svg,
+.amg-id-qr-block canvas {
+  display: block;
+  width: 76px;
+  height: 76px;
+  margin: 6px auto 0;
+}
+.amg-id-front-barcode {
+  align-self: end;
+  max-width: 250px;
+  padding-top: 7px;
+  border-top: 1px solid #e6eee9;
+}
+.amg-id-front-barcode svg,
+.amg-id-front-barcode canvas { max-width: 100%; height: 28px; }
+.amg-id-back {
+  display: block;
+  min-height: 190px;
+  padding: 20px 23px 15px;
+  border-color: #dce8e0;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(8,127,91,.07),transparent 36%),
+    linear-gradient(145deg,#fff,#f6faf7);
+}
+.amg-id-back header {
+  align-items: center;
+  padding-bottom: 11px;
+  border-bottom: 1px solid #e1ebe5;
+  color: #426354;
+  font-size: 9px;
+  letter-spacing: .12em;
+}
+.amg-id-back header span { color: #c69b48; }
+.amg-id-back-content { align-items: center; gap: 18px; padding: 14px 0; }
+.amg-id-back-content h3 {
+  margin: 0 0 8px;
+  color: #08704f;
+  font-size: 10px;
+  letter-spacing: .13em;
+}
+.amg-id-back-content ol {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding-left: 16px;
+  color: #60766b;
+  font-size: 9px;
+  line-height: 1.45;
+}
+.amg-id-dates { display: flex; align-items: end; flex-wrap: wrap; gap: 12px 22px; margin-top: 12px; }
+.amg-id-dates > div:first-child { display: grid; gap: 2px; }
+.amg-id-dates b { color: #84968d; font-size: 8px; letter-spacing: .1em; }
+.amg-id-dates strong { color: #174c37; font-size: 10px; letter-spacing: .06em; }
+.amg-id-signature { color: #84968d; font-size: 8px; }
+.amg-id-back-code {
+  min-width: 145px;
+  padding: 10px 12px;
+  border: 1px solid #e2ece5;
+  border-radius: 11px;
+  background: #fff;
+}
+.amg-id-back-code svg,
+.amg-id-back-code canvas { max-width: 100%; }
+.amg-id-back-code strong {
+  display: block;
+  margin-top: 4px;
+  color: #174c37;
+  font-size: 9px;
+  letter-spacing: .1em;
+}
+.amg-id-back footer {
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid #e1ebe5;
+  color: #84968d;
+  font-size: 8px;
+  letter-spacing: .03em;
+}
+.amg-id-back footer b { color: #08704f; letter-spacing: .12em; }
+.card-actions { gap: 9px; margin-top: 17px; }
+.card-actions .btn { min-height: 43px; border-radius: 12px; }
+.profile-layout > .panel { border-radius: 22px; box-shadow: 0 12px 34px rgba(22,56,43,.055); }
+.profile-layout > .panel > h3 { margin-bottom: 16px; }
+#myLoansList .stack-item {
+  border-color: #e3ece6;
+  border-radius: 13px;
+  background: linear-gradient(135deg,#fff,#f9fcfa);
+}
+#myLoansList .stack-item h4 { margin-bottom: 5px; font-size: 14px; }
+#myLoansList .stack-item p { margin-bottom: 0; font-size: 12px; }
+#learnerStats .stat-card,
+#learnerStats > div {
+  border-color: #e0ebe4;
+  border-radius: 13px;
+  background: linear-gradient(145deg,#fff,#f3f8f4);
+}
+#learnerStats strong { color: #087f5b; font-size: 25px; }
+#learnerStats span { color: #6d8177; font-size: 11px; font-weight: 700; }
+
+@media (max-width: 760px) {
+  .profile-layout { grid-template-columns: minmax(0,1fr); }
+  .amg-id-card { min-height: 220px; grid-template-columns: 28% minmax(0,1fr); border-radius: 15px; }
+  .amg-id-brand-panel { padding: 16px 12px; }
+  .amg-id-bookmark { width: 35px; height: 35px; margin-bottom: 9px; }
+  .amg-id-brand-name { font-size: 15px; }
+  .amg-id-tagline { font-size: 7px; }
+  .amg-id-front-content { gap: 8px; padding: 15px 11px; }
+  .amg-id-photo { width: 57px; height: 68px; border-radius: 10px; }
+  .amg-id-person { gap: 9px; }
+  .amg-id-details h3 { font-size: 14px; }
+  .amg-id-details small { font-size: 7px; }
+  .amg-id-details strong { font-size: 10px; }
+  .amg-id-pills span { font-size: 7px; padding: 3px 6px; }
+  .amg-id-qr-block { padding: 6px; font-size: 7px; }
+  .amg-id-qr-block .qr-holder,
+  .amg-id-qr-block svg,
+  .amg-id-qr-block canvas { width: 59px; height: 59px; }
+  .amg-id-back { min-height: 0; padding: 15px; }
+  .amg-id-back-content { align-items: flex-start; gap: 9px; }
+  .amg-id-back-code { min-width: 105px; padding: 7px; }
+  .amg-id-back-content ol { font-size: 8px; }
+  .amg-id-signature { display: none; }
+}
+@media (max-width: 420px) {
+  .card-preview-wrapper { padding: 8px; border-radius: 16px; }
+  .amg-card-pair { gap: 11px; }
+  .amg-id-card { min-height: 190px; grid-template-columns: 25% minmax(0,1fr); }
+  .amg-id-brand-panel { padding: 12px 8px; }
+  .amg-id-brand-name { font-size: 12px; }
+  .amg-id-tagline { font-size: 6px; letter-spacing: .08em; }
+  .amg-id-bookmark { width: 29px; height: 29px; border-radius: 9px; font-size: 18px; }
+  .amg-id-front-content { grid-template-columns: minmax(0,1fr) auto; padding: 11px 8px; gap: 6px; }
+  .amg-id-photo { width: 48px; height: 58px; padding: 2px; }
+  .amg-id-person { gap: 7px; }
+  .amg-id-details h3 { font-size: 11px; margin-bottom: 5px; }
+  .amg-id-pills { gap: 3px; margin-bottom: 5px; }
+  .amg-id-pills span { padding: 2px 5px; font-size: 6px; }
+  .amg-id-details small { margin-top: 4px; font-size: 6px; }
+  .amg-id-details strong { font-size: 8px; letter-spacing: .04em; }
+  .amg-id-qr-block { padding: 4px; font-size: 6px; }
+  .amg-id-qr-block .qr-holder,
+  .amg-id-qr-block svg,
+  .amg-id-qr-block canvas { width: 47px; height: 47px; }
+  .amg-id-front-barcode { padding-top: 4px; }
+  .amg-id-back { padding: 11px 10px; }
+  .amg-id-back header { font-size: 7px; padding-bottom: 7px; }
+  .amg-id-back-content { padding: 8px 0; }
+  .amg-id-back-content h3 { font-size: 8px; }
+  .amg-id-back-content ol { padding-left: 13px; font-size: 7px; }
+  .amg-id-back-code { min-width: 84px; padding: 5px; }
+  .amg-id-back footer { gap: 5px; font-size: 6px; }
+  .amg-id-back footer span:nth-child(2) { display: none; }
+  .amg-id-back footer b { font-size: 6px; }
+  .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .card-actions .btn { min-height: 40px; padding: 8px 6px; font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .amg-id-card { transition: none !important; }
+}
