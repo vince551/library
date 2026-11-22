@@ -30,7 +30,8 @@ function storageConfig() {
     throw error;
   }
   return {
-    baseUrl: SUPABASE_URL.replace(/\/$/, ""),
+    // Accept the project URL even if the environment variable was pasted with an API path suffix.
+    baseUrl: SUPABASE_URL.trim().replace(/\/+$/, "").replace(/\/(?:rest|storage)\/v1$/i, ""),
     key: SUPABASE_SERVICE_ROLE_KEY,
     bucket: SUPABASE_BUCKET
   };
