@@ -12,7 +12,7 @@ const memberStatus = (member) => {
 };
 
 export function BorrowRequestsTab({ active }) {
-  const { requests, loans, processRequest, returnLoan } = useLibrary();
+  const { requests, processRequest } = useLibrary();
 
   return (
     <div id="borrowRequestsTab" className={tabClass(active)}>
@@ -26,8 +26,6 @@ export function BorrowRequestsTab({ active }) {
             {requests.length === 0 ? (
               <tr><td colSpan="5">No borrowing requests are available.</td></tr>
             ) : requests.map(request => {
-              const loanId = request.loan_id ?? request.loanId;
-              const loan = loanId ? loans.find(item => item.id === loanId) : null;
               return (
                 <tr key={request.id}>
                   <td>{request.user_name ?? request.userName}</td>
@@ -35,7 +33,7 @@ export function BorrowRequestsTab({ active }) {
                   <td>{request.book_category ?? request.bookCategory ?? "—"}</td>
                   <td>{request.status}</td>
                   <td>
-                    {request.status === "Pending" ? (
+                    {String(request.status).toLowerCase() === "pending" ? (
                       <>
                         <button className="btn btn-sm btn-success" type="button" onClick={() => processRequest(request.id, "Approved")}>Accept</button>
                         <button className="btn btn-sm btn-danger" type="button" onClick={() => processRequest(request.id, "Declined")}>Decline</button>
