@@ -177,7 +177,8 @@ if (activeLoans.rows[0].total >= 3) {
         issued_by,
         issued_at,
         due_at,
-        status
+        status,
+        loan_number
       )
       VALUES (
         $1,
@@ -185,7 +186,8 @@ if (activeLoans.rows[0].total >= 3) {
         $3,
         NOW(),
         NOW() + ($4 * INTERVAL '1 day'),
-        'active'
+        'active',
+        next_amg_number('L')
       )
       RETURNING *`,
       [copy.id, memberId, req.user.id, dueDays]
@@ -259,6 +261,7 @@ export async function getLoans(req, res, next) {
     const result = await pool.query(
       `SELECT
         l.id,
+        l.loan_number,
         l.issued_at,
         l.due_at,
         l.returned_at,
@@ -403,7 +406,7 @@ export async function returnBook(req, res, next) {
 export async function getMyLoans(req, res, next) {
   try {
     const result = await pool.query(
-      `SELECT l.id, l.issued_at, l.issued_at AS created_at, l.due_at, l.returned_at,
+      `SELECT l.id, l.loan_number, l.issued_at, l.issued_at AS created_at, l.due_at, l.returned_at,
               l.status,
               b.title, b.title AS book_title, b.author, bc.barcode
        FROM loans l
