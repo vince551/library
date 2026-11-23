@@ -85,6 +85,7 @@ export function EbooksTab({ active }) {
           <article key={book.id} className="stack-item ebook-admin-item">
             <div>
               <h4>{book.title}</h4>
+              {book.ebookNumber ? <p><strong>{book.ebookNumber}</strong> · Catalogue {book.catalogueNumber || "—"}</p> : null}
               <p>{(book.author || "Unknown author") + " · " + (book.category || "General") + " · " + (book.fileName || "E-book") + " · " + prettySize(book.fileSize || 0)}</p>
               {book.description ? <p>{book.description}</p> : null}
               <small>Added {formatDate(book.createdAt)}</small>
