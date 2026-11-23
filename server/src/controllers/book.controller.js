@@ -1,7 +1,8 @@
 
 import { z } from "zod";
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { pool } from "../config/database.js";
+import { nextAmgNumber } from "../domain/amg-numbering.js";
 
 
 const MAX_COVER_BYTES = 5 * 1024 * 1024;
@@ -118,6 +119,7 @@ export async function getBooks(req, res, next) {
     const result = await pool.query(
       `SELECT
         b.id,
+        b.catalogue_number,
         b.title,
         b.author,
         b.isbn,
@@ -234,9 +236,10 @@ export async function createBook(req, res, next) {
         publisher,
         cover_image_key,
         created_by,
-        is_published
+        is_published,
+        catalogue_number
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, next_amg_number('B'))
       RETURNING *`,
       [
         book.title,
@@ -406,13 +409,13 @@ export async function registerPhysicalBook(req, res, next) {
         `INSERT INTO categories (name, slug) VALUES ($1, $2)
          ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name RETURNING id`, [input.category, slug]);
       const bookResult = await client.query(
-        `INSERT INTO books (id, title, author, isbn, description, category_id, cover_image_key, created_by, is_published)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TRUE)
-         RETURNING id, title, author, isbn, description, category_id, cover_image_key, is_published, created_at`,
+        `INSERT INTO books (id, title, author, isbn, description, category_id, cover_image_key, created_by, is_published, catalogue_number)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TRUE, next_amg_number('B'))
+         RETURNING id, catalogue_number, title, author, isbn, description, category_id, cover_image_key, is_published, created_at`,
         [id, input.title, input.author, input.isbn || null, input.description || null, categoryResult.rows[0].id, coverKey, req.user.id]);
       const createdBook = bookResult.rows[0], copies = [];
       for (let index = 0; index < input.quantity; index += 1) {
-        const barcode = `AMG-${Date.now()}-${randomBytes(4).toString("hex").toUpperCase()}`;
+        const barcode = await nextAmgNumber(client, "C");
         const copyResult = await client.query(
           `INSERT INTO book_copies (book_id, barcode, condition, status)
            VALUES ($1, $2, 'good', 'available')
