@@ -1,7 +1,7 @@
 
 import { z } from "zod";
-import { randomBytes } from "node:crypto";
 import { pool } from "../config/database.js";
+import { nextAmgNumber } from "../domain/amg-numbering.js";
 
 const createCopySchema = z.object({
   bookId: z.string().uuid(),
@@ -41,10 +41,6 @@ function handleDatabaseError(error, res, next) {
   }
 
   return next(error);
-}
-
-function generateBarcode() {
-  return `AMG-${Date.now()}-${randomBytes(3).toString("hex").toUpperCase()}`;
 }
 
 // List physical copies belonging to a book
@@ -127,7 +123,7 @@ export async function createCopy(req, res, next) {
     }
 
     const copy = parsed.data;
-    const barcode = copy.barcode || generateBarcode();
+    const barcode = copy.barcode || await nextAmgNumber(pool, "C");
 
     const result = await pool.query(
       `INSERT INTO book_copies (
