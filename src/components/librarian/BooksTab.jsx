@@ -71,7 +71,7 @@ export function BooksTab({ active }) {
   };
 
   const remove = (book) => {
-    if (!window.confirm("Delete “" + book.title + "” from the catalogue? This is only allowed if the book has no active loans.")) return;
+    if (!window.confirm("Permanently delete “" + book.title + "” and its unused copies? Books with any borrowing requests or loan history are protected.")) return;
     void deleteBook(book);
   };
 
