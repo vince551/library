@@ -1,12 +1,7 @@
 
 import { z } from "zod";
-import { randomBytes } from "node:crypto";
 import { pool } from "../config/database.js";
-
-// Generate a unique AMG membership number.
-function generateMembershipNumber() {
-  return `AMG-${randomBytes(4).toString("hex").toUpperCase()}`;
-}
+import { nextAmgNumber } from "../domain/amg-numbering.js";
 
 // List and search members.
 export async function getMembers(req, res, next) {
@@ -94,7 +89,7 @@ export async function approveMember(req, res, next) {
     }
 
     // Keep the number assigned at registration so an already-issued card remains scannable.
-    const membershipNumber = member.membership_number || generateMembershipNumber();
+    const membershipNumber = member.membership_number || await nextAmgNumber(client, "M");
 
     await client.query(
       `UPDATE users
