@@ -36,9 +36,9 @@ export function MemberProfile({ active }) {
 
   const stats = [
     ["Requests", myRequests.length],
-    ["Approved", myRequests.filter(item => item.status === "Approved").length],
-    ["Active loans", myLoans.filter(item => item.status === "Borrowed").length],
-    ["Returned", myLoans.filter(item => item.status === "Returned").length]
+    ["Approved", myRequests.filter(item => ["approved", "fulfilled"].includes(String(item.status).toLowerCase())).length],
+    ["Active loans", myLoans.filter(item => ["active", "overdue"].includes(String(item.status).toLowerCase())).length],
+    ["Returned", myLoans.filter(item => String(item.status).toLowerCase() === "returned").length]
   ];
 
   return (
@@ -88,7 +88,7 @@ export function MemberProfile({ active }) {
             ) : items.map(item => (
               <div key={item.id} className="stack-item">
                 <h4>{item.book_title ?? item.bookTitle ?? "Library book"}</h4>
-                <p>{item.kind} · {item.status || "Pending"}</p>
+                <p>{item.kind} · {String(item.status || "pending").replace(/^./, value => value.toUpperCase())}</p>
                 {(item.due_at ?? item.dueAt) ? <p>Due: {formatDate(item.due_at ?? item.dueAt)}</p> : null}
               </div>
             ))}
