@@ -162,7 +162,7 @@ export function AttendanceTab({ active }) {
     idle: ["Scanner not tested", "Click the barcode field, then scan a card to verify the scanner."],
     ready: ["Ready for scanner input", "The field is focused. Scan a barcode; AMG will confirm when input arrives."],
     receiving: ["Scanner input detected", "Rapid barcode characters are arriving in the scan field."],
-    detected: ["Barcode scanner detected", "A rapid scan was received. You can scan the next member card."],
+    detected: ["Scanner input detected", "Rapid input arrived in the scan field, matching a typical USB keyboard-wedge scan."],
     manual: ["Code entered", "The value was entered. A USB keyboard-wedge scanner is confirmed after a rapid scan."]
   }[scannerStatus];
 

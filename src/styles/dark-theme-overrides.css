@@ -1563,3 +1563,16 @@ html[data-theme="dark"] .catalogue-modal-close {
 @media(max-width:900px) {
   html[data-theme="dark"] #librarianSection .attendance-overview { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
+
+
+/* Scanner status surface — Midnight Lagoon dark theme. */
+html[data-theme="dark"] #librarianSection .scanner-connection-status {
+  border-color: #245363;
+  color: #c2ded9;
+  background: linear-gradient(120deg, #0d2938, #123c49);
+}
+html[data-theme="dark"] #librarianSection .scanner-connection-status strong { color: #e0f5ef; }
+html[data-theme="dark"] #librarianSection .scanner-connection-status small { color: #a7c8c4; }
+html[data-theme="dark"] #librarianSection .scanner-connection-status[data-scanner-state="ready"] > i,
+html[data-theme="dark"] #librarianSection .scanner-connection-status[data-scanner-state="receiving"] > i { background: #49c6cf; box-shadow: 0 0 0 4px rgba(73,198,207,.14); }
+html[data-theme="dark"] #librarianSection .scanner-connection-status[data-scanner-state="detected"] > i { background: #70dfb0; box-shadow: 0 0 0 4px rgba(112,223,176,.15); }
