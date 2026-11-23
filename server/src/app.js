@@ -10,6 +10,7 @@ import copyRoutes from "./routes/copy.routes.js";
 import loanRoutes from "./routes/loan.routes.js";
 import memberRoutes from "./routes/member.routes.js";
 import attendanceRoutes from "./routes/attendance.routes.js";
+import requestRoutes from "./routes/request.routes.js";
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use("/api/books", bookRoutes);
 app.use("/api/ebooks", ebookRoutes);
 app.use("/api/copies", copyRoutes);
 app.use("/api/loans", loanRoutes);
+app.use("/api/requests", requestRoutes);
 app.use("/api/members", memberRoutes);
 app.use("/api/attendance", attendanceRoutes);
 
