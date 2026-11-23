@@ -203,7 +203,8 @@ export function BooksTab({ active }) {
         <form className="form-grid" key={editing.id} onSubmit={submitEdit}>
           <label>Book title<input name="title" defaultValue={editing.title || ""} required maxLength="255" /></label>
           <label>Author<input name="author" defaultValue={editing.author || ""} required maxLength="255" /></label>
-          <label>ISBN<input name="isbn" defaultValue={editing.isbn || ""} maxLength="20" /></label>\n          <label>Category<select name="category" defaultValue={editing.category || BOOK_CATEGORIES[0]}>{BOOK_CATEGORIES.map(name => <option key={name} value={name}>{name}</option>)}</select></label>
+          <label>ISBN<input name="isbn" defaultValue={editing.isbn || ""} maxLength="20" /></label>
+          <label>Category<select name="category" defaultValue={editing.category || BOOK_CATEGORIES[0]}>{BOOK_CATEGORIES.map(name => <option key={name} value={name}>{name}</option>)}</select></label>
           <label className="full-span">Description<input name="description" defaultValue={editing.description || ""} maxLength="10000" /></label>
           <div className="book-cover-field full-span">
             <span className="book-cover-label">Replace cover image <small>Leave empty to keep the current cover</small></span>
