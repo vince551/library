@@ -1,6 +1,7 @@
 
 import { z } from "zod";
 import { pool } from "../config/database.js";
+import { withEffectiveLoanStatus } from "../domain/library-rules.js";
 
 const issueSchema = z.object({
   barcode: z.string().trim().min(3).max(100),
@@ -261,7 +262,7 @@ export async function getLoans(req, res, next) {
         l.issued_at,
         l.due_at,
         l.returned_at,
-        CASE WHEN l.status = 'active' AND l.due_at < NOW() THEN 'overdue' ELSE l.status END AS status,
+        l.status,
         u.full_name AS member_name,
         u.email AS member_email,
         mp.membership_number,
@@ -283,7 +284,7 @@ export async function getLoans(req, res, next) {
     return res.json({
       success: true,
       count: result.rowCount,
-      loans: result.rows
+      loans: result.rows.map(withEffectiveLoanStatus)
     });
   } catch (error) {
     next(error);
@@ -403,7 +404,7 @@ export async function getMyLoans(req, res, next) {
   try {
     const result = await pool.query(
       `SELECT l.id, l.issued_at, l.issued_at AS created_at, l.due_at, l.returned_at,
-              CASE WHEN l.status = 'active' AND l.due_at < NOW() THEN 'overdue' ELSE l.status END AS status,
+              l.status,
               b.title, b.title AS book_title, b.author, bc.barcode
        FROM loans l
        JOIN book_copies bc ON bc.id = l.copy_id
@@ -412,7 +413,7 @@ export async function getMyLoans(req, res, next) {
        ORDER BY l.issued_at DESC`,
       [req.user.id]
     );
-    return res.json({ success:true, count:result.rowCount, loans:result.rows });
+    return res.json({ success:true, count:result.rowCount, loans:result.rows.map(withEffectiveLoanStatus) });
   } catch (error) { return next(error); }
 }
 
@@ -433,7 +434,7 @@ export async function getMemberLoans(req, res, next) {
         l.issued_at,
         l.due_at,
         l.returned_at,
-        CASE WHEN l.status = 'active' AND l.due_at < NOW() THEN 'overdue' ELSE l.status END AS status,
+        l.status,
         b.title,
         b.author,
         bc.barcode
@@ -464,7 +465,7 @@ export async function getActiveLoanByBarcode(req, res, next) {
     }
     const result = await pool.query(
       `SELECT l.id AS "loanId",
-              CASE WHEN l.status = 'active' AND l.due_at < NOW() THEN 'overdue' ELSE l.status END AS status,
+              l.status,
               bc.barcode, b.title AS "bookTitle",
               u.full_name AS "memberName", mp.membership_number AS "libraryNumber"
        FROM loans l
