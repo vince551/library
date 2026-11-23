@@ -35,7 +35,7 @@ export async function createBorrowRequest(req, res, next) {
       return res.status(409).json({ success:false, message:"You already have an open request for this book." });
     }
     const inserted = await client.query(
-      "INSERT INTO borrow_requests (member_id, book_id, status) VALUES ($1, $2, 'pending') RETURNING id, member_id, book_id, status, created_at, updated_at",
+      "INSERT INTO borrow_requests (member_id, book_id, status, request_number) VALUES ($1, $2, 'pending', next_amg_number('R')) RETURNING id, member_id, book_id, status, request_number, created_at, updated_at",
       [req.user.id, parsed.data.bookId]
     );
     await client.query("COMMIT");
@@ -52,7 +52,7 @@ export async function createBorrowRequest(req, res, next) {
 export async function getMyBorrowRequests(req, res, next) {
   try {
     const result = await pool.query(
-      `SELECT r.id, r.book_id, r.status, r.created_at, r.updated_at,
+      `SELECT r.id, r.request_number, r.book_id, r.status, r.created_at, r.updated_at,
               r.loan_id, b.title AS book_title, b.author, c.name AS book_category
        FROM borrow_requests r
        JOIN books b ON b.id = r.book_id
@@ -68,7 +68,7 @@ export async function getMyBorrowRequests(req, res, next) {
 export async function getBorrowRequests(req, res, next) {
   try {
     const result = await pool.query(
-      `SELECT r.id, r.member_id, r.book_id, r.status, r.created_at, r.updated_at, r.loan_id,
+      `SELECT r.id, r.request_number, r.member_id, r.book_id, r.status, r.created_at, r.updated_at, r.loan_id,
               u.full_name AS user_name, u.email AS user_email, u.status AS member_status,
               mp.membership_number, b.title AS book_title, b.author, c.name AS book_category,
               COALESCE(stock.available, 0)::int AS available_copies
