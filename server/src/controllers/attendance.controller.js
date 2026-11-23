@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { pool } from "../config/database.js";
+import { canTransitionAttendance, hasAvailableCapacity } from "../domain/library-rules.js";
 
 const scanSchema = z.object({
   code: z.string().trim().min(3).max(100),
@@ -35,13 +36,14 @@ export async function recordAttendanceScan(req, res, next) {
       "SELECT action FROM attendance_records WHERE member_id = $1 ORDER BY scanned_at DESC LIMIT 1",
       [member.id]
     );
-    if (action === "check-in" && latest.rows[0]?.action === "check-in") {
+    if (!canTransitionAttendance(latest.rows[0]?.action ?? null, action)) {
       await client.query("ROLLBACK");
-      return res.status(409).json({ success: false, message: "This member is already checked in." });
-    }
-    if (action === "check-out" && latest.rows[0]?.action !== "check-in") {
-      await client.query("ROLLBACK");
-      return res.status(409).json({ success: false, message: "This member is not currently checked in." });
+      return res.status(409).json({
+        success: false,
+        message: action === "check-in"
+          ? "This member is already checked in."
+          : "This member is not currently checked in."
+      });
     }
 
     if (action === "check-in") {
@@ -53,7 +55,7 @@ export async function recordAttendanceScan(req, res, next) {
       );
       const setting = await client.query("SELECT setting_value FROM library_settings WHERE setting_key = 'capacity' LIMIT 1");
       const capacity = Number(setting.rows[0]?.setting_value) || 100;
-      if (occupancy.rows[0].total >= capacity) {
+      if (!hasAvailableCapacity(occupancy.rows[0].total, capacity)) {
         await client.query("ROLLBACK");
         return res.status(409).json({ success: false, message: `The library has reached its capacity of ${capacity}. Record a check-out before another member checks in.` });
       }
