@@ -34,8 +34,8 @@ export function Desk({ active }) {
     if (active) void refreshAdmin();
   }, [active, refreshAdmin]);
 
-  const pendingRequests = requests.filter(request => request.status === "Pending").length;
-  const pendingMembers = members.filter(member => member.status === "pending").length;
+  const pendingRequests = requests.filter(request => String(request.status || "").toLowerCase() === "pending").length;
+  const pendingMembers = members.filter(member => String(member.status || "").toLowerCase() === "pending").length;
   const inside = attendance.filter(record => record.status === "In library").length;
   const availableCopies = books.reduce((total, book) => total + Number(book.available || 0), 0);
   const staffName = profile?.fullName || user?.email || "Librarian";

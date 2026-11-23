@@ -11,6 +11,8 @@ import loanRoutes from "./routes/loan.routes.js";
 import memberRoutes from "./routes/member.routes.js";
 import attendanceRoutes from "./routes/attendance.routes.js";
 import requestRoutes from "./routes/request.routes.js";
+import contentRoutes from "./routes/content.routes.js";
+import settingsRoutes from "./routes/settings.routes.js";
 
 const app = express();
 
@@ -63,6 +65,8 @@ app.use("/api/loans", loanRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/members", memberRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/content", contentRoutes);
+app.use("/api/settings", settingsRoutes);
 
 app.use((err, req, res, next) => {
   console.error("API error:", err);

@@ -6,13 +6,6 @@ import { apiRequest, apiFileRequest, apiUrl } from "../lib/api";
 const LibraryContext = createContext(null);
 export const useLibrary = () => useContext(LibraryContext);
 
-const initialPosts = [
-  { id:"n-01", type:"announcement", announcementKind:"Announcement", title:"Welcome to the AMG Library digital portal", body:"Explore the catalogue, discover learning resources and stay connected with library activities.", date:new Date().toISOString(), createdAt:new Date().toISOString() },
-  { id:"n-02", type:"event", announcementKind:"Event", title:"Reading and discovery day", body:"Join fellow learners for a day of reading, shared stories and activities that celebrate curiosity.", date:new Date(Date.now()+86400000*10).toISOString(), createdAt:new Date().toISOString() }
-];
-
-const makeId = (prefix) => prefix + "-" + Date.now() + "-" + Math.random().toString(36).slice(2,7);
-
 function fileToBase64(file) {
   return file.arrayBuffer().then(buffer => {
     const bytes = new Uint8Array(buffer);
@@ -32,6 +25,11 @@ function mapPhysicalBook(book) {
     category: book.category || book.category_name || "General",
     createdAt: book.createdAt || book.created_at
   };
+}
+
+function mapPost(post) {
+  const type = String(post.type || "announcement").toLowerCase();
+  return { ...post, type, announcementKind: type === "event" ? "Event" : "Announcement", date: post.date || post.event_date || post.published_at || post.publishedAt || post.created_at || post.createdAt, createdAt: post.createdAt || post.created_at || post.published_at || post.publishedAt };
 }
 
 function mapEbook(book) {
@@ -54,7 +52,8 @@ export function LibraryProvider({ children }) {
   const [loans, setLoans] = useState([]);
   const [attendance, setAttendance] = useState([]);
   const [ebooks, setEbooks] = useState([]);
-  const [posts, setPosts] = useState(initialPosts);
+  const [posts, setPosts] = useState([]);
+  const [attendanceSummary, setAttendanceSummary] = useState({ days: [], totalRecords: 0, currentlyInside: 0 });
   const [capacity, setCapacity] = useState(100);
   const [myRequests, setMyRequests] = useState([]);
   const [myLoans, setMyLoans] = useState([]);
@@ -62,9 +61,8 @@ export function LibraryProvider({ children }) {
   const [scanMemberId, setScanMemberId] = useState("");
 
   const refreshPublic = useCallback(async () => {
-    const [bookResult, ebookResult] = await Promise.allSettled([
-      apiRequest("/books"),
-      apiRequest("/ebooks")
+    const [bookResult, ebookResult, postResult] = await Promise.allSettled([
+      apiRequest("/books"), apiRequest("/ebooks"), apiRequest("/content")
     ]);
 
     if (bookResult.status === "fulfilled") setBooks((bookResult.value.books || []).map(mapPhysicalBook));
@@ -96,13 +94,13 @@ export function LibraryProvider({ children }) {
   const refreshAdmin = useCallback(async () => {
     if (!token) return false;
 
-    const [memberResult, bookResult, loanResult, requestResult, attendanceResult, ebookResult] = await Promise.allSettled([
+    const [memberResult, bookResult, loanResult, requestResult, attendanceResult, ebookResult, attendanceSummaryResult, settingsResult] = await Promise.allSettled([
       apiRequest("/members", { token }),
       apiRequest("/books/manage", { token }),
       apiRequest("/loans", { token }),
       apiRequest("/requests", { token }),
-      apiRequest("/attendance", { token }),
-      apiRequest("/ebooks/manage", { token })
+      apiRequest("/attendance", { token }), apiRequest("/ebooks/manage", { token }),
+      apiRequest("/attendance/summary", { token }), apiRequest("/settings", { token })
     ]);
 
     if (memberResult.status === "fulfilled") setMembers(memberResult.value.members || []);
@@ -115,6 +113,8 @@ export function LibraryProvider({ children }) {
     else showToast(requestResult.reason?.message || "Could not load borrowing requests.", "error");
     if (attendanceResult.status === "fulfilled") setAttendance(attendanceResult.value.attendance || []);
     if (ebookResult.status === "fulfilled") setEbooks((ebookResult.value.ebooks || []).map(mapEbook));
+    if (attendanceSummaryResult.status === "fulfilled") setAttendanceSummary(attendanceSummaryResult.value.summary || { days: [], totalRecords: 0, currentlyInside: 0 });
+    if (settingsResult.status === "fulfilled") setCapacity(Number(settingsResult.value.settings?.capacity) || 100);
 
     return memberResult.status === "fulfilled";
   }, [token, showToast]);
@@ -320,11 +320,14 @@ export function LibraryProvider({ children }) {
       }
 
       const result = await apiRequest("/attendance/scan", {
-        token,
-        method: "POST",
-        body: { code, action: mode }
+        token, method: "POST", body: { code, action: mode }
       });
-      setAttendance(current => [result.attendance, ...current.filter(item => item.id !== result.attendance.id)]);
+      const [recordsResult, summaryResult] = await Promise.allSettled([
+        apiRequest("/attendance", { token }),
+        apiRequest("/attendance/summary", { token })
+      ]);
+      if (recordsResult.status === "fulfilled") setAttendance(recordsResult.value.attendance || []);
+      if (summaryResult.status === "fulfilled") setAttendanceSummary(summaryResult.value.summary || { days: [], totalRecords: 0, currentlyInside: 0 });
       showToast(result.message || "Attendance recorded.");
       return true;
     } catch (error) {
@@ -334,10 +337,19 @@ export function LibraryProvider({ children }) {
   }, [token, scanMemberId, resetScanMember, refreshAdmin, showToast]);
 
   const updateCapacity = useCallback(async (value) => {
-    setCapacity(Math.max(1, Number(value) || 1));
-    showToast("Demo library capacity updated.");
-    return true;
-  }, [showToast]);
+    if (!token) { showToast("Sign in with a librarian account to update capacity.", "error"); return false; }
+    try {
+      const result = await apiRequest("/settings/capacity", { token, method: "PATCH", body: { capacity: Number(value) } });
+      const savedCapacity = Number(result.settings?.capacity);
+      if (!Number.isInteger(savedCapacity) || savedCapacity < 1) throw new Error("The server did not confirm the saved capacity.");
+      setCapacity(savedCapacity);
+      showToast(result.message || "Library capacity saved.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not save library capacity.", "error");
+      return false;
+    }
+  }, [token, showToast]);
 
   const uploadEbook = useCallback(async ({ title, author, category, description, file, coverFile }) => {
     if (!file) {
@@ -409,15 +421,31 @@ export function LibraryProvider({ children }) {
   }, [token, showToast]);
 
   const publishNews = useCallback(async ({ type, title, body, date }) => {
-    setPosts(current => [{ id:makeId("post"), type, announcementKind:type === "event" ? "Event" : "Announcement", title, body, date:date || new Date().toISOString(), createdAt:new Date().toISOString() }, ...current]);
-    showToast("Update published in this demo session.");
-    return true;
-  }, [showToast]);
+    if (!token) { showToast("Sign in with a librarian account to publish updates.", "error"); return false; }
+    try {
+      const result = await apiRequest("/content", { token, method: "POST", body: { type, title: String(title || "").trim(), body: String(body || "").trim(), date: date || null } });
+      if (!result.post?.id) throw new Error("The server did not confirm that the update was saved.");
+      setPosts(current => [mapPost(result.post), ...current.filter(item => item.id !== result.post.id)]);
+      showToast(result.message || "Update published.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not publish this update.", "error");
+      return false;
+    }
+  }, [token, showToast]);
 
   const deletePost = useCallback(async (_type, id) => {
-    setPosts(current => current.filter(item => item.id !== id));
-    showToast("Demo update removed.");
-  }, [showToast]);
+    if (!token) { showToast("Sign in with a librarian account to delete updates.", "error"); return false; }
+    try {
+      const result = await apiRequest("/content/" + encodeURIComponent(id), { token, method: "DELETE" });
+      setPosts(current => current.filter(item => item.id !== id));
+      showToast(result.message || "Update deleted.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not delete this update.", "error");
+      return false;
+    }
+  }, [token, showToast]);
 
   const reviewLearner = useCallback(async (id, decision) => {
     try {
@@ -482,14 +510,14 @@ export function LibraryProvider({ children }) {
   const events = useMemo(() => posts.filter(post => post.type === "event"), [posts]);
 
   const value = useMemo(() => ({
-    books, announcements, events, ebooks, members, requests, loans, attendance, capacity,
+    books, announcements, events, ebooks, members, requests, loans, attendance, attendanceSummary, capacity,
     myRequests, myLoans, publicPosts, scanMemberCode,
     refreshPublic, refreshMember, refreshAdmin, resetScanMember, requestBook,
     reviewLearner, changeMemberStatus, processRequest, returnLoan, registerBook, updateBook, getBookCopies, addBookCopy, updateBookCopy, deleteBookCopy, deleteBook,
     processUnifiedCode, updateCapacity, uploadEbook, removeEbook, resolveEbookUrl,
     publishNews, deletePost
   }), [
-    books, announcements, events, ebooks, members, requests, loans, attendance, capacity,
+    books, announcements, events, ebooks, members, requests, loans, attendance, attendanceSummary, capacity,
     myRequests, myLoans, publicPosts, scanMemberCode,
     refreshPublic, refreshMember, refreshAdmin, resetScanMember, requestBook,
     reviewLearner, changeMemberStatus, processRequest, returnLoan, registerBook, updateBook, getBookCopies, addBookCopy, updateBookCopy, deleteBookCopy, deleteBook,
