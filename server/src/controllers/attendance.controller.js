@@ -62,8 +62,8 @@ export async function recordAttendanceScan(req, res, next) {
     }
 
     const inserted = await client.query(
-      `INSERT INTO attendance_records (member_id, action, scanned_code, scanned_by)
-       VALUES ($1, $2, $3, $4) RETURNING id, action, scanned_at`,
+      `INSERT INTO attendance_records (member_id, action, scanned_code, scanned_by, attendance_number)
+       VALUES ($1, $2, $3, $4, next_amg_number('A')) RETURNING id, attendance_number, action, scanned_at`,
       [member.id, action, code, req.user.id]
     );
     await client.query("COMMIT");
@@ -71,7 +71,7 @@ export async function recordAttendanceScan(req, res, next) {
       success: true,
       message: action === "check-in" ? "Member checked in successfully." : "Member checked out successfully.",
       attendance: {
-        id: inserted.rows[0].id, memberName: member.full_name,
+        id: inserted.rows[0].id, attendanceNumber: inserted.rows[0].attendance_number, memberName: member.full_name,
         libraryNumber: member.membership_number, action: inserted.rows[0].action,
         checkInAt: action === "check-in" ? inserted.rows[0].scanned_at : null,
         checkOutAt: action === "check-out" ? inserted.rows[0].scanned_at : null,
@@ -90,7 +90,7 @@ export async function recordAttendanceScan(req, res, next) {
 export async function getAttendanceRecords(req, res, next) {
   try {
     const result = await pool.query(
-      `SELECT ar.id, u.full_name AS "memberName", mp.membership_number AS "libraryNumber",
+      `SELECT ar.id, ar.attendance_number AS "attendanceNumber", u.full_name AS "memberName", mp.membership_number AS "libraryNumber",
               ar.action,
               CASE WHEN ar.action = 'check-in' THEN ar.scanned_at END AS "checkInAt",
               CASE WHEN ar.action = 'check-out' THEN ar.scanned_at END AS "checkOutAt",
