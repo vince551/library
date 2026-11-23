@@ -71,7 +71,10 @@ export function LibraryProvider({ children }) {
     if (ebookResult.status === "fulfilled") setEbooks((ebookResult.value.ebooks || []).map(mapEbook));
     else showToast(ebookResult.reason?.message || "Could not load e-books.", "error");
 
-    return bookResult.status === "fulfilled" || ebookResult.status === "fulfilled";
+    if (postResult.status === "fulfilled") setPosts((postResult.value.posts || []).map(mapPost));
+    else showToast(postResult.reason?.message || "Could not load News & Events updates.", "error");
+
+    return bookResult.status === "fulfilled" || ebookResult.status === "fulfilled" || postResult.status === "fulfilled";
   }, [showToast]);
 
   useEffect(() => {
