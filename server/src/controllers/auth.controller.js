@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { pool } from "../config/database.js";
+import { nextAmgNumber } from "../domain/amg-numbering.js";
 
 const registerSchema = z.object({
   fullName: z.string().trim().min(2).max(150),
@@ -76,8 +77,7 @@ export async function register(req, res, next) {
 
     const user = userResult.rows[0];
 
-    const membershipNumber =
-      `AMG-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    const membershipNumber = await nextAmgNumber(client, "M");
 
     await client.query(
       `INSERT INTO member_profiles (user_id, membership_number)
