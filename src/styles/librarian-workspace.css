@@ -395,3 +395,35 @@
   #librarianSection .attendance-capacity-form label { flex:1; }
   #librarianSection .attendance-capacity-form .btn { width:100%; }
 }
+
+
+/* Honest USB keyboard-wedge scanner readiness feedback. */
+#librarianSection .scanner-connection-status {
+  display:flex;
+  align-items:center;
+  gap:11px;
+  margin-top:14px;
+  padding:12px 14px;
+  border:1px solid #dce9e1;
+  border-radius:12px;
+  color:#426451;
+  background:#f7fbf8;
+}
+#librarianSection .scanner-connection-status > i {
+  width:9px;
+  height:9px;
+  flex:0 0 auto;
+  border-radius:50%;
+  background:#a2afa7;
+  box-shadow:0 0 0 4px rgba(130,148,137,.12);
+}
+#librarianSection .scanner-connection-status > span { display:grid; gap:3px; }
+#librarianSection .scanner-connection-status strong { color:#315b43; font-size:11px; }
+#librarianSection .scanner-connection-status small { color:#74857a; font-size:10px; line-height:1.45; }
+#librarianSection .scanner-connection-status[data-scanner-state="ready"] > i,
+#librarianSection .scanner-connection-status[data-scanner-state="receiving"] > i { background:#2797b2; box-shadow:0 0 0 4px rgba(39,151,178,.13); }
+#librarianSection .scanner-connection-status[data-scanner-state="detected"] > i { background:#20a36c; box-shadow:0 0 0 4px rgba(32,163,108,.14); }
+@media (prefers-reduced-motion: no-preference) {
+  #librarianSection .scanner-connection-status[data-scanner-state="receiving"] > i { animation: scanner-input-pulse 1s ease-in-out infinite; }
+  @keyframes scanner-input-pulse { 50% { box-shadow:0 0 0 7px rgba(39,151,178,.06); } }
+}

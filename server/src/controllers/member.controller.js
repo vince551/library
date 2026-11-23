@@ -67,10 +67,11 @@ export async function approveMember(req, res, next) {
     await client.query("BEGIN");
 
     const memberResult = await client.query(
-      `SELECT id, full_name, email, status
-       FROM users
-       WHERE id = $1 AND role = 'member'
-       FOR UPDATE`,
+      `SELECT u.id, u.full_name, u.email, u.status, mp.membership_number
+       FROM users u
+       LEFT JOIN member_profiles mp ON mp.user_id = u.id
+       WHERE u.id = $1 AND u.role = 'member'
+       FOR UPDATE OF u`,
       [parsed.data]
     );
 
@@ -92,7 +93,8 @@ export async function approveMember(req, res, next) {
       });
     }
 
-    const membershipNumber = generateMembershipNumber();
+    // Keep the number assigned at registration so an already-issued card remains scannable.
+    const membershipNumber = member.membership_number || generateMembershipNumber();
 
     await client.query(
       `UPDATE users
