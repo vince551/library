@@ -1576,3 +1576,46 @@ html[data-theme="dark"] #librarianSection .scanner-connection-status small { col
 html[data-theme="dark"] #librarianSection .scanner-connection-status[data-scanner-state="ready"] > i,
 html[data-theme="dark"] #librarianSection .scanner-connection-status[data-scanner-state="receiving"] > i { background: #49c6cf; box-shadow: 0 0 0 4px rgba(73,198,207,.14); }
 html[data-theme="dark"] #librarianSection .scanner-connection-status[data-scanner-state="detected"] > i { background: #70dfb0; box-shadow: 0 0 0 4px rgba(112,223,176,.15); }
+
+/* Recent attendance table — Midnight Lagoon surface and row states. */
+html[data-theme="dark"] #librarianSection .attendance-history-card .table-responsive {
+  border-color:rgba(104,190,196,.2);
+  background:#0a2638;
+  box-shadow:0 12px 28px rgba(0,0,0,.12);
+  scrollbar-color:#286575 transparent;
+}
+html[data-theme="dark"] #librarianSection .attendance-history-card .data-table {
+  background:transparent;
+}
+html[data-theme="dark"] #librarianSection .attendance-history-card .data-table thead th {
+  color:#8fe0d7;
+  background:linear-gradient(110deg,#123c4d,#144452);
+  border-bottom-color:rgba(104,190,196,.2);
+}
+html[data-theme="dark"] #librarianSection .attendance-history-card .data-table tbody td {
+  color:#bdd8d9;
+  background:rgba(7,29,44,.76);
+  border-bottom-color:rgba(104,190,196,.1);
+}
+html[data-theme="dark"] #librarianSection .attendance-history-card .data-table tbody tr:nth-child(even) td {
+  background:rgba(14,46,61,.76);
+}
+html[data-theme="dark"] #librarianSection .attendance-history-card .data-table tbody tr:hover td {
+  background:rgba(39,130,137,.2);
+}
+html[data-theme="dark"] #librarianSection .attendance-history-card .data-table tbody td:first-child { color:#eff8f5; }
+html[data-theme="dark"] #librarianSection .attendance-history-card .data-table tbody td:nth-child(2) { color:#83ded3; }
+html[data-theme="dark"] #librarianSection .attendance-history-card .attendance-status.is-inside {
+  color:#aaf0df;
+  border-color:rgba(112,223,176,.2);
+  background:rgba(43,164,132,.16);
+}
+html[data-theme="dark"] #librarianSection .attendance-history-card .attendance-status.is-outside {
+  color:#f0d5a4;
+  border-color:rgba(222,170,99,.2);
+  background:rgba(174,130,65,.14);
+}
+html[data-theme="dark"] #librarianSection .attendance-history-card .attendance-empty {
+  color:#a9c8d0 !important;
+  background:rgba(7,29,44,.76);
+}
