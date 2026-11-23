@@ -11,7 +11,7 @@ const RULES = [
 
 /** Front and back of the learner ID card, reused by the profile and the librarian modal. */
 export const MemberCard = forwardRef(function MemberCard({ profile, className = "amg-card-pair" }, ref) {
-  const libraryNumber = profile?.libraryNumber || "AMG-000000";
+  const libraryNumber = profile?.libraryNumber || profile?.membership_number || profile?.membershipNumber || profile?.library_number || "";
   const photoURL = profile?.photoURL || avatarUrl(libraryNumber);
   const issueDate = formatCardDate(profile?.approvedAt || profile?.decisionAt);
   const accountRole = String(profile?.role || "member").toLowerCase();
@@ -30,7 +30,7 @@ export const MemberCard = forwardRef(function MemberCard({ profile, className = 
         <div className="amg-id-front-content">
           <div className="amg-id-qr-block">
             <span>{isStaff ? "SCAN STAFF ID" : "SCAN MEMBER ID"}</span>
-            <QrCode value={libraryNumber} />
+            {libraryNumber ? <QrCode value={libraryNumber} /> : <span className="amg-id-code-pending">NUMBER PENDING</span>}
           </div>
           <div className="amg-id-person">
             <img className="amg-id-photo" src={photoURL} alt="Learner profile photo" />
@@ -41,12 +41,12 @@ export const MemberCard = forwardRef(function MemberCard({ profile, className = 
                 <span>{isStaff ? "Library Staff" : (profile?.studyLevel || "Study level")}</span>
               </div>
               <small>{isStaff ? "STAFF NO." : "MEMBER NO."}</small>
-              <strong>{libraryNumber}</strong>
+              <strong>{libraryNumber || "Awaiting assignment"}</strong>
               <small>{profile?.school || "School"}</small>
             </div>
           </div>
           <div className="amg-id-front-barcode">
-            <Barcode value={libraryNumber} />
+            {libraryNumber ? <Barcode value={libraryNumber} /> : null}
           </div>
         </div>
       </article>
@@ -65,8 +65,8 @@ export const MemberCard = forwardRef(function MemberCard({ profile, className = 
             </div>
           </section>
           <section className="amg-id-back-code">
-            <Barcode value={libraryNumber} height={34} width={1.1} />
-            <strong>{libraryNumber}</strong>
+            {libraryNumber ? <Barcode value={libraryNumber} height={34} width={1.1} /> : null}
+            <strong>{libraryNumber || "Membership number pending"}</strong>
           </section>
         </div>
         <footer>
