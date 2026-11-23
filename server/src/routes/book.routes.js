@@ -7,7 +7,8 @@ import {
   createBook,
   registerPhysicalBook,
   updateBook,
-  deleteBook
+  deleteBook,
+  streamBookCover
 } from "../controllers/book.controller.js";
 
 import {
@@ -26,7 +27,7 @@ const librarianAccess = [
 router.get("/", getBooks);
 
 // Librarian management
-router.get("/manage", ...librarianAccess, getManageBooks);
+router.get("/manage", ...librarianAccess, getManageBooks);\nrouter.get("/:id/cover", streamBookCover);
 router.post("/", ...librarianAccess, createBook);
 router.post("/register", ...librarianAccess, registerPhysicalBook);
 router.patch("/:id", ...librarianAccess, updateBook);
