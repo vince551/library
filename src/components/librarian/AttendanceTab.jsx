@@ -12,7 +12,7 @@ const SCAN_MODES = [
 ];
 
 export function AttendanceTab({ active }) {
-  const { attendance, capacity, scanMemberCode, processUnifiedCode, updateCapacity, resetScanMember } = useLibrary();
+  const { attendance, attendanceSummary, capacity, scanMemberCode, processUnifiedCode, updateCapacity, resetScanMember } = useLibrary();
   const { showToast } = useToast();
 
   const [mode, setMode] = useState("check-in");
@@ -185,7 +185,7 @@ export function AttendanceTab({ active }) {
     await updateCapacity(next);
   };
 
-  const inside = attendance.filter(item => item.status === "In library").length;
+  const inside = Number(attendanceSummary.currentlyInside) || 0;
   const instruction = hint || (scanMemberCode
     ? "Member scanned. Now scan the individual book-copy barcode."
     : DEFAULT_INSTRUCTION);
@@ -200,7 +200,7 @@ export function AttendanceTab({ active }) {
         <article className="attendance-overview-card attendance-overview-primary"><span>Currently in library</span><strong>{inside}</strong><small>People checked in</small></article>
         <article className="attendance-overview-card"><span>Maximum capacity</span><strong>{capacity}</strong><small>Configured library limit</small></article>
         <article className="attendance-overview-card"><span>Available spaces</span><strong>{Math.max(0, capacity - inside)}</strong><small>Remaining capacity</small></article>
-        <article className="attendance-overview-card"><span>Attendance records</span><strong>{attendance.length}</strong><small>Recorded visits</small></article>
+        <article className="attendance-overview-card"><span>Attendance records</span><strong>{Number(attendanceSummary.totalRecords) || 0}</strong><small>Recorded scan events</small></article>
       </div>
       <section className="attendance-card">
         <div className="attendance-card-heading"><div><span className="attendance-kicker">01 · SCAN &amp; PROCESS</span><h4>Smart barcode &amp; QR scanner</h4><p>Use a USB barcode scanner or the rear camera on a phone or tablet.</p></div><span className="attendance-step">01</span></div>
