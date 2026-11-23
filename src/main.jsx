@@ -7,6 +7,7 @@ import "./styles/librarian-workspace.css";
 import "./styles/theme-system.css";
 import "./styles/auth-experience.css";
 import "./styles/catalogue-card-responsive.css";
+import "./styles/dark-theme-overrides.css";
 import App from "./App.jsx";
 
 createRoot(document.getElementById("root")).render(<App />);
