@@ -38,6 +38,12 @@ jobs:
       - name: Validate backend JavaScript syntax
         run: find server/src -name "*.js" -print0 | xargs -0 -n1 node --check
 
+      - name: Install backend dependencies
+        run: npm ci --prefix server
+
+      - name: Run backend regression tests
+        run: npm test --prefix server
+
       - name: Build production frontend
         run: npm run build
 
