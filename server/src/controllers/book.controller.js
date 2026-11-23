@@ -278,6 +278,13 @@ export async function updateBook(req, res, next) {
     if (!existing.rowCount) return res.status(404).json({ success: false, message: "Book not found." });
     if (coverData) newCoverKey = await uploadBookCover(parsedId.data, coverData, coverType);
     if (newCoverKey) bookInput.coverImageKey = newCoverKey;
+    if (category) {
+      const slug = category.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80) || "general";
+      const categoryResult = await pool.query(
+        `INSERT INTO categories (name, slug) VALUES ($1, $2)
+         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name RETURNING id`, [category, slug]);
+      bookInput.categoryId = categoryResult.rows[0].id;
+    }
     const columns = { title: "title", author: "author", isbn: "isbn", description: "description",
       categoryId: "category_id", publicationYear: "publication_year", publisher: "publisher",
       coverImageKey: "cover_image_key", isPublished: "is_published" };
