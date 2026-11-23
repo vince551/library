@@ -27,7 +27,8 @@ const librarianAccess = [
 router.get("/", getBooks);
 
 // Librarian management
-router.get("/manage", ...librarianAccess, getManageBooks);\nrouter.get("/:id/cover", streamBookCover);
+router.get("/manage", ...librarianAccess, getManageBooks);
+router.get("/:id/cover", streamBookCover);
 router.post("/", ...librarianAccess, createBook);
 router.post("/register", ...librarianAccess, registerPhysicalBook);
 router.patch("/:id", ...librarianAccess, updateBook);
