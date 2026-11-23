@@ -270,36 +270,72 @@ export async function updateBook(req, res, next) {
   }
 }
 
-// Delete a book
+// Delete a physical book only when it has no circulation history.
+// Loan and request records are retained; they are never cascaded away.
 export async function deleteBook(req, res, next) {
+  const parsedId = z.string().uuid().safeParse(req.params.id);
+  if (!parsedId.success) {
+    return res.status(400).json({ success: false, message: "Invalid book ID." });
+  }
+
+  const client = await pool.connect();
   try {
-    const parsedId = z.string().uuid().safeParse(req.params.id);
+    await client.query("BEGIN");
 
-    if (!parsedId.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid book ID."
-      });
-    }
-
-    const result = await pool.query(
-      "DELETE FROM books WHERE id = $1 RETURNING id",
+    const bookResult = await client.query(
+      `SELECT id, title
+       FROM books
+       WHERE id = $1
+         AND NOT EXISTS (SELECT 1 FROM ebooks WHERE ebooks.book_id = books.id)
+       FOR UPDATE`,
       [parsedId.data]
     );
 
-    if (result.rowCount === 0) {
+    if (!bookResult.rowCount) {
+      await client.query("ROLLBACK");
       return res.status(404).json({
         success: false,
-        message: "Book not found."
+        message: "Physical book not found. E-books must be removed from the E-books section."
       });
     }
 
+    const historyResult = await client.query(
+      `SELECT
+         (SELECT COUNT(*)::int
+          FROM loans l
+          JOIN book_copies bc ON bc.id = l.copy_id
+          WHERE bc.book_id = $1) AS loan_count,
+         (SELECT COUNT(*)::int
+          FROM borrow_requests
+          WHERE book_id = $1) AS request_count`,
+      [parsedId.data]
+    );
+
+    const { loan_count: loanCount, request_count: requestCount } = historyResult.rows[0];
+    if (loanCount > 0 || requestCount > 0) {
+      await client.query("ROLLBACK");
+      const reasons = [];
+      if (loanCount > 0) reasons.push(`${loanCount} loan record(s)`);
+      if (requestCount > 0) reasons.push(`${requestCount} borrowing request(s)`);
+      return res.status(409).json({
+        success: false,
+        message: `This book cannot be deleted because it has ${reasons.join(" and ")}. Its circulation history is protected.`
+      });
+    }
+
+    await client.query("DELETE FROM book_copies WHERE book_id = $1", [parsedId.data]);
+    await client.query("DELETE FROM books WHERE id = $1", [parsedId.data]);
+    await client.query("COMMIT");
+
     return res.json({
       success: true,
-      message: "Book deleted successfully."
+      message: "Book and its unused physical copies were permanently deleted."
     });
   } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
     handleDatabaseError(error, res, next);
+  } finally {
+    client.release();
   }
 }
 
