@@ -508,7 +508,7 @@
 #librarianSection .insight-header-actions { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:9px; }
 #librarianSection .insight-export-button {
   min-height:38px; padding:0 14px; border:1px solid #cfe1d6; border-radius:10px;
-  color:#176344; background:#f4faf6; font:700 11px inherit; cursor:pointer;
+  color:#176344; background:#f4faf6; font-family:inherit; font-size:11px; font-weight:700; cursor:pointer;
 }
 #librarianSection .insight-export-button:hover { background:#eaf5ee; border-color:#a9cbb7; }
 #librarianSection .insight-period-heading { align-items:flex-start; gap:14px; }
