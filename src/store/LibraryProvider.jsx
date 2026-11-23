@@ -33,7 +33,8 @@ function mapPhysicalBook(book) {
     createdAt: book.createdAt || book.created_at
   };
 }
-\nfunction mapEbook(book) {
+
+function mapEbook(book) {
   return {
     ...book,
     fileName: book.fileName || book.file_name || "E-book",
