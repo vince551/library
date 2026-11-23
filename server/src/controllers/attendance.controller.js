@@ -94,10 +94,10 @@ export async function getAttendanceRecords(req, res, next) {
               CASE WHEN ar.action = 'check-out' THEN ar.scanned_at END AS "checkOutAt",
               CASE WHEN ar.action = 'check-in' THEN 'In library' ELSE 'Checked out' END AS status,
               ar.scanned_at AS "scannedAt"
-       FROM (SELECT DISTINCT ON (member_id) * FROM attendance_records ORDER BY member_id, scanned_at DESC) ar
+       FROM attendance_records ar
        JOIN users u ON u.id = ar.member_id
        JOIN member_profiles mp ON mp.user_id = u.id
-       ORDER BY ar.scanned_at DESC LIMIT 200`
+       ORDER BY ar.scanned_at DESC, ar.id DESC LIMIT 200`
     );
     return res.json({ success: true, count: result.rowCount, attendance: result.rows });
   } catch (error) { return next(error); }
