@@ -89,6 +89,7 @@ export function MemberProfile({ active }) {
               <div key={item.id} className="stack-item">
                 <h4>{item.book_title ?? item.bookTitle ?? "Library book"}</h4>
                 <p>{item.kind} · {String(item.status || "pending").replace(/^./, value => value.toUpperCase())}</p>
+                <small>{item.request_number || item.loan_number || "Reference pending"}</small>
                 {(item.due_at ?? item.dueAt) ? <p>Due: {formatDate(item.due_at ?? item.dueAt)}</p> : null}
               </div>
             ))}
