@@ -6,7 +6,8 @@ import { pool } from "../config/database.js";
 const registerSchema = z.object({
   fullName: z.string().trim().min(2).max(150),
   email: z.string().trim().email().max(255),
-  password: z.string().min(12).max(128)
+  // Keep this aligned with the registration form's visible 8-character rule.
+  password: z.string().min(8, "Password must contain at least 8 characters.").max(128)
 });
 
 const loginSchema = z.object({
@@ -29,9 +30,17 @@ export async function register(req, res, next) {
     const parsed = registerSchema.safeParse(req.body);
 
     if (!parsed.success) {
+      const firstIssue = parsed.error.issues[0];
+      const field = String(firstIssue?.path?.[0] || "");
+      const fieldMessages = {
+        fullName: "Enter your full name (at least 2 characters).",
+        email: "Enter a valid email address.",
+        password: "Password must contain at least 8 characters."
+      };
+
       return res.status(400).json({
         success: false,
-        message: "Please check your registration details.",
+        message: fieldMessages[field] || "Please check your registration details.",
         errors: parsed.error.flatten().fieldErrors
       });
     }
