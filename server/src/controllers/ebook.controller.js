@@ -126,6 +126,8 @@ function publicEbook(row) {
   const extension = format === "epub" || format === "application/epub+zip" ? "epub" : "pdf";
   return {
     id: row.id,
+    ebookNumber: row.ebook_number,
+    catalogueNumber: row.catalogue_number,
     bookId: row.book_id,
     title: row.title,
     author: row.author,
@@ -141,7 +143,7 @@ function publicEbook(row) {
 
 const ebookSelect = `
   SELECT e.id, e.book_id, e.file_format, e.file_size_bytes, e.created_at,
-         b.title, b.author, b.description, b.cover_image_key,
+         e.ebook_number, b.catalogue_number, b.title, b.author, b.description, b.cover_image_key,
          c.name AS category, e.is_published
   FROM ebooks e
   JOIN books b ON b.id = e.book_id
@@ -225,19 +227,20 @@ export async function uploadEbook(req, res, next) {
         [input.category, slug]
       );
       const bookResult = await client.query(
-        `INSERT INTO books (title, author, description, category_id, cover_image_key, created_by, is_published)
-         VALUES ($1, $2, $3, $4, $5, $6, TRUE)
-         RETURNING id`,
+        `INSERT INTO books (title, author, description, category_id, cover_image_key, created_by, is_published, catalogue_number)
+         VALUES ($1, $2, $3, $4, $5, $6, TRUE, next_amg_number('B'))
+         RETURNING id, catalogue_number`,
         [input.title, input.author, input.description || null, categoryResult.rows[0].id, coverKey, req.user.id]
       );
       const ebookResult = await client.query(
-        `INSERT INTO ebooks (book_id, file_key, file_format, file_size_bytes, is_published)
-         VALUES ($1, $2, $3, $4, TRUE)
-         RETURNING id, book_id, file_format, file_size_bytes, created_at`,
+        `INSERT INTO ebooks (book_id, file_key, file_format, file_size_bytes, is_published, ebook_number)
+         VALUES ($1, $2, $3, $4, TRUE, next_amg_number('E'))
+         RETURNING id, book_id, ebook_number, file_format, file_size_bytes, created_at`,
         [bookResult.rows[0].id, fileKey, fileType.format, fileBuffer.length]
       );
       created = {
         ...ebookResult.rows[0],
+        catalogue_number: bookResult.rows[0].catalogue_number,
         title: input.title,
         author: input.author,
         description: input.description,
