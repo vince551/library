@@ -119,6 +119,14 @@ export async function decideBorrowRequest(req, res, next) {
         await client.query("ROLLBACK");
         return res.status(409).json({ success:false, message:"Only active, approved members can borrow books." });
       }
+      const activeLoans = await client.query(
+        "SELECT COUNT(*)::int AS total FROM loans WHERE member_id = $1 AND status IN ('active', 'overdue')",
+        [request.member_id]
+      );
+      if (activeLoans.rows[0].total >= 3) {
+        await client.query("ROLLBACK");
+        return res.status(409).json({ success:false, message:"This member has reached the maximum borrowing limit of 3 books." });
+      }
       const stock = await client.query(
         "SELECT COUNT(*)::int AS available FROM book_copies WHERE book_id = $1 AND status = 'available'",
         [request.book_id]
