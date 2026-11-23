@@ -502,3 +502,35 @@
   #librarianSection .attendance-history-card .data-table thead th { padding:12px 14px; }
   #librarianSection .attendance-history-card .data-table tbody td { padding:13px 14px; }
 }
+
+
+/* Analytics reporting additions */
+#librarianSection .insight-header-actions { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:9px; }
+#librarianSection .insight-export-button {
+  min-height:38px; padding:0 14px; border:1px solid #cfe1d6; border-radius:10px;
+  color:#176344; background:#f4faf6; font:700 11px inherit; cursor:pointer;
+}
+#librarianSection .insight-export-button:hover { background:#eaf5ee; border-color:#a9cbb7; }
+#librarianSection .insight-period-heading { align-items:flex-start; gap:14px; }
+#librarianSection .insight-period-heading p { margin:5px 0 0; color:#84928a; font-size:10px; }
+#librarianSection .insight-period-switch { display:flex; flex:0 0 auto; gap:4px; padding:4px; border:1px solid #e4ece7; border-radius:10px; background:#f7faf8; }
+#librarianSection .insight-period-switch button { min-height:30px; padding:0 10px; border:0; border-radius:7px; color:#718078; background:transparent; font-size:10px; font-weight:700; cursor:pointer; }
+#librarianSection .insight-period-switch button.is-active { color:#176344; background:#e4f1e8; box-shadow:0 1px 2px rgba(20,60,38,.08); }
+#librarianSection .insight-secondary-grid { align-items:stretch; }
+#librarianSection .insight-alert-list { display:grid; gap:0; }
+#librarianSection .insight-alert-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-bottom:1px solid #edf2ee; }
+#librarianSection .insight-alert-row:last-child { border-bottom:0; }
+#librarianSection .insight-alert-row > span { display:grid; min-width:0; gap:3px; }
+#librarianSection .insight-alert-row strong { overflow:hidden; color:#294b3b; font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
+#librarianSection .insight-alert-row small { color:#87958d; font-size:9px; }
+#librarianSection .insight-alert-row b { flex:0 0 auto; color:#28724f; font-size:10px; white-space:nowrap; }
+#librarianSection .insight-alert-row b.is-empty { color:#a14d4d; }
+@media(max-width:760px) {
+  #librarianSection .insight-header-actions { justify-content:flex-start; }
+  #librarianSection .insight-period-heading { flex-direction:column; }
+}
+@media(max-width:420px) {
+  #librarianSection .insight-period-switch { width:100%; }
+  #librarianSection .insight-period-switch button { flex:1; }
+  #librarianSection .insight-alert-row { align-items:flex-start; flex-direction:column; gap:5px; }
+}
