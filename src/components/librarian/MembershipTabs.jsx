@@ -20,14 +20,15 @@ export function BorrowRequestsTab({ active }) {
       <div className="table-responsive">
         <table className="data-table">
           <thead>
-            <tr><th>Learner</th><th>Book</th><th>Category</th><th>Status</th><th>Actions</th></tr>
+            <tr><th>Request #</th><th>Learner</th><th>Book</th><th>Category</th><th>Status</th><th>Actions</th></tr>
           </thead>
           <tbody id="borrowRequestsTable">
             {requests.length === 0 ? (
-              <tr><td colSpan="5">No borrowing requests are available.</td></tr>
+              <tr><td colSpan="6">No borrowing requests are available.</td></tr>
             ) : requests.map(request => {
               return (
                 <tr key={request.id}>
+                  <td><strong>{request.request_number || "—"}</strong></td>
                   <td>{request.user_name ?? request.userName}</td>
                   <td>{request.book_title ?? request.bookTitle}</td>
                   <td>{request.book_category ?? request.bookCategory ?? "—"}</td>
