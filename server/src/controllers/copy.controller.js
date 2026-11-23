@@ -221,35 +221,23 @@ export async function updateCopy(req, res, next) {
 
 // Delete a physical copy
 export async function deleteCopy(req, res, next) {
+  const parsedId = z.string().uuid().safeParse(req.params.id);
+  if (!parsedId.success) return res.status(400).json({ success: false, message: "Invalid copy ID." });
+  const client = await pool.connect();
   try {
-    const parsedId = z.string().uuid().safeParse(req.params.id);
-
-    if (!parsedId.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid copy ID."
-      });
+    await client.query("BEGIN");
+    const existing = await client.query("SELECT id, status FROM book_copies WHERE id = $1 FOR UPDATE", [parsedId.data]);
+    if (!existing.rowCount) { await client.query("ROLLBACK"); return res.status(404).json({ success: false, message: "Physical copy not found." }); }
+    const history = await client.query("SELECT COUNT(*)::int AS count FROM loans WHERE copy_id = $1", [parsedId.data]);
+    if (Number(history.rows[0].count) > 0 || existing.rows[0].status !== "available") {
+      await client.query("ROLLBACK");
+      return res.status(409).json({ success: false, message: "This copy has circulation history or is not available. Its barcode and loan history are protected." });
     }
-
-    const result = await pool.query(
-      `DELETE FROM book_copies
-       WHERE id = $1
-       RETURNING id`,
-      [parsedId.data]
-    );
-
-    if (result.rowCount === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Physical copy not found."
-      });
-    }
-
-    return res.json({
-      success: true,
-      message: "Physical copy deleted successfully."
-    });
+    await client.query("DELETE FROM book_copies WHERE id = $1", [parsedId.data]);
+    await client.query("COMMIT");
+    return res.json({ success: true, message: "Unused physical copy deleted successfully." });
   } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
     handleDatabaseError(error, res, next);
-  }
+  } finally { client.release(); }
 }
