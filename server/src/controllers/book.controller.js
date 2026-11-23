@@ -160,7 +160,7 @@ export async function getBooks(req, res, next) {
       success: true,
       page,
       limit,
-      books: result.rows
+      books: result.rows.map(withCoverUrl)
     });
   } catch (error) {
     next(error);
@@ -263,69 +263,40 @@ export async function createBook(req, res, next) {
 
 // Edit a book
 export async function updateBook(req, res, next) {
+  let newCoverKey = null;
   try {
     const parsedId = z.string().uuid().safeParse(req.params.id);
-
-    if (!parsedId.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid book ID."
-      });
-    }
-
-    const parsed = updateSchema.safeParse(req.body);
-
+    if (!parsedId.success) return res.status(400).json({ success: false, message: "Invalid book ID." });
+    const schema = updateSchema.extend({ coverType: z.string().optional(), coverData: z.string().optional() });
+    const parsed = schema.safeParse(req.body);
     if (!parsed.success || Object.keys(parsed.data || {}).length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Provide at least one valid field to update.",
-        errors: parsed.error?.flatten().fieldErrors
-      });
+      return res.status(400).json({ success: false, message: "Provide at least one valid field to update.", errors: parsed.error?.flatten().fieldErrors });
     }
-
-    const columns = {
-      title: "title",
-      author: "author",
-      isbn: "isbn",
-      description: "description",
-      categoryId: "category_id",
-      publicationYear: "publication_year",
-      publisher: "publisher",
-      coverImageKey: "cover_image_key",
-      isPublished: "is_published"
-    };
-
-    const values = [];
-    const assignments = [];
-
-    for (const [key, value] of Object.entries(parsed.data)) {
+    const { coverType, coverData, ...bookInput } = parsed.data;
+    const existing = await pool.query("SELECT cover_image_key FROM books WHERE id = $1", [parsedId.data]);
+    if (!existing.rowCount) return res.status(404).json({ success: false, message: "Book not found." });
+    if (coverData) newCoverKey = await uploadBookCover(parsedId.data, coverData, coverType);
+    if (newCoverKey) bookInput.coverImageKey = newCoverKey;
+    const columns = { title: "title", author: "author", isbn: "isbn", description: "description",
+      categoryId: "category_id", publicationYear: "publication_year", publisher: "publisher",
+      coverImageKey: "cover_image_key", isPublished: "is_published" };
+    const values = [], assignments = [];
+    for (const [key, value] of Object.entries(bookInput)) {
+      if (!columns[key]) continue;
       values.push(value);
       assignments.push(`${columns[key]} = $${values.length}`);
     }
-
+    if (!assignments.length) return res.status(400).json({ success: false, message: "No book details were supplied to update." });
     values.push(parsedId.data);
-
-    const result = await pool.query(
-      `UPDATE books
-       SET ${assignments.join(", ")}
-       WHERE id = $${values.length}
-       RETURNING *`,
-      values
-    );
-
-    if (result.rowCount === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Book not found."
-      });
+    const result = await pool.query(`UPDATE books SET ${assignments.join(", ")} WHERE id = $${values.length} RETURNING *`, values);
+    if (newCoverKey && existing.rows[0].cover_image_key) {
+      await removeBookCover(existing.rows[0].cover_image_key).catch(error => console.error("Old book cover cleanup failed:", error.message));
     }
-
-    return res.json({
-      success: true,
-      message: "Book updated successfully.",
-      book: result.rows[0]
-    });
+    return res.json({ success: true, message: "Book details updated successfully.", book: withCoverUrl(result.rows[0]) });
   } catch (error) {
+    if (newCoverKey) await removeBookCover(newCoverKey).catch(() => {});
+    if (error.status) return res.status(error.status).json({ success: false, message: error.message });
+    if (error.message?.includes("cover")) return res.status(400).json({ success: false, message: error.message });
     handleDatabaseError(error, res, next);
   }
 }
