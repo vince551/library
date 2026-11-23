@@ -109,6 +109,24 @@ export async function issueBook(req, res, next) {
       });
     }
 
+    // An approved borrowing request is required before a physical handover.
+    // Lock it in the same transaction so it cannot be fulfilled twice.
+    const requestResult = await client.query(
+      `SELECT id FROM borrow_requests
+       WHERE member_id = $1 AND book_id = $2 AND status = 'approved'
+       ORDER BY created_at ASC
+       LIMIT 1 FOR UPDATE`,
+      [memberId, copy.book_id]
+    );
+    if (!requestResult.rowCount) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({
+        success: false,
+        message: "This learner has no approved borrowing request for this book. Approve the request before issuing the copy."
+      });
+    }
+    const approvedRequestId = requestResult.rows[0].id;
+
     // Verify the member is active.
     const memberResult = await client.query(
       `SELECT id, full_name, email, role, status
@@ -178,6 +196,14 @@ if (activeLoans.rows[0].total >= 3) {
        SET status = 'loaned'
        WHERE id = $1`,
       [copy.id]
+    );
+
+    // Mark the approved request fulfilled only after the loan and copy update succeed.
+    await client.query(
+      `UPDATE borrow_requests
+       SET status = 'fulfilled', loan_id = $1, updated_at = NOW()
+       WHERE id = $2`,
+      [loanResult.rows[0].id, approvedRequestId]
     );
 
     // Record the action.
@@ -378,6 +404,27 @@ export async function returnBook(req, res, next) {
   } finally {
     client.release();
   }
+}
+
+export async function getMyLoans(req, res, next) {
+  try {
+    await pool.query(
+      `UPDATE loans SET status = 'overdue'
+       WHERE member_id = $1 AND status = 'active' AND due_at < NOW()`,
+      [req.user.id]
+    );
+    const result = await pool.query(
+      `SELECT l.id, l.issued_at, l.due_at, l.returned_at, l.status,
+              b.title, b.title AS book_title, b.author, bc.barcode
+       FROM loans l
+       JOIN book_copies bc ON bc.id = l.copy_id
+       JOIN books b ON b.id = bc.book_id
+       WHERE l.member_id = $1
+       ORDER BY l.issued_at DESC`,
+      [req.user.id]
+    );
+    return res.json({ success:true, count:result.rowCount, loans:result.rows });
+  } catch (error) { return next(error); }
 }
 
 export async function getMemberLoans(req, res, next) {
