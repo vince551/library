@@ -17,9 +17,11 @@ export async function authenticate(req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const result = await pool.query(
-      `SELECT id, full_name, email, role, status
-       FROM users
-       WHERE id = $1`,
+      `SELECT u.id, u.full_name, u.email, u.role, u.status,
+              mp.membership_number, mp.approved_at, mp.phone, mp.address
+       FROM users u
+       LEFT JOIN member_profiles mp ON mp.user_id = u.id
+       WHERE u.id = $1`,
       [decoded.userId]
     );
 
