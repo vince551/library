@@ -414,7 +414,7 @@ export async function getMyLoans(req, res, next) {
       [req.user.id]
     );
     const result = await pool.query(
-      `SELECT l.id, l.issued_at, l.due_at, l.returned_at, l.status,
+      `SELECT l.id, l.issued_at, l.issued_at AS created_at, l.due_at, l.returned_at, l.status,
               b.title, b.title AS book_title, b.author, bc.barcode
        FROM loans l
        JOIN book_copies bc ON bc.id = l.copy_id
