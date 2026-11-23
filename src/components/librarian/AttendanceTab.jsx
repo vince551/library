@@ -20,6 +20,7 @@ export function AttendanceTab({ active }) {
   const [scanning, setScanning] = useState(false);
   const [hint, setHint] = useState("");
   const [capacityInput, setCapacityInput] = useState(String(capacity));
+  const [scannerStatus, setScannerStatus] = useState("idle");
 
   const videoRef = useRef(null);
   const codeRef = useRef(null);
@@ -28,6 +29,7 @@ export function AttendanceTab({ active }) {
   const busyRef = useRef(false);
   const lastScanRef = useRef("");
   const lastScanAtRef = useRef(0);
+  const scannerKeyTimesRef = useRef([]);
 
   useEffect(() => { modeRef.current = mode; }, [mode]);
   useEffect(() => { memberRef.current = scanMemberCode; }, [scanMemberCode]);
@@ -139,6 +141,31 @@ export function AttendanceTab({ active }) {
     };
   }, [scanning, showToast, resetScanMember]);
 
+  const handleScannerKeyDown = (event) => {
+    if (event.key === "Enter") {
+      const times = scannerKeyTimesRef.current;
+      const isScannerBurst = times.length >= 5 && times[times.length - 1] - times[0] <= 1500;
+      setScannerStatus(isScannerBurst ? "detected" : "manual");
+      scannerKeyTimesRef.current = [];
+      return;
+    }
+    if (event.key.length === 1) {
+      const now = Date.now();
+      scannerKeyTimesRef.current = [...scannerKeyTimesRef.current.filter(time => now - time < 1500), now].slice(-40);
+      if (scannerKeyTimesRef.current.length >= 5 && now - scannerKeyTimesRef.current[0] <= 1500) {
+        setScannerStatus("receiving");
+      }
+    }
+  };
+
+  const scannerStatusCopy = {
+    idle: ["Scanner not tested", "Click the barcode field, then scan a card to verify the scanner."],
+    ready: ["Ready for scanner input", "The field is focused. Scan a barcode; AMG will confirm when input arrives."],
+    receiving: ["Scanner input detected", "Rapid barcode characters are arriving in the scan field."],
+    detected: ["Barcode scanner detected", "A rapid scan was received. You can scan the next member card."],
+    manual: ["Code entered", "The value was entered. A USB keyboard-wedge scanner is confirmed after a rapid scan."]
+  }[scannerStatus];
+
   const submitCode = async (event) => {
     event.preventDefault();
     const value = code.trim();
@@ -183,9 +210,10 @@ export function AttendanceTab({ active }) {
         </div>
         <form id="attendanceForm" className="inline-form attendance-scan-form" onSubmit={submitCode}>
           <label>Scanner mode<select name="action" value={mode} onChange={event => setMode(event.target.value)}>{SCAN_MODES.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
-          <label className="attendance-code-field">Scan / enter barcode<input id="attendanceCodeInput" ref={codeRef} name="libraryNumber" type="text" required autoComplete="off" autoCapitalize="off" spellCheck={false} placeholder="Click here, then scan CODE-128 or QR code" value={code} onChange={event => setCode(event.target.value)} /></label>
+          <label className="attendance-code-field">Scan / enter barcode<input id="attendanceCodeInput" ref={codeRef} name="libraryNumber" type="text" required autoComplete="off" autoCapitalize="off" spellCheck={false} placeholder="Click here, then scan CODE-128 or QR code" value={code} onFocus={() => setScannerStatus("ready")} onBlur={() => { if (scannerStatus === "ready") setScannerStatus("idle"); }} onKeyDown={handleScannerKeyDown} onChange={event => setCode(event.target.value)} /></label>
           <button className="btn btn-primary" type="submit">Process scan</button>
         </form>
+        <div className="scanner-connection-status" data-scanner-state={scannerStatus} role="status" aria-live="polite"><i /><span><strong>{scannerStatusCopy[0]}</strong><small>{scannerStatusCopy[1]}</small></span></div>
         <div className="attendance-instruction" role="status">{instruction}</div>
         <button id="startScannerBtn" className="btn btn-outline attendance-camera-button" type="button" onClick={() => setScanning(true)} disabled={scanning}>Open phone camera scanner</button>
         <div id="scannerBox" className={"scanner-box attendance-camera-box" + (scanning ? "" : " hidden")}>
