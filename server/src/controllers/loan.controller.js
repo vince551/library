@@ -255,20 +255,13 @@ if (activeLoans.rows[0].total >= 3) {
 // List all loans
 export async function getLoans(req, res, next) {
   try {
-    await pool.query(
-      `UPDATE loans
-       SET status = 'overdue'
-       WHERE status = 'active'
-         AND due_at < NOW()`
-    );
-
     const result = await pool.query(
       `SELECT
         l.id,
         l.issued_at,
         l.due_at,
         l.returned_at,
-        l.status,
+        CASE WHEN l.status = 'active' AND l.due_at < NOW() THEN 'overdue' ELSE l.status END AS status,
         u.full_name AS member_name,
         u.email AS member_email,
         mp.membership_number,
@@ -408,13 +401,9 @@ export async function returnBook(req, res, next) {
 
 export async function getMyLoans(req, res, next) {
   try {
-    await pool.query(
-      `UPDATE loans SET status = 'overdue'
-       WHERE member_id = $1 AND status = 'active' AND due_at < NOW()`,
-      [req.user.id]
-    );
     const result = await pool.query(
-      `SELECT l.id, l.issued_at, l.issued_at AS created_at, l.due_at, l.returned_at, l.status,
+      `SELECT l.id, l.issued_at, l.issued_at AS created_at, l.due_at, l.returned_at,
+              CASE WHEN l.status = 'active' AND l.due_at < NOW() THEN 'overdue' ELSE l.status END AS status,
               b.title, b.title AS book_title, b.author, bc.barcode
        FROM loans l
        JOIN book_copies bc ON bc.id = l.copy_id
@@ -444,7 +433,7 @@ export async function getMemberLoans(req, res, next) {
         l.issued_at,
         l.due_at,
         l.returned_at,
-        l.status,
+        CASE WHEN l.status = 'active' AND l.due_at < NOW() THEN 'overdue' ELSE l.status END AS status,
         b.title,
         b.author,
         bc.barcode
@@ -474,7 +463,9 @@ export async function getActiveLoanByBarcode(req, res, next) {
       return res.status(400).json({ success: false, message: "Invalid book-copy barcode." });
     }
     const result = await pool.query(
-      `SELECT l.id AS "loanId", l.status, bc.barcode, b.title AS "bookTitle",
+      `SELECT l.id AS "loanId",
+              CASE WHEN l.status = 'active' AND l.due_at < NOW() THEN 'overdue' ELSE l.status END AS status,
+              bc.barcode, b.title AS "bookTitle",
               u.full_name AS "memberName", mp.membership_number AS "libraryNumber"
        FROM loans l
        JOIN book_copies bc ON bc.id = l.copy_id
