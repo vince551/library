@@ -468,6 +468,7 @@ export async function getActiveLoanByBarcode(req, res, next) {
     }
     const result = await pool.query(
       `SELECT l.id AS "loanId",
+              l.loan_number AS "loanNumber",
               l.status,
               bc.barcode, b.title AS "bookTitle",
               u.full_name AS "memberName", mp.membership_number AS "libraryNumber"
