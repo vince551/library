@@ -552,3 +552,484 @@ html[data-theme="dark"] :focus-visible { outline-color:rgba(185,208,181,.68); }
   html[data-theme="dark"] .book-card,
   html[data-theme="dark"] .catalogue-card { transition:none; }
 }
+
+/* Focused dark-theme refinement: digital reading catalogue */
+html[data-theme="dark"] #libShelfSection .catalogue-heading {
+  position:relative;
+  overflow:hidden;
+  border-color:rgba(174,194,176,.16);
+  background:
+    radial-gradient(ellipse at 92% 0%,rgba(177,154,112,.13),transparent 34%),
+    radial-gradient(ellipse at 0% 100%,rgba(102,145,125,.13),transparent 42%),
+    linear-gradient(135deg,#1c3024 0%,#172a25 55%,#1a2b32 100%);
+  box-shadow:0 18px 42px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.035);
+}
+html[data-theme="dark"] #libShelfSection .catalogue-heading h2 { color:#f0f3e9; }
+html[data-theme="dark"] #libShelfSection .catalogue-heading>p:not(.eyebrow) { color:#aab9aa; }
+html[data-theme="dark"] #libShelfSection .catalogue-summary span {
+  color:#c1cbbb;
+  border-color:rgba(174,194,176,.16);
+  background:rgba(12,25,19,.42);
+}
+html[data-theme="dark"] #libShelfSection .catalogue-summary strong { color:#d5c39c; }
+html[data-theme="dark"] #libShelfSection .catalogue-search,
+html[data-theme="dark"] #libShelfSection .catalogue-filter select {
+  color:#dce7da;
+  border-color:rgba(174,194,176,.18);
+  background:rgba(22,38,29,.94);
+  box-shadow:0 8px 22px rgba(0,0,0,.12);
+}
+html[data-theme="dark"] #libShelfSection .catalogue-search input { color:#edf3ed; }
+html[data-theme="dark"] #libShelfSection .catalogue-search input::placeholder { color:#829386; }
+html[data-theme="dark"] #libShelfSection .catalogue-filter select option { color:#edf3ed;background:#17291e; }
+html[data-theme="dark"] #libShelfSection .catalogue-format-filter {
+  border-color:rgba(174,194,176,.15);
+  background:rgba(12,24,18,.62);
+}
+html[data-theme="dark"] #libShelfSection .catalogue-format-filter button { color:#b3c0b3; }
+html[data-theme="dark"] #libShelfSection .catalogue-format-filter button.active {
+  color:#17251b;
+  background:linear-gradient(120deg,#d0ddc5,#a9c4ad);
+  box-shadow:0 5px 15px rgba(0,0,0,.18);
+}
+html[data-theme="dark"] #libShelfSection .catalogue-results-line { color:#94a596; }
+html[data-theme="dark"] #libShelfSection .catalogue-results-line button { color:#d2c19b; }
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook {
+  position:relative;
+  overflow:hidden;
+  border-color:rgba(174,194,176,.16);
+  background:linear-gradient(155deg,rgba(29,44,37,.98),rgba(19,34,34,.98)) !important;
+}
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook::before {
+  position:absolute;
+  z-index:1;
+  top:0;
+  right:18px;
+  left:18px;
+  height:2px;
+  border-radius:0 0 4px 4px;
+  background:linear-gradient(90deg,#9db89b,#c8b58c,#91b2a6);
+  opacity:.72;
+  content:"";
+}
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .catalogue-cover {
+  aspect-ratio:5/4;
+  min-height:178px;
+  padding:14px;
+  background:
+    radial-gradient(circle at 82% 12%,rgba(190,170,128,.13),transparent 31%),
+    linear-gradient(145deg,#203b32,#1c3038);
+  box-shadow:inset 0 0 0 1px rgba(205,218,196,.08);
+}
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .catalogue-cover img {
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  border-radius:7px;
+  filter:drop-shadow(0 12px 15px rgba(0,0,0,.3));
+}
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .catalogue-cover-placeholder {
+  color:#e3e9dc;
+  border:1px solid rgba(204,190,151,.2);
+  border-radius:8px;
+  background:
+    radial-gradient(circle at 85% 10%,rgba(196,177,135,.2),transparent 34%),
+    linear-gradient(145deg,#345447,#263d48 58%,#403d32);
+}
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .catalogue-cover-placeholder b {
+  color:#e0d0a9;
+  letter-spacing:.22em;
+}
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .catalogue-cover-placeholder small { color:#e2e8dc; }
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .catalogue-format-badge {
+  color:#17271f !important;
+  border-color:rgba(235,229,207,.3);
+  background:linear-gradient(120deg,#e1d2ae,#b8cbb4);
+}
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .star-btn {
+  color:#e5d5ad;
+  border-color:rgba(235,229,207,.18);
+  background:rgba(17,30,26,.82);
+  backdrop-filter:blur(10px);
+}
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .book-details { gap:10px; }
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .book-category {
+  color:#c3d5bd;
+  border-color:rgba(163,190,161,.17);
+  background:rgba(102,143,105,.13);
+}
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .book-title {
+  color:#f0f2e9;
+  font-size:clamp(15px,1.25vw,18px);
+  line-height:1.32;
+  letter-spacing:-.025em;
+}
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .book-author { color:#b9c4b8; }
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .book-description {
+  display:-webkit-box;
+  overflow:hidden;
+  color:#9eafa2;
+  line-height:1.65;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:3;
+}
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .book-stock {
+  display:inline-flex;
+  align-self:flex-start;
+  padding:6px 9px;
+  border:1px solid rgba(190,176,139,.16);
+  border-radius:8px;
+  color:#d4c6a5;
+  background:rgba(157,133,88,.09);
+  font-size:10px;
+  font-weight:750;
+}
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .book-actions { margin-top:auto; }
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .book-actions .btn-primary {
+  color:#18271e;
+  border-color:#b7c9ad;
+  background:linear-gradient(120deg,#d1ddc5,#a9c4ad);
+  box-shadow:0 7px 16px rgba(0,0,0,.17);
+}
+html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .book-actions .btn-outline {
+  color:#d4dfd2;
+  border-color:rgba(174,194,176,.22);
+  background:rgba(15,29,25,.45);
+}
+html[data-theme="dark"] #libShelfSection .catalogue-empty {
+  border-color:rgba(174,194,176,.2);
+  background:linear-gradient(145deg,rgba(25,42,31,.9),rgba(18,34,31,.9));
+}
+html[data-theme="dark"] #libShelfSection .catalogue-empty-mark {
+  color:#d6dfca;
+  border-color:rgba(174,194,176,.17);
+  background:rgba(105,145,107,.15);
+}
+html[data-theme="dark"] #libShelfSection .catalogue-empty h3 { color:#e9efe5; }
+html[data-theme="dark"] #libShelfSection .catalogue-empty p { color:#a5b3a6; }
+html[data-theme="dark"] .catalogue-detail-modal {
+  color:#dce7da;
+  background:linear-gradient(145deg,#1b3024,#142923 72%,#1a2b31);
+}
+html[data-theme="dark"] .catalogue-detail-modal h2 { color:#f0f3e9; }
+html[data-theme="dark"] .catalogue-detail-modal>p:not(.eyebrow) { color:#aab9aa; }
+html[data-theme="dark"] .catalogue-detail-modal dl div {
+  border-color:rgba(174,194,176,.15);
+  background:rgba(10,22,17,.32);
+}
+html[data-theme="dark"] .catalogue-detail-modal dt { color:#9aaa9b; }
+html[data-theme="dark"] .catalogue-detail-modal dd { color:#e0e9dc; }
+html[data-theme="dark"] .catalogue-modal-close {
+  color:#dce7da;
+  border-color:rgba(174,194,176,.18);
+  background:rgba(10,22,17,.48);
+}
+
+/* Focused dark-theme refinement: check-in, check-out and circulation desk */
+html[data-theme="dark"] #librarianSection #attendanceTab { gap:18px; }
+html[data-theme="dark"] #librarianSection .attendance-header {
+  align-items:center;
+  gap:18px;
+  padding:4px 2px 8px;
+}
+html[data-theme="dark"] #librarianSection .attendance-header h3 {
+  margin:7px 0 6px;
+  color:#f0f3e9;
+  font-size:clamp(22px,3vw,30px);
+  letter-spacing:-.04em;
+}
+html[data-theme="dark"] #librarianSection .attendance-header p { color:#9eafa2; line-height:1.65; }
+html[data-theme="dark"] #librarianSection .attendance-live {
+  flex:0 0 auto;
+  padding:9px 13px;
+  border-radius:999px;
+  color:#d2dfc9;
+  background:rgba(105,145,107,.13);
+}
+html[data-theme="dark"] #librarianSection .attendance-live i {
+  background:#a9c89f;
+  box-shadow:0 0 0 4px rgba(169,200,159,.12);
+}
+html[data-theme="dark"] #librarianSection .attendance-overview {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:11px;
+}
+html[data-theme="dark"] #librarianSection .attendance-overview-card {
+  position:relative;
+  display:grid;
+  align-content:start;
+  gap:7px;
+  min-width:0;
+  min-height:112px;
+  padding:16px 17px;
+  overflow:hidden;
+  border:1px solid rgba(174,194,176,.14);
+  border-radius:15px;
+  color:#dce7da;
+  background:linear-gradient(145deg,rgba(29,46,35,.97),rgba(19,36,32,.97));
+  box-shadow:0 9px 22px rgba(0,0,0,.13),inset 0 1px 0 rgba(255,255,255,.025);
+}
+html[data-theme="dark"] #librarianSection .attendance-overview-card::after {
+  position:absolute;
+  right:-22px;
+  bottom:-34px;
+  width:88px;
+  height:88px;
+  border:1px solid rgba(174,194,176,.09);
+  border-radius:50%;
+  box-shadow:0 0 0 13px rgba(174,194,176,.025);
+  content:"";
+}
+html[data-theme="dark"] #librarianSection .attendance-overview-card>span {
+  color:#a5b4a5;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.035em;
+}
+html[data-theme="dark"] #librarianSection .attendance-overview-card strong {
+  color:#e8eddf;
+  font-size:29px;
+  font-weight:800;
+  letter-spacing:-.055em;
+  line-height:1;
+}
+html[data-theme="dark"] #librarianSection .attendance-overview-card small { color:#829587; font-size:10px; }
+html[data-theme="dark"] #librarianSection .attendance-overview-primary {
+  border-color:rgba(174,194,176,.23);
+  background:
+    radial-gradient(circle at 95% 0%,rgba(174,194,176,.12),transparent 43%),
+    linear-gradient(145deg,#294635,#203c37);
+}
+html[data-theme="dark"] #librarianSection .attendance-overview-primary strong { color:#d5e4c9; }
+html[data-theme="dark"] #librarianSection .attendance-card {
+  gap:17px;
+  padding:clamp(17px,2.5vw,25px);
+  border-radius:18px;
+  box-shadow:0 12px 30px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.025);
+}
+html[data-theme="dark"] #librarianSection .attendance-card-heading {
+  align-items:flex-start;
+  gap:14px;
+  padding-bottom:15px;
+  border-bottom:1px solid rgba(174,194,176,.12);
+}
+html[data-theme="dark"] #librarianSection .attendance-card-heading h4 {
+  margin:6px 0;
+  color:#edf2e8;
+  font-size:17px;
+  letter-spacing:-.025em;
+}
+html[data-theme="dark"] #librarianSection .attendance-card-heading p {
+  margin:0;
+  color:#9eafa2;
+  font-size:11px;
+  line-height:1.65;
+}
+html[data-theme="dark"] #librarianSection .attendance-step {
+  display:grid;
+  width:35px;
+  height:35px;
+  flex:0 0 35px;
+  place-items:center;
+  border:1px solid rgba(190,176,139,.18);
+  border-radius:11px;
+  color:#d8c8a4;
+  background:rgba(157,133,88,.1);
+  font-size:11px;
+  font-weight:850;
+}
+html[data-theme="dark"] #librarianSection .scanner-method-hints {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+html[data-theme="dark"] #librarianSection .scanner-method-hints>span {
+  display:grid;
+  gap:5px;
+  padding:13px 14px;
+  border:1px solid rgba(174,194,176,.13);
+  border-radius:12px;
+  background:rgba(9,22,17,.27);
+}
+html[data-theme="dark"] #librarianSection .scanner-method-hints b {
+  color:#d5e2cf;
+  font-size:11px;
+}
+html[data-theme="dark"] #librarianSection .scanner-method-hints small {
+  color:#91a294;
+  font-size:10px;
+  line-height:1.6;
+}
+html[data-theme="dark"] #librarianSection .attendance-scan-form {
+  display:grid;
+  grid-template-columns:minmax(190px,.75fr) minmax(260px,1.5fr) auto;
+  align-items:end;
+  gap:11px;
+  padding:15px;
+  border:1px solid rgba(174,194,176,.13);
+  border-radius:14px;
+  background:rgba(9,22,17,.25);
+}
+html[data-theme="dark"] #librarianSection .attendance-scan-form label,
+html[data-theme="dark"] #librarianSection .attendance-capacity-form label {
+  display:grid;
+  gap:7px;
+  color:#bdcabb;
+  font-size:10px;
+  font-weight:750;
+}
+html[data-theme="dark"] #librarianSection .attendance-scan-form input,
+html[data-theme="dark"] #librarianSection .attendance-scan-form select,
+html[data-theme="dark"] #librarianSection .attendance-capacity-form input {
+  width:100%;
+  min-width:0;
+  min-height:44px;
+  padding:0 12px;
+  border:1px solid rgba(174,194,176,.2);
+  border-radius:10px;
+  color:#edf3ed;
+  background:#14271e;
+  box-shadow:none;
+}
+html[data-theme="dark"] #librarianSection .attendance-scan-form input::placeholder { color:#718476; }
+html[data-theme="dark"] #librarianSection .attendance-scan-form select option { color:#edf3ed;background:#14271e; }
+html[data-theme="dark"] #librarianSection .attendance-scan-form .btn {
+  min-height:44px;
+  padding-inline:17px;
+  white-space:nowrap;
+}
+html[data-theme="dark"] #librarianSection .attendance-instruction {
+  padding:12px 14px;
+  border:1px solid rgba(174,194,176,.16);
+  border-left:3px solid #a7c39e;
+  border-radius:10px;
+  color:#c4d2c1;
+  background:rgba(105,145,107,.09);
+  font-size:11px;
+  line-height:1.6;
+}
+html[data-theme="dark"] #librarianSection .attendance-camera-button {
+  min-height:42px;
+  color:#d9e4d6;
+  border-color:rgba(174,194,176,.2);
+  background:rgba(10,23,17,.3);
+}
+html[data-theme="dark"] #librarianSection .attendance-camera-box {
+  display:grid;
+  justify-items:center;
+  gap:12px;
+  padding:15px;
+  border:1px solid rgba(174,194,176,.15);
+  border-radius:14px;
+  background:rgba(7,17,13,.48);
+}
+html[data-theme="dark"] #librarianSection .attendance-camera-box video {
+  width:min(100%,620px);
+  max-height:360px;
+  border:1px solid rgba(174,194,176,.18);
+  border-radius:12px;
+  background:#07120c;
+  object-fit:cover;
+}
+html[data-theme="dark"] #librarianSection .scanner-camera-help { color:#9eafa2; font-size:11px; text-align:center; }
+html[data-theme="dark"] #librarianSection .attendance-capacity-visual {
+  display:grid;
+  grid-template-columns:auto minmax(90px,1fr) auto;
+  align-items:center;
+  gap:16px;
+  padding:16px;
+  border:1px solid rgba(174,194,176,.13);
+  border-radius:13px;
+  background:rgba(9,22,17,.25);
+}
+html[data-theme="dark"] #librarianSection .attendance-capacity-visual>div:first-child { display:grid; gap:4px; }
+html[data-theme="dark"] #librarianSection .attendance-capacity-visual strong { color:#e7eddf; font-size:25px; letter-spacing:-.04em; }
+html[data-theme="dark"] #librarianSection .attendance-capacity-visual strong small { color:#93a393; font-size:14px; }
+html[data-theme="dark"] #librarianSection .attendance-capacity-visual>div:first-child>span { color:#93a393; font-size:10px; }
+html[data-theme="dark"] #librarianSection .attendance-capacity-track {
+  height:9px;
+  overflow:hidden;
+  border-radius:99px;
+  background:rgba(174,194,176,.13);
+}
+html[data-theme="dark"] #librarianSection .attendance-capacity-track span {
+  display:block;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#789b7b,#c6c59e);
+  box-shadow:0 0 14px rgba(169,197,166,.18);
+}
+html[data-theme="dark"] #librarianSection .attendance-capacity-visual>b { color:#c7d5c2; font-size:10px; white-space:nowrap; }
+html[data-theme="dark"] #librarianSection .attendance-capacity-form {
+  display:flex;
+  align-items:end;
+  gap:11px;
+  max-width:480px;
+}
+html[data-theme="dark"] #librarianSection .attendance-capacity-form label { flex:1; }
+html[data-theme="dark"] #librarianSection .attendance-capacity-form .btn { min-height:43px; white-space:nowrap; }
+html[data-theme="dark"] #librarianSection .attendance-history-card .table-responsive {
+  overflow:auto;
+  border:1px solid rgba(174,194,176,.13);
+  border-radius:12px;
+}
+html[data-theme="dark"] #librarianSection .attendance-history-card .data-table { min-width:650px; }
+html[data-theme="dark"] #librarianSection .attendance-history-card .data-table th {
+  padding:13px 14px;
+  color:#d5e1d0;
+  background:rgba(102,143,105,.17);
+  font-size:9px;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+html[data-theme="dark"] #librarianSection .attendance-history-card .data-table td {
+  padding:13px 14px;
+  color:#d1ddd0;
+  border-color:rgba(174,194,176,.1);
+  font-size:11px;
+}
+html[data-theme="dark"] #librarianSection .attendance-status {
+  display:inline-flex;
+  align-items:center;
+  padding:5px 9px;
+  border:1px solid rgba(174,194,176,.16);
+  border-radius:999px;
+  font-size:9px;
+  font-weight:800;
+  white-space:nowrap;
+}
+html[data-theme="dark"] #librarianSection .attendance-status.is-inside {
+  color:#d3e5c9;
+  border-color:rgba(155,192,143,.22);
+  background:rgba(104,151,91,.14);
+}
+html[data-theme="dark"] #librarianSection .attendance-status.is-outside {
+  color:#d8c9a8;
+  border-color:rgba(190,176,139,.2);
+  background:rgba(157,133,88,.1);
+}
+html[data-theme="dark"] #librarianSection .attendance-empty { color:#91a294 !important; text-align:center; }
+
+@media(max-width:900px) {
+  html[data-theme="dark"] #librarianSection .attendance-overview { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  html[data-theme="dark"] #librarianSection .attendance-scan-form { grid-template-columns:1fr 1.4fr; }
+  html[data-theme="dark"] #librarianSection .attendance-scan-form .btn { grid-column:1/-1; }
+}
+@media(max-width:620px) {
+  html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .catalogue-cover { min-height:135px; padding:10px; }
+  html[data-theme="dark"] #libShelfSection .catalogue-card.is-ebook .book-details { padding:12px; }
+  html[data-theme="dark"] #librarianSection .attendance-header { align-items:flex-start; flex-direction:column; }
+  html[data-theme="dark"] #librarianSection .attendance-live { align-self:flex-start; }
+  html[data-theme="dark"] #librarianSection .attendance-overview { gap:8px; }
+  html[data-theme="dark"] #librarianSection .attendance-overview-card { min-height:98px; padding:13px; }
+  html[data-theme="dark"] #librarianSection .attendance-overview-card strong { font-size:25px; }
+  html[data-theme="dark"] #librarianSection .attendance-card { padding:15px; border-radius:15px; }
+  html[data-theme="dark"] #librarianSection .scanner-method-hints { grid-template-columns:1fr; }
+  html[data-theme="dark"] #librarianSection .attendance-scan-form { grid-template-columns:1fr; padding:12px; }
+  html[data-theme="dark"] #librarianSection .attendance-scan-form .btn { grid-column:auto; width:100%; }
+  html[data-theme="dark"] #librarianSection .attendance-capacity-visual { grid-template-columns:1fr; gap:11px; }
+  html[data-theme="dark"] #librarianSection .attendance-capacity-visual>b { justify-self:start; }
+  html[data-theme="dark"] #librarianSection .attendance-capacity-form { max-width:none; flex-direction:column; align-items:stretch; }
+  html[data-theme="dark"] #librarianSection .attendance-capacity-form .btn { width:100%; }
+}
