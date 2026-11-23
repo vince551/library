@@ -395,3 +395,11 @@
   #librarianSection .attendance-capacity-form label { flex:1; }
   #librarianSection .attendance-capacity-form .btn { width:100%; }
 }
+
+/* QR / barcode scanner feedback */
+#librarianSection .attendance-scan-feedback { margin-top:9px; padding:11px 13px; border:1px solid #dce8e1; border-radius:10px; color:#405c4c; background:#f7faf8; font-size:11px; line-height:1.5; }
+#librarianSection .attendance-scan-feedback.is-processing { border-color:#d7e7f2; color:#315b78; background:#f3f8fc; }
+#librarianSection .attendance-scan-feedback.is-success { border-color:#cce8d8; color:#176342; background:#f0faf4; }
+#librarianSection .attendance-scan-feedback.is-error { border-color:#f0d4d1; color:#9a3933; background:#fff6f5; }
+#librarianSection .attendance-scan-form .btn:disabled { cursor:not-allowed; opacity:.55; }
+#librarianSection .attendance-camera-box video { display:block; width:min(100%,620px); max-height:360px; border:1px solid #dce7e0; border-radius:12px; background:#101b1d; object-fit:cover; }

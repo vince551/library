@@ -3,11 +3,11 @@ import { useLibrary } from "../../store/LibraryProvider";
 import { useToast } from "../../store/ToastProvider";
 import { errorMessage, formatDate } from "../../lib/format";
 
-const DEFAULT_INSTRUCTION = "Select an action, then scan the relevant membership card or book-copy label.";
+const DEFAULT_INSTRUCTION = "Choose an action, then scan the member card or individual book-copy label.";
 const SCAN_MODES = [
   { value: "check-in", label: "Member check-in" },
   { value: "check-out", label: "Member check-out" },
-  { value: "issue-book", label: "Issue book (scan member, then copy)" },
+  { value: "issue-book", label: "Issue book (member, then copy)" },
   { value: "return-book", label: "Return book (scan copy)" }
 ];
 
@@ -19,6 +19,7 @@ export function AttendanceTab({ active }) {
   const [code, setCode] = useState("");
   const [scanning, setScanning] = useState(false);
   const [hint, setHint] = useState("");
+  const [scanFeedback, setScanFeedback] = useState(null);
   const [capacityInput, setCapacityInput] = useState(String(capacity));
 
   const videoRef = useRef(null);
@@ -33,22 +34,43 @@ export function AttendanceTab({ active }) {
   useEffect(() => { memberRef.current = scanMemberCode; }, [scanMemberCode]);
   useEffect(() => { setCapacityInput(String(capacity)); }, [capacity]);
 
-  // A scanned code is only processed once, even if the detector reports the
-  // same value on several consecutive frames.
   const scanHandler = useCallback(async (rawCode) => {
-    const value = String(rawCode || "").trim();
-    if (!value || busyRef.current) return;
+    const value = String(rawCode || "").replace(/[\\r\\n]+$/g, "").trim();
+    if (!value || busyRef.current) return false;
+
     const now = Date.now();
     const currentMode = modeRef.current;
-    if (currentMode === "issue-book" && memberRef.current && value === memberRef.current) return;
-    if (value === lastScanRef.current && now - lastScanAtRef.current < 1600) return;
+    const awaitingCopy = currentMode === "issue-book" && Boolean(memberRef.current);
+
+    if (awaitingCopy && value.toUpperCase() === String(memberRef.current).toUpperCase()) return false;
+    if (value === lastScanRef.current && now - lastScanAtRef.current < 1800) return false;
+
     lastScanRef.current = value;
     lastScanAtRef.current = now;
     busyRef.current = true;
-    const hadMember = Boolean(memberRef.current);
+    setScanFeedback({ type: "processing", message: "Reading code and verifying it…" });
+
     try {
       const processed = await processUnifiedCode(value, currentMode);
-      if (processed && (currentMode !== "issue-book" || hadMember)) setScanning(false);
+      if (!processed) {
+        setScanFeedback({ type: "error", message: "This code was not accepted. Check the scan and try again." });
+        return false;
+      }
+
+      if (currentMode === "issue-book" && !awaitingCopy) {
+        setScanFeedback({ type: "success", message: "Member verified. Scan the individual book-copy label next." });
+      } else {
+        const message = currentMode === "issue-book"
+          ? "Book issue completed successfully."
+          : currentMode === "return-book"
+            ? "Book return completed successfully."
+            : currentMode === "check-in"
+              ? "Member checked in successfully."
+              : "Member checked out successfully.";
+        setScanFeedback({ type: "success", message });
+        setScanning(false);
+      }
+      return true;
     } finally {
       busyRef.current = false;
     }
@@ -60,67 +82,52 @@ export function AttendanceTab({ active }) {
   useEffect(() => {
     if (!scanning) return undefined;
     let disposed = false;
-    let stream = null;
-    let frame = 0;
     let controls = null;
 
     const run = async () => {
       const video = videoRef.current;
       if (!video) return;
+
       if (!navigator.mediaDevices?.getUserMedia) {
-        showToast("Camera access is unavailable. Use a USB barcode scanner connected to the code field.", "error");
+        showToast("Camera access is unavailable in this browser. Use a USB/Bluetooth scanner or the manual code field.", "error");
         setScanning(false);
         return;
       }
-      try {
-        if ("BarcodeDetector" in window) {
-          try {
-            const formats = ["code_128", "qr_code", "ean_13", "ean_8", "upc_a", "upc_e"];
-            const supported = await window.BarcodeDetector.getSupportedFormats?.();
-            const usable = supported ? formats.filter(format => supported.includes(format)) : formats;
-            if (usable.length) {
-              const detector = new window.BarcodeDetector({ formats: usable });
-              stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } });
-              if (disposed) {
-                stream.getTracks().forEach(track => track.stop());
-                return;
-              }
-              video.srcObject = stream;
-              await video.play();
-              const loop = async () => {
-                if (disposed) return;
-                try {
-                  if (!busyRef.current) {
-                    const codes = await detector.detect(video);
-                    if (codes.length && codes[0].rawValue) await handlerRef.current(codes[0].rawValue);
-                  }
-                } catch (_) { /* skip this frame */ }
-                if (!disposed) frame = window.requestAnimationFrame(loop);
-              };
-              setHint("Camera ready. Scan a membership card or book-copy label.");
-              loop();
-              return;
-            }
-          } catch (_) {
-            if (stream) stream.getTracks().forEach(track => track.stop());
-            stream = null;
-            video.srcObject = null;
-          }
-        }
 
+      try {
+        setHint("Requesting camera access…");
         const { BrowserMultiFormatReader } = await import("@zxing/browser");
         if (disposed) return;
+
         const reader = new BrowserMultiFormatReader();
-        setHint("Loading the compatible barcode and QR camera reader…");
-        controls = await reader.decodeFromVideoDevice(undefined, video, result => {
-          if (result) void handlerRef.current(result.getText());
-        });
-        setHint("Camera ready. Scan a membership card or book-copy label.");
-      } catch (error) {
-        showToast(
-          "Could not start camera scanning: " + errorMessage(error) + ". Check camera permission and use HTTPS, or connect a USB scanner.",
-          "error"
+        controls = await reader.decodeFromConstraints(
+          {
+            audio: false,
+            video: {
+              facingMode: { ideal: "environment" },
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            }
+          },
+          video,
+          result => {
+            if (result && !disposed) void handlerRef.current(result.getText());
+          }
         );
+
+        if (disposed) {
+          controls?.stop();
+          return;
+        }
+        setHint("Camera ready. Hold the QR code or barcode steadily inside the frame.");
+      } catch (error) {
+        if (disposed) return;
+        const detail = error?.name === "NotAllowedError"
+          ? "Camera permission was denied."
+          : error?.name === "NotFoundError"
+            ? "No camera was found on this device."
+            : errorMessage(error);
+        showToast("Could not start camera scanning: " + detail + " Use HTTPS, allow camera access, or connect a USB scanner.", "error");
         setScanning(false);
       }
     };
@@ -129,11 +136,12 @@ export function AttendanceTab({ active }) {
 
     return () => {
       disposed = true;
-      window.cancelAnimationFrame(frame);
-      try { controls?.stop(); } catch (_) { /* reader already stopped */ }
-      if (stream) stream.getTracks().forEach(track => track.stop());
+      try { controls?.stop(); } catch (_) { /* camera may already be stopped */ }
       const video = videoRef.current;
-      if (video) video.srcObject = null;
+      if (video) {
+        video.pause();
+        video.srcObject = null;
+      }
       setHint("");
       resetScanMember();
     };
@@ -143,9 +151,18 @@ export function AttendanceTab({ active }) {
     event.preventDefault();
     const value = code.trim();
     if (!value) return;
-    await processUnifiedCode(value, mode);
+    await handlerRef.current(value);
     setCode("");
     codeRef.current?.focus();
+  };
+
+  const changeMode = (nextMode) => {
+    setMode(nextMode);
+    modeRef.current = nextMode;
+    lastScanRef.current = "";
+    lastScanAtRef.current = 0;
+    setScanFeedback(null);
+    resetScanMember();
   };
 
   const submitCapacity = async (event) => {
@@ -160,7 +177,7 @@ export function AttendanceTab({ active }) {
 
   const inside = attendance.filter(item => item.status === "In library").length;
   const instruction = hint || (scanMemberCode
-    ? "Member scanned. Now scan the individual book-copy barcode."
+    ? "Member verified. Now scan the individual book-copy barcode."
     : DEFAULT_INSTRUCTION);
 
   return (
@@ -176,21 +193,22 @@ export function AttendanceTab({ active }) {
         <article className="attendance-overview-card"><span>Attendance records</span><strong>{attendance.length}</strong><small>Recorded visits</small></article>
       </div>
       <section className="attendance-card">
-        <div className="attendance-card-heading"><div><span className="attendance-kicker">01 · SCAN &amp; PROCESS</span><h4>Smart barcode &amp; QR scanner</h4><p>Use a USB barcode scanner or the rear camera on a phone or tablet.</p></div><span className="attendance-step">01</span></div>
+        <div className="attendance-card-heading"><div><span className="attendance-kicker">01 · SCAN &amp; PROCESS</span><h4>Smart barcode &amp; QR scanner</h4><p>Scan membership cards and book-copy labels using a phone camera or external scanner.</p></div><span className="attendance-step">01</span></div>
         <div className="scanner-method-hints">
-          <span><b>USB scanner</b><small>Focus the code field and scan. Configure the scanner to send Enter after each scan.</small></span>
-          <span><b>Phone camera</b><small>Allow camera access and hold the barcode or QR code inside the frame.</small></span>
+          <span><b>USB / Bluetooth scanner</b><small>Click the code field and scan. The scanner should send Enter after each code.</small></span>
+          <span><b>Phone camera</b><small>Allow camera access and hold the QR code or barcode inside the frame.</small></span>
         </div>
         <form id="attendanceForm" className="inline-form attendance-scan-form" onSubmit={submitCode}>
-          <label>Scanner mode<select name="action" value={mode} onChange={event => setMode(event.target.value)}>{SCAN_MODES.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
-          <label className="attendance-code-field">Scan / enter barcode<input id="attendanceCodeInput" ref={codeRef} name="libraryNumber" type="text" required autoComplete="off" autoCapitalize="off" spellCheck={false} placeholder="Click here, then scan CODE-128 or QR code" value={code} onChange={event => setCode(event.target.value)} /></label>
-          <button className="btn btn-primary" type="submit">Process scan</button>
+          <label>Scanner mode<select name="action" value={mode} onChange={event => changeMode(event.target.value)}>{SCAN_MODES.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
+          <label className="attendance-code-field">Scan / enter code<input id="attendanceCodeInput" ref={codeRef} name="libraryNumber" type="text" required autoComplete="off" autoCapitalize="off" spellCheck={false} placeholder="Focus here, then scan a QR code or barcode" value={code} onChange={event => setCode(event.target.value)} /></label>
+          <button className="btn btn-primary" type="submit" disabled={!code.trim()}>Process scan</button>
         </form>
-        <div className="attendance-instruction" role="status">{instruction}</div>
-        <button id="startScannerBtn" className="btn btn-outline attendance-camera-button" type="button" onClick={() => setScanning(true)} disabled={scanning}>Open phone camera scanner</button>
+        <div className="attendance-instruction" role="status" aria-live="polite">{instruction}</div>
+        {scanFeedback ? <div className={"attendance-scan-feedback is-" + scanFeedback.type} role="status" aria-live="polite">{scanFeedback.message}</div> : null}
+        <button id="startScannerBtn" className="btn btn-outline attendance-camera-button" type="button" onClick={() => { setScanFeedback(null); setScanning(true); }} disabled={scanning}>Open phone camera scanner</button>
         <div id="scannerBox" className={"scanner-box attendance-camera-box" + (scanning ? "" : " hidden")}>
-          <video id="scannerVideo" ref={videoRef} playsInline muted></video>
-          <p className="scanner-camera-help">Position the code inside the camera view. The scanner will process it automatically.</p>
+          <video id="scannerVideo" ref={videoRef} playsInline muted autoPlay></video>
+          <p className="scanner-camera-help">Position the code inside the camera view. QR codes and supported barcodes are read automatically.</p>
           <button id="stopScannerBtn" className="btn btn-secondary" type="button" onClick={() => setScanning(false)}>Stop scanner</button>
         </div>
       </section>

@@ -1563,3 +1563,10 @@ html[data-theme="dark"] .catalogue-modal-close {
 @media(max-width:900px) {
   html[data-theme="dark"] #librarianSection .attendance-overview { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
+
+/* Midnight Lagoon scanner feedback */
+html[data-theme="dark"] #librarianSection .attendance-scan-feedback { margin-top:9px; padding:11px 13px; border:1px solid rgba(105,191,195,.2); border-radius:10px; color:#c7e5e5; background:rgba(13,41,56,.72); font-size:11px; line-height:1.5; }
+html[data-theme="dark"] #librarianSection .attendance-scan-feedback.is-processing { border-color:rgba(66,191,196,.3); color:#9ce6e4; background:rgba(22,75,89,.28); }
+html[data-theme="dark"] #librarianSection .attendance-scan-feedback.is-success { border-color:rgba(112,224,206,.32); color:#a9f0dc; background:rgba(23,91,83,.24); }
+html[data-theme="dark"] #librarianSection .attendance-scan-feedback.is-error { border-color:rgba(236,133,120,.3); color:#ffc0b5; background:rgba(104,43,45,.25); }
+html[data-theme="dark"] #librarianSection .attendance-camera-box video { background:#071722; border-color:rgba(66,191,196,.22); }
