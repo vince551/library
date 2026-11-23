@@ -7,6 +7,7 @@ import {
   getLoans,
   returnBook,
   getMemberLoans,
+  getMyLoans,
   getActiveLoanByBarcode
 } from "../controllers/loan.controller.js";
 
@@ -17,6 +18,8 @@ import {
 } from "../middleware/auth.middleware.js";
 
 const router = Router();
+
+router.get("/mine", authenticate, authorize("member"), getMyLoans);
 
 const librarianAccess = [
   authenticate,
