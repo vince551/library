@@ -315,7 +315,7 @@ export async function deleteBook(req, res, next) {
     await client.query("BEGIN");
 
     const bookResult = await client.query(
-      `SELECT id, title
+      `SELECT id, title, cover_image_key
        FROM books
        WHERE id = $1
          AND NOT EXISTS (SELECT 1 FROM ebooks WHERE ebooks.book_id = books.id)
@@ -358,6 +358,9 @@ export async function deleteBook(req, res, next) {
     await client.query("DELETE FROM book_copies WHERE book_id = $1", [parsedId.data]);
     await client.query("DELETE FROM books WHERE id = $1", [parsedId.data]);
     await client.query("COMMIT");
+    if (bookResult.rows[0].cover_image_key) {
+      await removeBookCover(bookResult.rows[0].cover_image_key).catch(error => console.error("Deleted book cover cleanup failed:", error.message));
+    }
 
     return res.json({
       success: true,
