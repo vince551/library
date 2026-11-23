@@ -71,15 +71,27 @@ export function LibraryProvider({ children }) {
     void refreshPublic();
   }, [refreshPublic]);
 
-  const refreshMember = useCallback(async () => true, []);
+  const refreshMember = useCallback(async () => {
+    if (!token) { setMyRequests([]); setMyLoans([]); return false; }
+    const [requestResult, loanResult] = await Promise.allSettled([
+      apiRequest("/requests/mine", { token }),
+      apiRequest("/loans/mine", { token })
+    ]);
+    if (requestResult.status === "fulfilled") setMyRequests(requestResult.value.requests || []);
+    else showToast(requestResult.reason?.message || "Could not load your borrowing requests.", "error");
+    if (loanResult.status === "fulfilled") setMyLoans(loanResult.value.loans || []);
+    else showToast(loanResult.reason?.message || "Could not load your loan history.", "error");
+    return requestResult.status === "fulfilled" && loanResult.status === "fulfilled";
+  }, [token, showToast]);
 
   const refreshAdmin = useCallback(async () => {
     if (!token) return false;
 
-    const [memberResult, bookResult, loanResult, attendanceResult, ebookResult] = await Promise.allSettled([
+    const [memberResult, bookResult, loanResult, requestResult, attendanceResult, ebookResult] = await Promise.allSettled([
       apiRequest("/members", { token }),
       apiRequest("/books/manage", { token }),
       apiRequest("/loans", { token }),
+      apiRequest("/requests", { token }),
       apiRequest("/attendance", { token }),
       apiRequest("/ebooks/manage", { token })
     ]);
@@ -89,6 +101,9 @@ export function LibraryProvider({ children }) {
 
     if (bookResult.status === "fulfilled") setBooks(bookResult.value.books || []);
     if (loanResult.status === "fulfilled") setLoans(loanResult.value.loans || []);
+    else showToast(loanResult.reason?.message || "Could not load loans.", "error");
+    if (requestResult.status === "fulfilled") setRequests(requestResult.value.requests || []);
+    else showToast(requestResult.reason?.message || "Could not load borrowing requests.", "error");
     if (attendanceResult.status === "fulfilled") setAttendance(attendanceResult.value.attendance || []);
     if (ebookResult.status === "fulfilled") setEbooks((ebookResult.value.ebooks || []).map(mapEbook));
 
@@ -98,17 +113,17 @@ export function LibraryProvider({ children }) {
   const resetScanMember = useCallback(() => { setScanMemberCode(""); setScanMemberId(""); }, []);
 
   const requestBook = useCallback(async (id) => {
-    const book = books.find(item => String(item.id) === String(id));
-    if (!book || Number(book.available) < 1) {
-      showToast("This title is not currently available.", "error");
+    if (!token) { showToast("Sign in to request a physical book.", "error"); return false; }
+    try {
+      const result = await apiRequest("/requests", { token, method: "POST", body: { bookId: id } });
+      await Promise.all([refreshMember(), refreshPublic()]);
+      showToast(result.message || "Borrowing request submitted.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not submit this borrowing request.", "error");
       return false;
     }
-    const request = { id:makeId("request"), bookId:book.id, bookTitle:book.title, book_title:book.title, status:"Pending", createdAt:new Date().toISOString(), created_at:new Date().toISOString() };
-    setMyRequests(current => [request, ...current]);
-    setRequests(current => [request, ...current]);
-    showToast("Borrow request added to this demo session.");
-    return true;
-  }, [books, showToast]);
+  }, [token, refreshMember, refreshPublic, showToast]);
 
   const resolveEbookUrl = useCallback(async (book) => {
     if (!book?.id) {
@@ -360,14 +375,29 @@ export function LibraryProvider({ children }) {
   }, [token, refreshAdmin, showToast]);
 
   const processRequest = useCallback(async (id, status) => {
-    setRequests(current => current.map(request => request.id === id ? { ...request, status } : request));
-    showToast("Demo request " + status.toLowerCase() + ".");
-  }, [showToast]);
+    const decision = String(status).toLowerCase() === "approved" ? "approved" : "declined";
+    try {
+      const result = await apiRequest("/requests/" + encodeURIComponent(id), { token, method: "PATCH", body: { decision } });
+      await refreshAdmin();
+      showToast(result.message || "Borrowing request updated.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not update this borrowing request.", "error");
+      return false;
+    }
+  }, [token, refreshAdmin, showToast]);
 
   const returnLoan = useCallback(async (_requestId, id) => {
-    setLoans(current => current.map(loan => loan.id === id ? { ...loan, status:"Returned" } : loan));
-    showToast("Demo return recorded.");
-  }, [showToast]);
+    try {
+      const result = await apiRequest("/loans/return", { token, method: "POST", body: { loanId: id } });
+      await Promise.all([refreshAdmin(), refreshMember(), refreshPublic()]);
+      showToast(result.message || "Book returned successfully.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not return this book.", "error");
+      return false;
+    }
+  }, [token, refreshAdmin, refreshMember, refreshPublic, showToast]);
 
   const publicPosts = useMemo(() => posts, [posts]);
   const announcements = useMemo(() => posts.filter(post => post.type === "announcement"), [posts]);
