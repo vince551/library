@@ -192,11 +192,30 @@ export function LibraryProvider({ children }) {
   }, [token, refreshPublic, refreshAdmin, showToast]);
 
   const deleteBook = useCallback(async (book) => {
-    if (book?.coverUrl?.startsWith("blob:")) URL.revokeObjectURL(book.coverUrl);
-    setBooks(current => current.filter(item => item.id !== book.id));
-    showToast("Book removed from this demo catalogue.");
-    return true;
-  }, [showToast]);
+    if (!token) {
+      showToast("Sign in with a librarian account to delete books.", "error");
+      return false;
+    }
+    if (!book?.id) {
+      showToast("This book is missing its database ID.", "error");
+      return false;
+    }
+
+    try {
+      const result = await apiRequest(`/books/${encodeURIComponent(book.id)}`, {
+        token,
+        method: "DELETE"
+      });
+      if (book.coverUrl?.startsWith("blob:")) URL.revokeObjectURL(book.coverUrl);
+      setBooks(current => current.filter(item => item.id !== book.id));
+      await Promise.all([refreshPublic(), refreshAdmin()]);
+      showToast(result.message || "Book deleted successfully.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not delete this book.", "error");
+      return false;
+    }
+  }, [token, refreshPublic, refreshAdmin, showToast]);
 
   const processUnifiedCode = useCallback(async (rawCode, mode) => {
     const code = String(rawCode || "").trim();
