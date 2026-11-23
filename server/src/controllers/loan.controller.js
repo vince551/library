@@ -449,7 +449,7 @@ export async function getMemberLoans(req, res, next) {
     return res.json({
       success: true,
       count: result.rowCount,
-      loans: result.rows
+      loans: result.rows.map(withEffectiveLoanStatus)
     });
   } catch (error) {
     next(error);
@@ -480,7 +480,7 @@ export async function getActiveLoanByBarcode(req, res, next) {
     if (!result.rowCount) {
       return res.status(404).json({ success: false, message: "No active loan was found for that book-copy barcode." });
     }
-    return res.json({ success: true, loan: result.rows[0] });
+    return res.json({ success: true, loan: withEffectiveLoanStatus(result.rows[0]) });
   } catch (error) {
     next(error);
   }
