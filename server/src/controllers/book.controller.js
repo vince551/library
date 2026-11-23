@@ -1,9 +1,69 @@
 
 import { z } from "zod";
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { pool } from "../config/database.js";
 
-const bookSchema = z.object({
+
+const MAX_COVER_BYTES = 5 * 1024 * 1024;
+const COVER_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+function storageConfig() {
+  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_BUCKET } = process.env;
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_BUCKET) {
+    const error = new Error("Book cover storage is not configured on the API server.");
+    error.status = 503; throw error;
+  }
+  return { baseUrl: SUPABASE_URL.trim().replace(/\/+$/, "").replace(/\/(?:rest|storage)\/v1$/i, ""), key: SUPABASE_SERVICE_ROLE_KEY, bucket: SUPABASE_BUCKET };
+}
+function storagePath(key) { return key.split("/").map(encodeURIComponent).join("/"); }
+async function storageCall(path, options = {}) {
+  const config = storageConfig();
+  const response = await fetch(`${config.baseUrl}/storage/v1/${path}`, {
+    ...options,
+    headers: { apikey: config.key, Authorization: `Bearer ${config.key}`,
+      ...(options.body && !Buffer.isBuffer(options.body) ? { "Content-Type": "application/json" } : {}), ...options.headers }
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    const error = new Error("Book cover storage request failed" + (detail ? `: ${detail.slice(0, 250)}` : "."));
+    error.status = response.status === 413 ? 413 : 502; throw error;
+  }
+  return response;
+}
+function decodeCover(data) {
+  const value = String(data || "").replace(/^data:[^;]+;base64,/, "");
+  if (!value || !/^[A-Za-z0-9+/]*={0,2}$/.test(value)) throw new Error("The book cover image data is invalid.");
+  const buffer = Buffer.from(value, "base64");
+  if (!buffer.length || buffer.length > MAX_COVER_BYTES) throw new Error("Book cover images must be 5 MB or smaller.");
+  return buffer;
+}
+async function uploadBookCover(bookId, data, contentType) {
+  if (!COVER_TYPES.has(contentType)) throw new Error("Book covers must be JPEG, PNG or WebP.");
+  const buffer = decodeCover(data);
+  const ext = contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : "jpg";
+  const key = `covers/physical/${bookId}/${randomUUID()}.${ext}`;
+  const config = storageConfig();
+  await storageCall(`object/${encodeURIComponent(config.bucket)}/${storagePath(key)}`, {
+    method: "POST", headers: { "Content-Type": contentType, "x-upsert": "false" }, body: buffer
+  });
+  return key;
+}
+async function removeBookCover(key) {
+  if (!key) return;
+  const config = storageConfig();
+  await storageCall(`object/${encodeURIComponent(config.bucket)}`, { method: "DELETE", body: JSON.stringify({ prefixes: [key] }) });
+}
+async function signedBookCover(key) {
+  const config = storageConfig();
+  const response = await storageCall(`object/sign/${encodeURIComponent(config.bucket)}/${storagePath(key)}`, {
+    method: "POST", body: JSON.stringify({ expiresIn: 3600 })
+  });
+  const data = await response.json();
+  const signed = data.signedURL || data.signedUrl;
+  if (!signed) throw new Error("Storage did not return a signed cover URL.");
+  return signed.startsWith("http") ? signed : `${config.baseUrl}/storage/v1${signed.startsWith("/") ? "" : "/"}${signed}`;
+}
+function withCoverUrl(row) { return { ...row, coverUrl: row.cover_image_key ? `/api/books/${row.id}/cover` : "" }; }
+\nconst bookSchema = z.object({
   title: z.string().trim().min(1).max(255),
   author: z.string().trim().min(1).max(255),
   isbn: z.string().trim().max(20).nullable().optional(),
@@ -342,72 +402,64 @@ export async function deleteBook(req, res, next) {
 
 // Register a physical title and all its copies atomically.
 export async function registerPhysicalBook(req, res, next) {
-  const schema = z.object({
-    title: z.string().trim().min(1).max(255),
-    author: z.string().trim().min(1).max(255),
-    isbn: z.string().trim().max(20).optional().default(""),
-    description: z.string().trim().max(10000).optional().default(""),
-    category: z.string().trim().min(1).max(80),
-    quantity: z.number().int().min(1).max(400)
-  });
-  const parsed = schema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({
-      success: false,
-      message: "Complete the required physical book details.",
-      errors: parsed.error.flatten().fieldErrors
-    });
-  }
-
-  const input = parsed.data;
-  const client = await pool.connect();
+  let coverKey = null;
   try {
-    await client.query("BEGIN");
-    const slug = input.category.toLowerCase().trim()
-      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80) || "general";
-    const categoryResult = await client.query(
-      `INSERT INTO categories (name, slug)
-       VALUES ($1, $2)
-       ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
-       RETURNING id`,
-      [input.category, slug]
-    );
-    const bookResult = await client.query(
-      `INSERT INTO books (title, author, isbn, description, category_id, created_by, is_published)
-       VALUES ($1, $2, $3, $4, $5, $6, TRUE)
-       RETURNING id, title, author, isbn, description, category_id, is_published, created_at`,
-      [input.title, input.author, input.isbn || null, input.description || null, categoryResult.rows[0].id, req.user.id]
-    );
-    const createdBook = bookResult.rows[0];
-    const copies = [];
-    for (let index = 0; index < input.quantity; index += 1) {
-      const barcode = `AMG-${Date.now()}-${randomBytes(4).toString("hex").toUpperCase()}`;
-      const copyResult = await client.query(
-        `INSERT INTO book_copies (book_id, barcode, condition, status)
-         VALUES ($1, $2, 'good', 'available')
-         RETURNING id, book_id, barcode, shelf_location, condition, status, created_at`,
-        [createdBook.id, barcode]
-      );
-      copies.push({ ...copyResult.rows[0], copyNumber: index + 1 });
-    }
-    await client.query("COMMIT");
-    return res.status(201).json({
-      success: true,
-      message: "Physical book and copies saved to the AMG Library database.",
-      book: {
-        ...createdBook,
-        category: input.category,
-        quantity: copies.length,
-        available: copies.length,
-        barcode: copies[0]?.barcode || "",
-        libraryNumber: copies[0]?.barcode || "",
-        copies
-      }
+    const schema = z.object({
+      title: z.string().trim().min(1).max(255), author: z.string().trim().min(1).max(255),
+      isbn: z.string().trim().max(20).optional().default(""),
+      description: z.string().trim().max(10000).optional().default(""),
+      category: z.string().trim().min(1).max(80), quantity: z.number().int().min(1).max(400),
+      coverType: z.string().optional().default(""), coverData: z.string().optional().default("")
     });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ success: false, message: "Complete the required physical book details.", errors: parsed.error.flatten().fieldErrors });
+    const input = parsed.data;
+    const id = randomUUID();
+    if (input.coverData) coverKey = await uploadBookCover(id, input.coverData, input.coverType);
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const slug = input.category.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80) || "general";
+      const categoryResult = await client.query(
+        `INSERT INTO categories (name, slug) VALUES ($1, $2)
+         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name RETURNING id`, [input.category, slug]);
+      const bookResult = await client.query(
+        `INSERT INTO books (id, title, author, isbn, description, category_id, cover_image_key, created_by, is_published)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TRUE)
+         RETURNING id, title, author, isbn, description, category_id, cover_image_key, is_published, created_at`,
+        [id, input.title, input.author, input.isbn || null, input.description || null, categoryResult.rows[0].id, coverKey, req.user.id]);
+      const createdBook = bookResult.rows[0], copies = [];
+      for (let index = 0; index < input.quantity; index += 1) {
+        const barcode = `AMG-${Date.now()}-${randomBytes(4).toString("hex").toUpperCase()}`;
+        const copyResult = await client.query(
+          `INSERT INTO book_copies (book_id, barcode, condition, status)
+           VALUES ($1, $2, 'good', 'available')
+           RETURNING id, book_id, barcode, shelf_location, condition, status, created_at`, [id, barcode]);
+        copies.push({ ...copyResult.rows[0], copyNumber: index + 1 });
+      }
+      await client.query("COMMIT");
+      return res.status(201).json({ success: true, message: "Physical book, cover and copies saved to the AMG Library database.",
+        book: { ...createdBook, category: input.category, coverUrl: coverKey ? `/api/books/${id}/cover` : "",
+          quantity: copies.length, available: copies.length, barcode: copies[0]?.barcode || "",
+          libraryNumber: copies[0]?.barcode || "", copies } });
+    } catch (error) { await client.query("ROLLBACK").catch(() => {}); throw error; }
+    finally { client.release(); }
   } catch (error) {
-    await client.query("ROLLBACK").catch(() => {});
+    if (coverKey) await removeBookCover(coverKey).catch(() => {});
+    if (error.status) return res.status(error.status).json({ success: false, message: error.message });
+    if (error.message?.includes("cover")) return res.status(400).json({ success: false, message: error.message });
     handleDatabaseError(error, res, next);
-  } finally {
-    client.release();
   }
+}
+
+export async function streamBookCover(req, res, next) {
+  try {
+    const id = z.string().uuid().safeParse(req.params.id);
+    if (!id.success) return res.status(400).end();
+    const result = await pool.query(
+      `SELECT cover_image_key FROM books WHERE id = $1 AND is_published = TRUE
+       AND NOT EXISTS (SELECT 1 FROM ebooks WHERE ebooks.book_id = books.id)`, [id.data]);
+    if (!result.rowCount || !result.rows[0].cover_image_key) return res.status(404).end();
+    return res.redirect(302, await signedBookCover(result.rows[0].cover_image_key));
+  } catch (error) { next(error); }
 }
