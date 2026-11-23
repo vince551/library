@@ -63,7 +63,8 @@ async function signedBookCover(key) {
   return signed.startsWith("http") ? signed : `${config.baseUrl}/storage/v1${signed.startsWith("/") ? "" : "/"}${signed}`;
 }
 function withCoverUrl(row) { return { ...row, coverUrl: row.cover_image_key ? `/api/books/${row.id}/cover` : "" }; }
-\nconst bookSchema = z.object({
+
+const bookSchema = z.object({
   title: z.string().trim().min(1).max(255),
   author: z.string().trim().min(1).max(255),
   isbn: z.string().trim().max(20).nullable().optional(),
@@ -160,7 +161,7 @@ export async function getBooks(req, res, next) {
       success: true,
       page,
       limit,
-      books: result.rows.map(withCoverUrl)
+      books: result.rows.map(withCoverUrl).map(withCoverUrl)
     });
   } catch (error) {
     next(error);
@@ -200,7 +201,7 @@ export async function getManageBooks(req, res, next) {
     return res.json({
       success: true,
       count: result.rowCount,
-      books: result.rows
+      books: result.rows.map(withCoverUrl)
     });
   } catch (error) {
     next(error);
