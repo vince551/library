@@ -53,6 +53,115 @@ WHERE membership_number ~ '^AMG-M-[0-9]+$'
 ON CONFLICT (number_type) DO UPDATE
 SET last_value = GREATEST(amg_number_counters.last_value, EXCLUDED.last_value);
 
+INSERT INTO amg_number_counters (number_type, last_value)
+SELECT 'C', COALESCE(MAX(SUBSTRING(barcode FROM '^AMG-C-([0-9]+)
+WITH pending AS (
+  SELECT id FROM books WHERE catalogue_number IS NULL ORDER BY created_at, id
+), numbered AS (
+  SELECT id, next_amg_number('B') AS number FROM pending
+)
+UPDATE books b SET catalogue_number = numbered.number
+FROM numbered WHERE b.id = numbered.id;
+
+WITH pending AS (
+  SELECT id FROM ebooks WHERE ebook_number IS NULL ORDER BY created_at, id
+), numbered AS (
+  SELECT id, next_amg_number('E') AS number FROM pending
+)
+UPDATE ebooks e SET ebook_number = numbered.number
+FROM numbered WHERE e.id = numbered.id;
+
+WITH pending AS (
+  SELECT id FROM loans WHERE loan_number IS NULL ORDER BY issued_at, id
+), numbered AS (
+  SELECT id, next_amg_number('L') AS number FROM pending
+)
+UPDATE loans l SET loan_number = numbered.number
+FROM numbered WHERE l.id = numbered.id;
+
+WITH pending AS (
+  SELECT id FROM borrow_requests WHERE request_number IS NULL ORDER BY created_at, id
+), numbered AS (
+  SELECT id, next_amg_number('R') AS number FROM pending
+)
+UPDATE borrow_requests r SET request_number = numbered.number
+FROM numbered WHERE r.id = numbered.id;
+
+WITH pending AS (
+  SELECT id FROM attendance_records WHERE attendance_number IS NULL ORDER BY scanned_at, id
+), numbered AS (
+  SELECT id, next_amg_number('A') AS number FROM pending
+)
+UPDATE attendance_records a SET attendance_number = numbered.number
+FROM numbered WHERE a.id = numbered.id;
+
+CREATE UNIQUE INDEX IF NOT EXISTS books_catalogue_number_uidx
+  ON books (catalogue_number) WHERE catalogue_number IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ebooks_ebook_number_uidx
+  ON ebooks (ebook_number) WHERE ebook_number IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS loans_loan_number_uidx
+  ON loans (loan_number) WHERE loan_number IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS borrow_requests_request_number_uidx
+  ON borrow_requests (request_number) WHERE request_number IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS attendance_records_number_uidx
+  ON attendance_records (attendance_number) WHERE attendance_number IS NOT NULL;
+)::BIGINT), 0)
+FROM book_copies
+WHERE barcode ~ '^AMG-C-[0-9]+
+WITH pending AS (
+  SELECT id FROM books WHERE catalogue_number IS NULL ORDER BY created_at, id
+), numbered AS (
+  SELECT id, next_amg_number('B') AS number FROM pending
+)
+UPDATE books b SET catalogue_number = numbered.number
+FROM numbered WHERE b.id = numbered.id;
+
+WITH pending AS (
+  SELECT id FROM ebooks WHERE ebook_number IS NULL ORDER BY created_at, id
+), numbered AS (
+  SELECT id, next_amg_number('E') AS number FROM pending
+)
+UPDATE ebooks e SET ebook_number = numbered.number
+FROM numbered WHERE e.id = numbered.id;
+
+WITH pending AS (
+  SELECT id FROM loans WHERE loan_number IS NULL ORDER BY issued_at, id
+), numbered AS (
+  SELECT id, next_amg_number('L') AS number FROM pending
+)
+UPDATE loans l SET loan_number = numbered.number
+FROM numbered WHERE l.id = numbered.id;
+
+WITH pending AS (
+  SELECT id FROM borrow_requests WHERE request_number IS NULL ORDER BY created_at, id
+), numbered AS (
+  SELECT id, next_amg_number('R') AS number FROM pending
+)
+UPDATE borrow_requests r SET request_number = numbered.number
+FROM numbered WHERE r.id = numbered.id;
+
+WITH pending AS (
+  SELECT id FROM attendance_records WHERE attendance_number IS NULL ORDER BY scanned_at, id
+), numbered AS (
+  SELECT id, next_amg_number('A') AS number FROM pending
+)
+UPDATE attendance_records a SET attendance_number = numbered.number
+FROM numbered WHERE a.id = numbered.id;
+
+CREATE UNIQUE INDEX IF NOT EXISTS books_catalogue_number_uidx
+  ON books (catalogue_number) WHERE catalogue_number IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ebooks_ebook_number_uidx
+  ON ebooks (ebook_number) WHERE ebook_number IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS loans_loan_number_uidx
+  ON loans (loan_number) WHERE loan_number IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS borrow_requests_request_number_uidx
+  ON borrow_requests (request_number) WHERE request_number IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS attendance_records_number_uidx
+  ON attendance_records (attendance_number) WHERE attendance_number IS NOT NULL;
+
+ON CONFLICT (number_type) DO UPDATE
+SET last_value = GREATEST(amg_number_counters.last_value, EXCLUDED.last_value);
+
 -- Backfill catalog/operational references without changing primary keys or relationships.
 WITH pending AS (
   SELECT id FROM books WHERE catalogue_number IS NULL ORDER BY created_at, id
