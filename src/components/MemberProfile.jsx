@@ -36,7 +36,7 @@ export function MemberProfile({ active }) {
 
   const stats = [
     ["Requests", myRequests.length],
-    ["Approved", myRequests.filter(item => ["approved", "fulfilled"].includes(String(item.status).toLowerCase())).length],
+    ["Approved", myRequests.filter(item => String(item.status).toLowerCase() === "approved").length],
     ["Active loans", myLoans.filter(item => ["active", "overdue"].includes(String(item.status).toLowerCase())).length],
     ["Returned", myLoans.filter(item => String(item.status).toLowerCase() === "returned").length]
   ];
