@@ -238,11 +238,11 @@ export function AttendanceTab({ active }) {
         <div className="attendance-card-heading"><div><span className="attendance-kicker">03 · ACTIVITY LOG</span><h4>Recent attendance</h4><p>Review member visits and check-in / check-out activity.</p></div><span className="attendance-step">03</span></div>
         <div className="table-responsive">
           <table className="data-table">
-            <thead><tr><th>Member</th><th>Library #</th><th>Check-in</th><th>Check-out</th><th>Status</th></tr></thead>
+            <thead><tr><th>Attendance #</th><th>Member</th><th>Library #</th><th>Check-in</th><th>Check-out</th><th>Status</th></tr></thead>
             <tbody id="attendanceTable">
               {attendance.length ? attendance.map(item => (
-                <tr key={item.id}><td>{item.memberName}</td><td>{item.libraryNumber}</td><td>{formatDate(item.checkInAt)}</td><td>{formatDate(item.checkOutAt)}</td><td><span className={"attendance-status " + (item.status === "In library" ? "is-inside" : "is-outside")}>{item.status}</span></td></tr>
-              )) : <tr><td colSpan="5" className="attendance-empty">No attendance records have been recorded yet.</td></tr>}
+                <tr key={item.id}><td><strong>{item.attendanceNumber || "—"}</strong></td><td>{item.memberName}</td><td>{item.libraryNumber}</td><td>{formatDate(item.checkInAt)}</td><td>{formatDate(item.checkOutAt)}</td><td><span className={"attendance-status " + (item.status === "In library" ? "is-inside" : "is-outside")}>{item.status}</span></td></tr>
+              )) : <tr><td colSpan="6" className="attendance-empty">No attendance records have been recorded yet.</td></tr>}
             </tbody>
           </table>
         </div>
