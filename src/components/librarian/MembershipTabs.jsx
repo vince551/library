@@ -38,9 +38,15 @@ export function BorrowRequestsTab({ active }) {
                         <button className="btn btn-sm btn-success" type="button" onClick={() => processRequest(request.id, "Approved")}>Accept</button>
                         <button className="btn btn-sm btn-danger" type="button" onClick={() => processRequest(request.id, "Declined")}>Decline</button>
                       </>
-                    ) : request.status === "Approved" && loan && loan.status === "Borrowed" ? (
-                      <button className="btn btn-sm btn-outline" type="button" onClick={() => returnLoan(request.id, loanId)}>Return book</button>
-                    ) : "Processed"}
+                    ) : String(request.status).toLowerCase() === "approved" ? (
+                      <span>Approved · Awaiting physical issue</span>
+                    ) : String(request.status).toLowerCase() === "fulfilled" ? (
+                      <span>Issued</span>
+                    ) : String(request.status).toLowerCase() === "declined" ? (
+                      <span>Declined</span>
+                    ) : (
+                      <span>Processed</span>
+                    )}
                   </td>
                 </tr>
               );
