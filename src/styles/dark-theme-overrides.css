@@ -287,3 +287,283 @@ html[data-theme="dark"] .status-badge { border-color: rgba(103,232,249,.22); }
 @media (prefers-reduced-motion: reduce) {
   html[data-theme="dark"] * { scroll-behavior: auto; }
 }
+
+/* --- Editorial art direction: make dark mode feel like its own product --- */
+html[data-theme="dark"] .container { isolation: isolate; }
+html[data-theme="dark"] .section-header,
+html[data-theme="dark"] .featured-heading,
+html[data-theme="dark"] .workspace-section-heading {
+  position: relative;
+}
+html[data-theme="dark"] .section-header h1,
+html[data-theme="dark"] .section-header h2,
+html[data-theme="dark"] .featured-heading h2 {
+  letter-spacing: -.055em;
+  text-wrap: balance;
+}
+html[data-theme="dark"] .eyebrow,
+html[data-theme="dark"] .admin-kicker,
+html[data-theme="dark"] .workspace-eyebrow,
+html[data-theme="dark"] .insight-kicker,
+html[data-theme="dark"] .attendance-kicker {
+  color: #a5b4fc !important;
+  letter-spacing: .17em;
+}
+html[data-theme="dark"] .hero h1 span,
+html[data-theme="dark"] .section-header h2 span {
+  color: #67e8f9;
+  background: linear-gradient(100deg,#c4b5fd 4%,#67e8f9 85%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+html[data-theme="dark"] .hero-bottom-line { color: #9e9abd; border-color: rgba(167,139,250,.2); }
+html[data-theme="dark"] .hero-proof i,
+html[data-theme="dark"] .hero-note-icon { color: #67e8f9; }
+html[data-theme="dark"] .hero-image-note {
+  color: #f0efff;
+  border-color: rgba(167,139,250,.24);
+  background: rgba(20,22,48,.88);
+}
+html[data-theme="dark"] .amg-counter {
+  border-color: rgba(167,139,250,.18);
+  background: linear-gradient(135deg,rgba(35,31,73,.92),rgba(17,35,55,.92));
+}
+html[data-theme="dark"] .amg-counter strong { color: #67e8f9; }
+html[data-theme="dark"] .amg-counter span { color: #b8b6d3; }
+
+/* Varied card hierarchy: not every surface is the same purple rectangle. */
+html[data-theme="dark"] .home-featured-section,
+html[data-theme="dark"] .home-intro,
+html[data-theme="dark"] .home-services,
+html[data-theme="dark"] .home-journey,
+html[data-theme="dark"] .home-levels,
+html[data-theme="dark"] .home-values {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 100% 0%,rgba(103,232,249,.055),transparent 34%),
+    linear-gradient(145deg,rgba(22,24,50,.94),rgba(15,25,45,.94)) !important;
+}
+html[data-theme="dark"] .purpose-card,
+html[data-theme="dark"] .home-feature,
+html[data-theme="dark"] .values-grid article,
+html[data-theme="dark"] .journey-grid article {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(145deg,rgba(31,31,67,.92),rgba(18,31,54,.94)) !important;
+  transition: transform .22s ease,border-color .22s ease,box-shadow .22s ease;
+}
+html[data-theme="dark"] .purpose-card::before,
+html[data-theme="dark"] .home-feature::before,
+html[data-theme="dark"] .values-grid article::before,
+html[data-theme="dark"] .journey-grid article::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(180deg,#a78bfa,#67e8f9);
+  opacity: .85;
+}
+html[data-theme="dark"] .purpose-card:hover,
+html[data-theme="dark"] .home-feature:hover,
+html[data-theme="dark"] .values-grid article:hover,
+html[data-theme="dark"] .journey-grid article:hover,
+html[data-theme="dark"] .featured-book-card:hover,
+html[data-theme="dark"] .book-card:hover,
+html[data-theme="dark"] .catalogue-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(103,232,249,.32) !important;
+  box-shadow: 0 22px 48px rgba(0,0,0,.34),0 0 0 1px rgba(103,232,249,.06);
+}
+html[data-theme="dark"] .featured-book-card,
+html[data-theme="dark"] .book-card,
+html[data-theme="dark"] .catalogue-card {
+  background: linear-gradient(155deg,rgba(28,29,59,.97),rgba(15,29,49,.97)) !important;
+  transition: transform .22s ease,border-color .22s ease,box-shadow .22s ease;
+}
+html[data-theme="dark"] .catalogue-cover,
+html[data-theme="dark"] .featured-book-cover,
+html[data-theme="dark"] .book-cover {
+  background: linear-gradient(145deg,#39256f,#164b62);
+  box-shadow: inset 0 0 0 1px rgba(196,181,253,.13);
+}
+html[data-theme="dark"] .catalogue-format-badge,
+html[data-theme="dark"] .featured-format-tag {
+  color: #17152e !important;
+  background: linear-gradient(110deg,#c4b5fd,#67e8f9);
+}
+
+/* Librarian workspace: distinct operational dashboard, not generic cards. */
+html[data-theme="dark"] #librarianSection .workspace-hero {
+  border-color: rgba(196,181,253,.25);
+  background:
+    radial-gradient(circle at 78% 18%,rgba(103,232,249,.2),transparent 26%),
+    radial-gradient(circle at 12% 100%,rgba(217,119,6,.12),transparent 32%),
+    linear-gradient(118deg,#24164e 0%,#25265d 48%,#0d5364 100%);
+  box-shadow: 0 28px 70px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.1);
+}
+html[data-theme="dark"] #librarianSection .workspace-eyebrow { color: #a5f3fc; }
+html[data-theme="dark"] #librarianSection .workspace-eyebrow::before {
+  background: #67e8f9;
+  box-shadow: 0 0 0 5px rgba(103,232,249,.14);
+}
+html[data-theme="dark"] #librarianSection .workspace-metric,
+html[data-theme="dark"] #librarianSection .insight-summary-card {
+  border-color: rgba(167,139,250,.2);
+  background: linear-gradient(145deg,rgba(34,32,70,.96),rgba(17,35,56,.96));
+  box-shadow: 0 12px 30px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.05);
+}
+html[data-theme="dark"] #librarianSection .workspace-metric strong,
+html[data-theme="dark"] #librarianSection .insight-summary-card strong { color: #67e8f9; }
+html[data-theme="dark"] #librarianSection .workspace-metric span,
+html[data-theme="dark"] #librarianSection .insight-summary-card > span,
+html[data-theme="dark"] #librarianSection .insight-summary-card small { color: #aaa8ca; }
+html[data-theme="dark"] #librarianSection .workspace-module {
+  border-color: rgba(167,139,250,.2);
+  color: #efedff;
+  background: linear-gradient(145deg,rgba(34,32,70,.94),rgba(17,35,56,.96));
+  box-shadow: 0 12px 28px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.045);
+}
+html[data-theme="dark"] #librarianSection .workspace-module:hover {
+  border-color: rgba(103,232,249,.42);
+  box-shadow: 0 18px 38px rgba(0,0,0,.3),0 0 0 1px rgba(103,232,249,.07);
+}
+html[data-theme="dark"] #librarianSection .workspace-module-icon {
+  color: #c4b5fd;
+  background: rgba(124,58,237,.2);
+  box-shadow: inset 0 0 0 1px rgba(196,181,253,.12);
+}
+html[data-theme="dark"] #librarianSection .workspace-module--blue .workspace-module-icon { color:#67e8f9;background:rgba(8,145,178,.18); }
+html[data-theme="dark"] #librarianSection .workspace-module--violet .workspace-module-icon { color:#c4b5fd;background:rgba(124,58,237,.2); }
+html[data-theme="dark"] #librarianSection .workspace-module--amber .workspace-module-icon { color:#fcd34d;background:rgba(217,119,6,.16); }
+html[data-theme="dark"] #librarianSection .workspace-module--rose .workspace-module-icon { color:#fda4af;background:rgba(190,24,93,.16); }
+html[data-theme="dark"] #librarianSection .workspace-module--slate .workspace-module-icon { color:#cbd5e1;background:rgba(100,116,139,.2); }
+html[data-theme="dark"] #librarianSection .workspace-module strong { color:#f0efff; }
+html[data-theme="dark"] #librarianSection .workspace-module small,
+html[data-theme="dark"] #librarianSection .workspace-module-count { color:#aaa8ca; }
+html[data-theme="dark"] #librarianSection .workspace-module-arrow { color:#67e8f9; }
+html[data-theme="dark"] #librarianSection .workspace-section-heading h3,
+html[data-theme="dark"] #librarianSection .insight-header h3,
+html[data-theme="dark"] #librarianSection .attendance-header h3 { color:#f0efff; }
+html[data-theme="dark"] #librarianSection .insight-panel {
+  border-color:rgba(167,139,250,.2);
+  background:linear-gradient(145deg,rgba(29,29,61,.96),rgba(16,31,51,.96));
+  box-shadow:0 14px 32px rgba(0,0,0,.22);
+}
+html[data-theme="dark"] #librarianSection .insight-panel-heading h4 { color:#e8e5ff; }
+html[data-theme="dark"] #librarianSection .insight-total {
+  color:#a5f3fc;
+  background:rgba(8,145,178,.16);
+}
+html[data-theme="dark"] #librarianSection .insight-donut > div {
+  background:#171a37;
+  box-shadow:inset 0 0 0 1px rgba(167,139,250,.16);
+}
+html[data-theme="dark"] #librarianSection .insight-donut strong { color:#f0efff; }
+html[data-theme="dark"] #librarianSection .insight-donut small,
+html[data-theme="dark"] #librarianSection .insight-legend-row { color:#aaa8ca; }
+html[data-theme="dark"] #librarianSection .insight-legend-row strong { color:#e5e2ff; }
+html[data-theme="dark"] #librarianSection .insight-bar-label { color:#d7d4f1; }
+html[data-theme="dark"] #librarianSection .insight-live,
+html[data-theme="dark"] #librarianSection .attendance-live {
+  color:#a5f3fc;
+  border-color:rgba(103,232,249,.2);
+  background:rgba(8,145,178,.12);
+}
+html[data-theme="dark"] #librarianSection .attendance-card,
+html[data-theme="dark"] #librarianSection .attendance-panel,
+html[data-theme="dark"] #librarianSection .scanner-box {
+  color:#eeedff;
+  border-color:rgba(167,139,250,.2);
+  background:linear-gradient(145deg,rgba(29,29,61,.96),rgba(16,31,51,.96));
+}
+html[data-theme="dark"] #librarianSection .workspace-panel-heading {
+  border-color:rgba(167,139,250,.18);
+}
+html[data-theme="dark"] #librarianSection .workspace-panel-heading h2 { color:#f0efff; }
+html[data-theme="dark"] #librarianSection .workspace-back {
+  color:#dcd8ff;
+  border-color:rgba(167,139,250,.22);
+  background:rgba(124,58,237,.12);
+}
+html[data-theme="dark"] #librarianSection .tabs {
+  border-color:rgba(167,139,250,.16);
+  background:rgba(10,13,31,.55);
+}
+html[data-theme="dark"] #librarianSection .tabs > * {
+  color:#b8b5d6;
+  border-color:transparent;
+  background:transparent;
+}
+html[data-theme="dark"] #librarianSection .tabs > *.active {
+  color:#fff;
+  background:linear-gradient(110deg,#7c3aed,#2563a6);
+}
+html[data-theme="dark"] #librarianSection .tab-content {
+  border-color:rgba(167,139,250,.2) !important;
+  background:linear-gradient(145deg,rgba(25,26,54,.96),rgba(15,29,48,.96)) !important;
+}
+html[data-theme="dark"] #librarianSection .data-table th {
+  color:#d8d1ff;
+  background:rgba(124,58,237,.22);
+}
+html[data-theme="dark"] #librarianSection .data-table td { color:#dedcf3; }
+html[data-theme="dark"] #librarianSection .data-table tr:hover td { background:rgba(103,232,249,.055); }
+html[data-theme="dark"] #librarianSection .insight-bar-track { background:rgba(167,139,250,.14); }
+html[data-theme="dark"] #librarianSection .insight-bar-fill { background:linear-gradient(90deg,#8b5cf6,#22d3ee); }
+
+/* Authentication, profile, announcements and dialogs receive the same contrast care. */
+html[data-theme="dark"] #authModal .auth-modal {
+  border-color:rgba(167,139,250,.26);
+  background:linear-gradient(145deg,#171833,#101d32);
+  box-shadow:0 30px 90px rgba(0,0,0,.55);
+}
+html[data-theme="dark"] #authModal .auth-art {
+  background:
+    radial-gradient(circle at 15% 85%,rgba(34,211,238,.3),transparent 38%),
+    radial-gradient(circle at 95% 5%,rgba(245,158,11,.22),transparent 34%),
+    linear-gradient(145deg,#34206e 0%,#4b318c 52%,#07566b 100%);
+}
+html[data-theme="dark"] #authModal .auth-form-panel { background:rgba(15,17,39,.96); }
+html[data-theme="dark"] #authModal .auth-tabs .pill:not(.active) { color:#c7c3e5; }
+html[data-theme="dark"] #profileSection .profile-layout > .panel {
+  background:linear-gradient(145deg,rgba(29,29,61,.96),rgba(16,31,51,.96)) !important;
+}
+html[data-theme="dark"] #newsSection #announcementsList > * {
+  background:linear-gradient(120deg,rgba(32,29,68,.96),rgba(16,36,54,.96)) !important;
+}
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .catalogue-detail-modal {
+  border-color:rgba(167,139,250,.24);
+  box-shadow:0 28px 80px rgba(0,0,0,.5);
+}
+html[data-theme="dark"] .site-footer {
+  background:linear-gradient(90deg,rgba(14,15,34,.9),rgba(13,28,43,.9));
+}
+html[data-theme="dark"] ::selection { color:#101329; background:#a5f3fc; }
+html[data-theme="dark"] :focus-visible { outline-color:rgba(103,232,249,.72); }
+@media (hover:hover) and (prefers-reduced-motion:no-preference) {
+  html[data-theme="dark"] .nav-btn,
+  html[data-theme="dark"] .btn,
+  html[data-theme="dark"] .workspace-module { transition-duration:.22s; }
+}
+@media (max-width:680px) {
+  html[data-theme="dark"] .hero,
+  html[data-theme="dark"] #heroSection .hero.hero-editorial { border-radius:22px; }
+  html[data-theme="dark"] .home-featured-section,
+  html[data-theme="dark"] .home-intro,
+  html[data-theme="dark"] .home-services,
+  html[data-theme="dark"] .home-journey,
+  html[data-theme="dark"] .home-levels,
+  html[data-theme="dark"] .home-values { border-radius:18px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  html[data-theme="dark"] .purpose-card,
+  html[data-theme="dark"] .home-feature,
+  html[data-theme="dark"] .values-grid article,
+  html[data-theme="dark"] .journey-grid article,
+  html[data-theme="dark"] .featured-book-card,
+  html[data-theme="dark"] .book-card,
+  html[data-theme="dark"] .catalogue-card { transition:none; }
+}
