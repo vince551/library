@@ -173,6 +173,7 @@ export function BooksTab({ active }) {
 
       {labels ? <div id="copyLabelsPanel" className="copy-labels-panel">
         <h4>Copy labels — {labels.title}</h4>
+        {labels.catalogueNumber ? <p className="muted">Book number: <strong>{labels.catalogueNumber}</strong></p> : null}
         <p className="muted">Print and attach one label to each physical copy.</p>
         <button className="btn btn-outline top-gap" type="button" onClick={() => window.print()}>Print copy labels</button>
         <div className="copy-label-grid">{labels.copies.map(copy => <article key={copy.barcode} className="copy-label"><strong>Copy {copy.copyNumber}</strong><Barcode value={copy.barcode} height={42} width={1.4} /><small>{copy.barcode}</small><QrCode value={copy.barcode} size={88} className="copy-label-qr" /></article>)}</div>
@@ -181,10 +182,10 @@ export function BooksTab({ active }) {
       <h3 className="top-gap">Published physical books</h3>
       <div className="table-responsive">
         <table className="data-table">
-          <thead><tr><th>Barcode / Library #</th><th>Book</th><th>Category</th><th>Available / Total</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Book number / First copy</th><th>Book</th><th>Category</th><th>Available / Total</th><th>Actions</th></tr></thead>
           <tbody id="inventoryTable">
             {books.map(book => <tr key={book.id}>
-              <td><strong>{book.libraryNumber || book.barcode}</strong><Barcode value={book.barcode || book.libraryNumber} height={30} width={1} style={{ width: "130px", height: "35px" }} /></td>
+              <td><strong>{book.catalogue_number || book.libraryNumber || "—"}</strong><small className="muted" style={{ display: "block" }}>Copy: {book.barcode || "—"}</small><Barcode value={book.barcode || book.libraryNumber} height={30} width={1} style={{ width: "130px", height: "35px" }} /></td>
               <td><div className="book-inventory-title">{book.coverUrl ? <img src={book.coverUrl} alt="" loading="lazy" style={{ width: 48, height: 64, objectFit: "cover", borderRadius: 6, verticalAlign: "middle", marginRight: 10 }} /> : null}<span>{(book.title || "") + " — " + (book.author || "Unknown author")}</span></div></td>
               <td>{book.category}</td>
               <td>{Number(book.available || 0) + " / " + Number(book.quantity || 0)}</td>
