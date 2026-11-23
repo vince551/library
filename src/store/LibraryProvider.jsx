@@ -25,7 +25,15 @@ function fileToBase64(file) {
   });
 }
 
-function mapEbook(book) {
+
+function mapPhysicalBook(book) {
+  return { ...book,
+    coverUrl: book.coverUrl ? (book.coverUrl.startsWith("http") ? book.coverUrl : apiUrl(book.coverUrl.replace(/^\/api(?=\/)/, ""))) : "",
+    category: book.category || book.category_name || "General",
+    createdAt: book.createdAt || book.created_at
+  };
+}
+\nfunction mapEbook(book) {
   return {
     ...book,
     fileName: book.fileName || book.file_name || "E-book",
@@ -58,7 +66,7 @@ export function LibraryProvider({ children }) {
       apiRequest("/ebooks")
     ]);
 
-    if (bookResult.status === "fulfilled") setBooks(bookResult.value.books || []);
+    if (bookResult.status === "fulfilled") setBooks((bookResult.value.books || []).map(mapPhysicalBook));
     else showToast(bookResult.reason?.message || "Could not load the book catalogue.", "error");
 
     if (ebookResult.status === "fulfilled") setEbooks((ebookResult.value.ebooks || []).map(mapEbook));
@@ -99,7 +107,7 @@ export function LibraryProvider({ children }) {
     if (memberResult.status === "fulfilled") setMembers(memberResult.value.members || []);
     else showToast(memberResult.reason?.message || "Could not load members.", "error");
 
-    if (bookResult.status === "fulfilled") setBooks(bookResult.value.books || []);
+    if (bookResult.status === "fulfilled") setBooks((bookResult.value.books || []).map(mapPhysicalBook));
     if (loanResult.status === "fulfilled") setLoans(loanResult.value.loans || []);
     else showToast(loanResult.reason?.message || "Could not load loans.", "error");
     if (requestResult.status === "fulfilled") setRequests(requestResult.value.requests || []);
@@ -154,7 +162,8 @@ export function LibraryProvider({ children }) {
           isbn: String(data.isbn || "").trim(),
           category: String(data.category || "").trim(),
           quantity: Math.max(1, Math.min(400, Number(data.quantity) || 1)),
-          description: String(data.description || "").trim()
+          description: String(data.description || "").trim(),
+          ...(data.coverFile ? { coverType: data.coverFile.type, coverData: await fileToBase64(data.coverFile) } : {})
         }
       });
       const saved = result.book;
@@ -189,6 +198,55 @@ export function LibraryProvider({ children }) {
       showToast(error.message || "Could not save the physical book.", "error");
       return false;
     }
+  }, [token, refreshPublic, refreshAdmin, showToast]);
+
+  const updateBook = useCallback(async (id, data) => {
+    if (!token) { showToast("Sign in with a librarian account to edit books.", "error"); return false; }
+    try {
+      const body = {
+        title: String(data.title || "").trim(), author: String(data.author || "").trim(),
+        isbn: String(data.isbn || "").trim() || null, description: String(data.description || "").trim() || null,
+        ...(data.coverFile ? { coverType: data.coverFile.type, coverData: await fileToBase64(data.coverFile) } : {})
+      };
+      const result = await apiRequest(`/books/${encodeURIComponent(id)}`, { token, method: "PATCH", body });
+      await Promise.all([refreshPublic(), refreshAdmin()]);
+      showToast(result.message || "Book updated successfully.");
+      return true;
+    } catch (error) { showToast(error.message || "Could not update this book.", "error"); return false; }
+  }, [token, refreshPublic, refreshAdmin, showToast]);
+
+  const getBookCopies = useCallback(async (bookId) => {
+    try {
+      const result = await apiRequest(`/copies/book/${encodeURIComponent(bookId)}`, { token });
+      return result.copies || [];
+    } catch (error) { showToast(error.message || "Could not load physical copies.", "error"); return null; }
+  }, [token, showToast]);
+
+  const addBookCopy = useCallback(async (bookId, shelfLocation = "") => {
+    try {
+      const result = await apiRequest("/copies", { token, method: "POST", body: { bookId, shelfLocation } });
+      await Promise.all([refreshPublic(), refreshAdmin()]);
+      showToast(result.message || "Physical copy added.");
+      return result.copy || null;
+    } catch (error) { showToast(error.message || "Could not add a copy.", "error"); return null; }
+  }, [token, refreshPublic, refreshAdmin, showToast]);
+
+  const updateBookCopy = useCallback(async (copyId, data) => {
+    try {
+      const result = await apiRequest(`/copies/${encodeURIComponent(copyId)}`, { token, method: "PATCH", body: data });
+      await Promise.all([refreshPublic(), refreshAdmin()]);
+      showToast(result.message || "Copy details updated.");
+      return result.copy || null;
+    } catch (error) { showToast(error.message || "Could not update this copy.", "error"); return null; }
+  }, [token, refreshPublic, refreshAdmin, showToast]);
+
+  const deleteBookCopy = useCallback(async (copyId) => {
+    try {
+      const result = await apiRequest(`/copies/${encodeURIComponent(copyId)}`, { token, method: "DELETE" });
+      await Promise.all([refreshPublic(), refreshAdmin()]);
+      showToast(result.message || "Copy removed.");
+      return true;
+    } catch (error) { showToast(error.message || "Could not remove this copy.", "error"); return false; }
   }, [token, refreshPublic, refreshAdmin, showToast]);
 
   const deleteBook = useCallback(async (book) => {
@@ -426,14 +484,14 @@ export function LibraryProvider({ children }) {
     books, announcements, events, ebooks, members, requests, loans, attendance, capacity,
     myRequests, myLoans, publicPosts, scanMemberCode,
     refreshPublic, refreshMember, refreshAdmin, resetScanMember, requestBook,
-    reviewLearner, changeMemberStatus, processRequest, returnLoan, registerBook, deleteBook,
+    reviewLearner, changeMemberStatus, processRequest, returnLoan, registerBook, updateBook, getBookCopies, addBookCopy, updateBookCopy, deleteBookCopy, deleteBook,
     processUnifiedCode, updateCapacity, uploadEbook, removeEbook, resolveEbookUrl,
     publishNews, deletePost
   }), [
     books, announcements, events, ebooks, members, requests, loans, attendance, capacity,
     myRequests, myLoans, publicPosts, scanMemberCode,
     refreshPublic, refreshMember, refreshAdmin, resetScanMember, requestBook,
-    reviewLearner, changeMemberStatus, processRequest, returnLoan, registerBook, deleteBook,
+    reviewLearner, changeMemberStatus, processRequest, returnLoan, registerBook, updateBook, getBookCopies, addBookCopy, updateBookCopy, deleteBookCopy, deleteBook,
     processUnifiedCode, updateCapacity, uploadEbook, removeEbook, resolveEbookUrl,
     publishNews, deletePost
   ]);
