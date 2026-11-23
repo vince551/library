@@ -26,7 +26,7 @@ const formatToday = () => new Intl.DateTimeFormat("en-KE", {
 
 export function Desk({ active }) {
   const { profile, user } = useAuth();
-  const { members, books, ebooks, requests, loans, attendance, refreshAdmin } = useLibrary();
+  const { members, books, ebooks, requests, loans, attendanceSummary, refreshAdmin } = useLibrary();
   const [tab, setTab] = useState(null);
   const [cardMember, setCardMember] = useState(null);
 
@@ -36,7 +36,7 @@ export function Desk({ active }) {
 
   const pendingRequests = requests.filter(request => String(request.status || "").toLowerCase() === "pending").length;
   const pendingMembers = members.filter(member => String(member.status || "").toLowerCase() === "pending").length;
-  const inside = attendance.filter(record => record.status === "In library").length;
+  const inside = Number(attendanceSummary.currentlyInside) || 0;
   const availableCopies = books.reduce((total, book) => total + Number(book.available || 0), 0);
   const staffName = profile?.fullName || user?.email || "Librarian";
   const moduleCounts = {
