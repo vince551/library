@@ -105,9 +105,11 @@ export async function login(req, res, next) {
     const { email, password } = parsed.data;
 
     const result = await pool.query(
-      `SELECT id, full_name, email, password_hash, role, status
-       FROM users
-       WHERE email = $1`,
+      `SELECT u.id, u.full_name, u.email, u.password_hash, u.role, u.status,
+              mp.membership_number, mp.approved_at, mp.phone, mp.address
+       FROM users u
+       LEFT JOIN member_profiles mp ON mp.user_id = u.id
+       WHERE u.email = $1`,
       [email.toLowerCase()]
     );
 
@@ -151,7 +153,11 @@ export async function login(req, res, next) {
         fullName: user.full_name,
         email: user.email,
         role: user.role,
-        status: user.status
+        status: user.status,
+        membership_number: user.membership_number,
+        approved_at: user.approved_at,
+        phone: user.phone,
+        address: user.address
       }
     });
   } catch (error) {
@@ -167,7 +173,11 @@ export async function getMe(req, res) {
       fullName: req.user.full_name,
       email: req.user.email,
       role: req.user.role,
-      status: req.user.status
+      status: req.user.status,
+      membership_number: req.user.membership_number,
+      approved_at: req.user.approved_at,
+      phone: req.user.phone,
+      address: req.user.address
     }
   });
 }
