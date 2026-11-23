@@ -161,7 +161,7 @@ export async function getBooks(req, res, next) {
       success: true,
       page,
       limit,
-      books: result.rows.map(withCoverUrl).map(withCoverUrl)
+      books: result.rows.map(withCoverUrl)
     });
   } catch (error) {
     next(error);
