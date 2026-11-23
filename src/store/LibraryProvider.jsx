@@ -110,16 +110,30 @@ export function LibraryProvider({ children }) {
     else showToast(memberResult.reason?.message || "Could not load members.", "error");
 
     if (bookResult.status === "fulfilled") setBooks((bookResult.value.books || []).map(mapPhysicalBook));
+    else showToast(bookResult.reason?.message || "Could not load the managed book catalogue.", "error");
+
     if (loanResult.status === "fulfilled") setLoans(loanResult.value.loans || []);
     else showToast(loanResult.reason?.message || "Could not load loans.", "error");
+
     if (requestResult.status === "fulfilled") setRequests(requestResult.value.requests || []);
     else showToast(requestResult.reason?.message || "Could not load borrowing requests.", "error");
-    if (attendanceResult.status === "fulfilled") setAttendance(attendanceResult.value.attendance || []);
-    if (ebookResult.status === "fulfilled") setEbooks((ebookResult.value.ebooks || []).map(mapEbook));
-    if (attendanceSummaryResult.status === "fulfilled") setAttendanceSummary(attendanceSummaryResult.value.summary || { days: [], totalRecords: 0, currentlyInside: 0 });
-    if (settingsResult.status === "fulfilled") setCapacity(Number(settingsResult.value.settings?.capacity) || 100);
 
-    return memberResult.status === "fulfilled";
+    if (attendanceResult.status === "fulfilled") setAttendance(attendanceResult.value.attendance || []);
+    else showToast(attendanceResult.reason?.message || "Could not load attendance records.", "error");
+
+    if (ebookResult.status === "fulfilled") setEbooks((ebookResult.value.ebooks || []).map(mapEbook));
+    else showToast(ebookResult.reason?.message || "Could not load managed e-books.", "error");
+
+    if (attendanceSummaryResult.status === "fulfilled") setAttendanceSummary(attendanceSummaryResult.value.summary || { days: [], totalRecords: 0, currentlyInside: 0 });
+    else showToast(attendanceSummaryResult.reason?.message || "Could not load attendance analytics.", "error");
+
+    if (settingsResult.status === "fulfilled") setCapacity(Number(settingsResult.value.settings?.capacity) || 100);
+    else showToast(settingsResult.reason?.message || "Could not load library settings.", "error");
+
+    return [
+      memberResult, bookResult, loanResult, requestResult,
+      attendanceResult, ebookResult, attendanceSummaryResult, settingsResult
+    ].every(result => result.status === "fulfilled");
   }, [token, showToast]);
 
   const resetScanMember = useCallback(() => { setScanMemberCode(""); setScanMemberId(""); }, []);
