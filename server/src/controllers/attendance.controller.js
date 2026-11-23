@@ -19,7 +19,8 @@ export async function recordAttendanceScan(req, res, next) {
        FROM users u
        JOIN member_profiles mp ON mp.user_id = u.id
        WHERE u.role = 'member'
-         AND UPPER(mp.membership_number) = UPPER($1)
+         AND regexp_replace(UPPER(COALESCE(mp.membership_number, '')), '[^A-Z0-9]', '', 'g')
+             = regexp_replace(UPPER($1), '[^A-Z0-9]', '', 'g')
        LIMIT 1`,
       [code]
     );
