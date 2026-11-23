@@ -268,12 +268,12 @@ export async function updateBook(req, res, next) {
   try {
     const parsedId = z.string().uuid().safeParse(req.params.id);
     if (!parsedId.success) return res.status(400).json({ success: false, message: "Invalid book ID." });
-    const schema = updateSchema.extend({ coverType: z.string().optional(), coverData: z.string().optional() });
+    const schema = updateSchema.extend({ coverType: z.string().optional(), coverData: z.string().optional(), category: z.string().trim().min(1).max(80).optional() });
     const parsed = schema.safeParse(req.body);
     if (!parsed.success || Object.keys(parsed.data || {}).length === 0) {
       return res.status(400).json({ success: false, message: "Provide at least one valid field to update.", errors: parsed.error?.flatten().fieldErrors });
     }
-    const { coverType, coverData, ...bookInput } = parsed.data;
+    const { coverType, coverData, category, ...bookInput } = parsed.data;
     const existing = await pool.query("SELECT cover_image_key FROM books WHERE id = $1", [parsedId.data]);
     if (!existing.rowCount) return res.status(404).json({ success: false, message: "Book not found." });
     if (coverData) newCoverKey = await uploadBookCover(parsedId.data, coverData, coverType);
