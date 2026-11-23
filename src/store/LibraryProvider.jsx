@@ -203,7 +203,7 @@ export function LibraryProvider({ children }) {
         quantity: Number(saved.quantity ?? copies.length),
         available: Number(saved.available ?? copies.length),
         barcode: saved.barcode || copies[0]?.barcode || "",
-        libraryNumber: saved.libraryNumber || copies[0]?.barcode || "",
+        libraryNumber: saved.catalogue_number || saved.catalogueNumber || saved.libraryNumber || copies[0]?.barcode || "",
         copies,
         createdAt: saved.created_at || saved.createdAt
       };
@@ -211,7 +211,7 @@ export function LibraryProvider({ children }) {
       showToast(result.message || "Physical book and copy barcodes saved to the AMG Library database.");
       await refreshPublic();
       await refreshAdmin();
-      return { title: item.title, copies };
+      return { title: item.title, catalogueNumber: item.catalogue_number || item.catalogueNumber || "", copies };
     } catch (error) {
       showToast(error.message || "Could not save the physical book.", "error");
       return false;
