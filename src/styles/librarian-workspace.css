@@ -1266,3 +1266,104 @@ html:not([data-theme="dark"]) #librarianSection textarea::placeholder {
     color:#9AB3A6;
   }
 }
+
+
+/* Glassmorphism analytics charts — scoped to the statistics workspace. */
+#librarianSection .insight-dashboard {
+  --insight-glass-bg: rgba(255,255,255,.58);
+  --insight-glass-border: rgba(255,255,255,.82);
+  --insight-glass-text: #173d30;
+}
+#librarianSection .insight-dashboard .insight-panel,
+#librarianSection .insight-dashboard .insight-summary-card {
+  position:relative;
+  overflow:hidden;
+  border:1px solid var(--insight-glass-border);
+  background:linear-gradient(145deg,rgba(255,255,255,.78),rgba(247,252,248,.48));
+  box-shadow:0 16px 38px rgba(20,75,49,.075),inset 0 1px 0 rgba(255,255,255,.9);
+  backdrop-filter:blur(18px) saturate(155%);
+  -webkit-backdrop-filter:blur(18px) saturate(155%);
+}
+#librarianSection .insight-dashboard .insight-panel::before {
+  content:"";
+  position:absolute;
+  inset:0 0 auto;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.95),transparent);
+  pointer-events:none;
+}
+#librarianSection .insight-trend-panel { min-width:0; }
+#librarianSection .insight-trend-panel .insight-panel-heading { align-items:flex-start; }
+#librarianSection .insight-trend-panel .insight-panel-heading p {
+  margin:5px 0 0;
+  color:#82958a;
+  font-size:10px;
+}
+#librarianSection .insight-trend-chart {
+  width:100%;
+  height:clamp(190px,26vw,250px);
+  min-width:0;
+  overflow:hidden;
+  border:1px solid rgba(214,231,220,.56);
+  border-radius:15px;
+  background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(238,248,242,.28));
+}
+#librarianSection .insight-trend-chart svg { display:block; width:100%; height:100%; overflow:visible; }
+#librarianSection .insight-trend-gridline { stroke:rgba(105,139,119,.18); stroke-width:1; stroke-dasharray:4 6; }
+#librarianSection .insight-trend-axis { fill:#82958a; font-size:10px; font-family:inherit; }
+#librarianSection .insight-trend-line {
+  fill:none;
+  stroke:#10a875;
+  stroke-width:3.5;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;
+  filter:drop-shadow(0 3px 4px rgba(16,168,117,.18));
+}
+#librarianSection .insight-trend-area .insight-trend-line { stroke:#269ec0; }
+#librarianSection .insight-trend-point {
+  fill:#fff;
+  stroke:#10a875;
+  stroke-width:2.5;
+  vector-effect:non-scaling-stroke;
+}
+#librarianSection .insight-trend-area .insight-trend-point { stroke:#269ec0; }
+#librarianSection .insight-chart-toolbar { margin-bottom:12px; }
+#librarianSection .insight-dashboard .insight-period-switch {
+  border-color:rgba(255,255,255,.8);
+  background:rgba(239,248,242,.65);
+  box-shadow:inset 0 1px 2px rgba(25,70,45,.04);
+}
+#librarianSection .insight-dashboard .insight-period-switch button.is-active {
+  color:#075c40;
+  background:rgba(161,225,188,.55);
+  box-shadow:0 3px 10px rgba(16,100,65,.1),inset 0 1px 0 rgba(255,255,255,.8);
+}
+html[data-theme="dark"] #librarianSection .insight-dashboard {
+  --insight-glass-bg:rgba(18,46,34,.72);
+  --insight-glass-border:rgba(90,145,111,.24);
+}
+html[data-theme="dark"] #librarianSection .insight-dashboard .insight-panel,
+html[data-theme="dark"] #librarianSection .insight-dashboard .insight-summary-card {
+  border-color:rgba(90,145,111,.25);
+  background:linear-gradient(145deg,rgba(18,46,34,.82),rgba(10,31,22,.72));
+  box-shadow:0 18px 42px rgba(0,0,0,.2),inset 0 1px 0 rgba(184,235,199,.07);
+}
+html[data-theme="dark"] #librarianSection .insight-dashboard .insight-trend-chart {
+  border-color:rgba(90,145,111,.2);
+  background:linear-gradient(180deg,rgba(18,46,34,.56),rgba(10,31,22,.36));
+}
+html[data-theme="dark"] #librarianSection .insight-dashboard .insight-panel-heading h4,
+html[data-theme="dark"] #librarianSection .insight-dashboard .insight-summary-card strong { color:#e5f8ec; }
+html[data-theme="dark"] #librarianSection .insight-dashboard .insight-panel-heading p,
+html[data-theme="dark"] #librarianSection .insight-dashboard .insight-summary-card small,
+html[data-theme="dark"] #librarianSection .insight-dashboard .insight-summary-card > span { color:#9ab3a6; }
+html[data-theme="dark"] #librarianSection .insight-trend-gridline { stroke:rgba(154,179,166,.2); }
+html[data-theme="dark"] #librarianSection .insight-trend-axis { fill:#9ab3a6; }
+html[data-theme="dark"] #librarianSection .insight-dashboard .insight-period-switch { border-color:rgba(90,145,111,.22); background:rgba(10,31,22,.62); }
+html[data-theme="dark"] #librarianSection .insight-dashboard .insight-period-switch button { color:#9ab3a6; }
+html[data-theme="dark"] #librarianSection .insight-dashboard .insight-period-switch button.is-active { color:#062c1c; background:#34d399; }
+@media(max-width:520px) {
+  #librarianSection .insight-trend-chart { height:205px; }
+  #librarianSection .insight-trend-panel .insight-panel-heading { gap:9px; }
+}
