@@ -106,8 +106,7 @@ export async function getAttendanceRecords(req, res, next) {
        JOIN users u ON u.id = event.member_id
        JOIN member_profiles mp ON mp.user_id = u.id
        WHERE event.action = 'check-in'
-       ORDER BY event.scanned_at DESC, event.id DESC
-       LIMIT 200`
+       ORDER BY event.scanned_at DESC, event.id DESC`
     );
     return res.json({ success: true, count: result.rowCount, attendance: result.rows });
   } catch (error) { return next(error); }
