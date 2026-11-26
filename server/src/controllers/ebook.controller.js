@@ -121,6 +121,29 @@ function decodeBase64(value, maxBytes, label) {
   return buffer;
 }
 
+function validateEbookSignature(buffer, format) {
+  if (format === "pdf") {
+    const header = buffer.subarray(0, Math.min(buffer.length, 1024)).toString("latin1");
+    if (!header.includes("%PDF-")) {
+      const error = new Error("The selected file is not a valid PDF document.");
+      error.status = 400;
+      throw error;
+    }
+    return;
+  }
+  if (format === "epub") {
+    // EPUB is a ZIP container. Reject files that only have an .epub filename
+    // but do not have the ZIP local-file signature.
+    if (buffer.length < 4 || buffer[0] !== 0x50 || buffer[1] !== 0x4b ||
+        ![0x03, 0x05, 0x07].includes(buffer[2]) ||
+        ![0x04, 0x06, 0x08].includes(buffer[3])) {
+      const error = new Error("The selected file is not a valid EPUB archive.");
+      error.status = 400;
+      throw error;
+    }
+  }
+}
+
 function publicEbook(row) {
   const format = String(row.file_format || "").toLowerCase();
   const extension = format === "epub" || format === "application/epub+zip" ? "epub" : "pdf";
@@ -192,6 +215,7 @@ export async function uploadEbook(req, res, next) {
     }
 
     const fileBuffer = decodeBase64(input.fileData, MAX_EBOOK_BYTES, "E-book");
+    validateEbookSignature(fileBuffer, fileType.format);
     let coverBuffer = null;
     if (input.coverData) {
       if (!allowedCoverTypes.has(input.coverType)) {
