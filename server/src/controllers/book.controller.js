@@ -272,47 +272,145 @@ export async function createBook(req, res, next) {
 // Edit a book
 export async function updateBook(req, res, next) {
   let newCoverKey = null;
+  let oldCoverKey = null;
+  const parsedId = z.string().uuid().safeParse(req.params.id);
+  if (!parsedId.success) return res.status(400).json({ success: false, message: "Invalid book ID." });
+
+  const schema = updateSchema.extend({
+    coverType: z.string().optional(),
+    coverData: z.string().optional(),
+    category: z.string().trim().min(1).max(80).optional(),
+    quantity: z.number().int().min(1).max(400).optional()
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success || Object.keys(parsed.data || {}).length === 0) {
+    return res.status(400).json({ success: false, message: "Provide valid book details to update.", errors: parsed.error?.flatten().fieldErrors });
+  }
+
+  const { coverType, coverData, category, quantity, ...bookInput } = parsed.data;
+  const client = await pool.connect();
+  let transactionStarted = false;
   try {
-    const parsedId = z.string().uuid().safeParse(req.params.id);
-    if (!parsedId.success) return res.status(400).json({ success: false, message: "Invalid book ID." });
-    const schema = updateSchema.extend({ coverType: z.string().optional(), coverData: z.string().optional(), category: z.string().trim().min(1).max(80).optional() });
-    const parsed = schema.safeParse(req.body);
-    if (!parsed.success || Object.keys(parsed.data || {}).length === 0) {
-      return res.status(400).json({ success: false, message: "Provide at least one valid field to update.", errors: parsed.error?.flatten().fieldErrors });
+    await client.query("BEGIN");
+    transactionStarted = true;
+    const existing = await client.query(
+      "SELECT id, cover_image_key FROM books WHERE id = $1 FOR UPDATE",
+      [parsedId.data]
+    );
+    if (!existing.rowCount) {
+      await client.query("ROLLBACK");
+      transactionStarted = false;
+      return res.status(404).json({ success: false, message: "Book not found." });
     }
-    const { coverType, coverData, category, ...bookInput } = parsed.data;
-    const existing = await pool.query("SELECT cover_image_key FROM books WHERE id = $1", [parsedId.data]);
-    if (!existing.rowCount) return res.status(404).json({ success: false, message: "Book not found." });
+    oldCoverKey = existing.rows[0].cover_image_key;
+
     if (coverData) newCoverKey = await uploadBookCover(parsedId.data, coverData, coverType);
     if (newCoverKey) bookInput.coverImageKey = newCoverKey;
+
     if (category) {
       const slug = category.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80) || "general";
-      const categoryResult = await pool.query(
+      const categoryResult = await client.query(
         `INSERT INTO categories (name, slug) VALUES ($1, $2)
-         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name RETURNING id`, [category, slug]);
+         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name RETURNING id`,
+        [category, slug]
+      );
       bookInput.categoryId = categoryResult.rows[0].id;
     }
-    const columns = { title: "title", author: "author", isbn: "isbn", description: "description",
+
+    const columns = {
+      title: "title", author: "author", isbn: "isbn", description: "description",
       categoryId: "category_id", publicationYear: "publication_year", publisher: "publisher",
-      coverImageKey: "cover_image_key", isPublished: "is_published" };
-    const values = [], assignments = [];
+      coverImageKey: "cover_image_key", isPublished: "is_published"
+    };
+    const values = [];
+    const assignments = [];
     for (const [key, value] of Object.entries(bookInput)) {
       if (!columns[key]) continue;
       values.push(value);
       assignments.push(`${columns[key]} = $${values.length}`);
     }
-    if (!assignments.length) return res.status(400).json({ success: false, message: "No book details were supplied to update." });
-    values.push(parsedId.data);
-    const result = await pool.query(`UPDATE books SET ${assignments.join(", ")} WHERE id = $${values.length} RETURNING *`, values);
-    if (newCoverKey && existing.rows[0].cover_image_key) {
-      await removeBookCover(existing.rows[0].cover_image_key).catch(error => console.error("Old book cover cleanup failed:", error.message));
+
+    if (assignments.length) {
+      values.push(parsedId.data);
+      await client.query(
+        `UPDATE books SET ${assignments.join(", ")} WHERE id = $${values.length}`,
+        values
+      );
     }
-    return res.json({ success: true, message: "Book details updated successfully.", book: withCoverUrl(result.rows[0]) });
+
+    if (Number.isInteger(quantity)) {
+      const current = await client.query(
+        "SELECT COUNT(*)::int AS quantity FROM book_copies WHERE book_id = $1",
+        [parsedId.data]
+      );
+      const currentQuantity = Number(current.rows[0].quantity);
+      if (quantity > currentQuantity) {
+        for (let index = currentQuantity; index < quantity; index += 1) {
+          const barcode = await nextAmgNumber(client, "C");
+          await client.query(
+            "INSERT INTO book_copies (book_id, barcode, condition, status) VALUES ($1, $2, 'good', 'available')",
+            [parsedId.data, barcode]
+          );
+        }
+      } else if (quantity < currentQuantity) {
+        const removeCount = currentQuantity - quantity;
+        const removable = await client.query(
+          `SELECT bc.id
+           FROM book_copies bc
+           WHERE bc.book_id = $1
+             AND bc.status = 'available'
+             AND NOT EXISTS (SELECT 1 FROM loans l WHERE l.copy_id = bc.id)
+           ORDER BY bc.created_at DESC
+           LIMIT $2
+           FOR UPDATE OF bc`,
+          [parsedId.data, removeCount]
+        );
+        if (removable.rowCount < removeCount) {
+          const error = new Error("The total cannot be reduced that far. Borrowed, unavailable, or historically used copies are protected.");
+          error.status = 409;
+          throw error;
+        }
+        await client.query(
+          "DELETE FROM book_copies WHERE id = ANY($1::uuid[])",
+          [removable.rows.map(row => row.id)]
+        );
+      }
+    }
+
+    const result = await client.query(
+      `SELECT b.*, c.name AS category_name,
+              COALESCE(stats.quantity, 0)::int AS quantity,
+              COALESCE(stats.available, 0)::int AS available
+       FROM books b
+       LEFT JOIN categories c ON c.id = b.category_id
+       LEFT JOIN LATERAL (
+         SELECT COUNT(*) AS quantity,
+                COUNT(*) FILTER (WHERE status = 'available') AS available
+         FROM book_copies WHERE book_id = b.id
+       ) stats ON TRUE
+       WHERE b.id = $1`,
+      [parsedId.data]
+    );
+
+    await client.query("COMMIT");
+    transactionStarted = false;
+
+    if (newCoverKey && oldCoverKey && oldCoverKey !== newCoverKey) {
+      await removeBookCover(oldCoverKey).catch(error => console.error("Old book cover cleanup failed:", error.message));
+    }
+    return res.json({
+      success: true,
+      message: "Book details and physical copy total updated successfully.",
+      book: withCoverUrl(result.rows[0])
+    });
   } catch (error) {
+    if (transactionStarted) await client.query("ROLLBACK").catch(() => {});
     if (newCoverKey) await removeBookCover(newCoverKey).catch(() => {});
     if (error.status) return res.status(error.status).json({ success: false, message: error.message });
-    if (error.message?.includes("cover")) return res.status(400).json({ success: false, message: error.message });
+    if (error.message?.toLowerCase().includes("cover")) return res.status(400).json({ success: false, message: error.message });
     handleDatabaseError(error, res, next);
+  } finally {
+    client.release();
   }
 }
 
