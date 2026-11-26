@@ -28,11 +28,11 @@ export function BorrowRequestsTab({ active }) {
             ) : requests.map(request => {
               return (
                 <tr key={request.id}>
-                  <td><strong>{request.request_number || "—"}</strong></td>
-                  <td>{request.user_name ?? request.userName}</td>
-                  <td>{request.book_title ?? request.bookTitle}</td>
-                  <td>{request.book_category ?? request.bookCategory ?? "—"}</td>
-                  <td>{request.status}</td>
+                  <td data-label="Request #"><strong>{request.request_number || "—"}</strong></td>
+                  <td data-label="Learner">{request.user_name ?? request.userName}</td>
+                  <td data-label="Book">{request.book_title ?? request.bookTitle}</td>
+                  <td data-label="Category">{request.book_category ?? request.bookCategory ?? "—"}</td>
+                  <td data-label="Status">{request.status}</td>
                   <td>
                     {String(request.status).toLowerCase() === "pending" ? (
                       <>
@@ -83,10 +83,10 @@ export function PendingLearnersTab({ active }) {
               <tr><td colSpan="5">There are no pending membership applications.</td></tr>
             ) : pending.map(member => (
               <tr key={member.id}>
-                <td>{member.full_name}</td>
-                <td>{member.email}</td>
-                <td>{member.phone || "—"}</td>
-                <td>{member.created_at ? new Date(member.created_at).toLocaleDateString("en-KE") : "—"}</td>
+                <td data-label="Name">{member.full_name}</td>
+                <td data-label="Email">{member.email}</td>
+                <td data-label="Phone">{member.phone || "—"}</td>
+                <td data-label="Applied">{member.created_at ? new Date(member.created_at).toLocaleDateString("en-KE") : "—"}</td>
                 <td>
                   <button className="btn btn-sm btn-success" type="button" onClick={() => decide(member, "Approved")}>Approve</button>
                   <button className="btn btn-sm btn-danger" type="button" onClick={() => decide(member, "Denied")}>Reject</button>
@@ -122,11 +122,11 @@ export function AllLearnersTab({ active, onViewCard }) {
               <tr><td colSpan="6">No member accounts have been registered yet.</td></tr>
             ) : members.map(member => (
               <tr key={member.id}>
-                <td>{member.membership_number || "Not issued"}</td>
+                <td data-label="Membership #">{member.membership_number || "Not issued"}</td>
                 <td>{member.full_name}</td>
                 <td>{member.email}</td>
                 <td>{member.phone || "—"}</td>
-                <td>{memberStatus(member)}</td>
+                <td data-label="Status">{memberStatus(member)}</td>
                 <td>
                   {member.status === "active" ? (
                     <>
