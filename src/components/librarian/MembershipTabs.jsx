@@ -33,7 +33,7 @@ export function BorrowRequestsTab({ active }) {
                   <td data-label="Book">{request.book_title ?? request.bookTitle}</td>
                   <td data-label="Category">{request.book_category ?? request.bookCategory ?? "—"}</td>
                   <td data-label="Status">{request.status}</td>
-                  <td>
+                  <td data-label="Actions">
                     {String(request.status).toLowerCase() === "pending" ? (
                       <>
                         <button className="btn btn-sm btn-success" type="button" onClick={() => processRequest(request.id, "Approved")}>Accept</button>
@@ -87,7 +87,7 @@ export function PendingLearnersTab({ active }) {
                 <td data-label="Email">{member.email}</td>
                 <td data-label="Phone">{member.phone || "—"}</td>
                 <td data-label="Applied">{member.created_at ? new Date(member.created_at).toLocaleDateString("en-KE") : "—"}</td>
-                <td>
+                <td data-label="Actions">
                   <button className="btn btn-sm btn-success" type="button" onClick={() => decide(member, "Approved")}>Approve</button>
                   <button className="btn btn-sm btn-danger" type="button" onClick={() => decide(member, "Denied")}>Reject</button>
                 </td>
@@ -123,11 +123,11 @@ export function AllLearnersTab({ active, onViewCard }) {
             ) : members.map(member => (
               <tr key={member.id}>
                 <td data-label="Membership #">{member.membership_number || "Not issued"}</td>
-                <td>{member.full_name}</td>
-                <td>{member.email}</td>
-                <td>{member.phone || "—"}</td>
+                <td data-label="Name">{member.full_name}</td>
+                <td data-label="Email">{member.email}</td>
+                <td data-label="Phone">{member.phone || "—"}</td>
                 <td data-label="Status">{memberStatus(member)}</td>
-                <td>
+                <td data-label="Actions">
                   {member.status === "active" ? (
                     <>
                       <button className="btn btn-sm btn-outline" type="button" onClick={() => onViewCard(member)}>View card</button>
