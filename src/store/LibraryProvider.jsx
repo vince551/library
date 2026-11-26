@@ -165,6 +165,33 @@ export function LibraryProvider({ children }) {
     }
   }, [token, showToast]);
 
+  const downloadEbook = useCallback(async (book) => {
+    if (!token) {
+      showToast("Sign in to download this e-book.", "error");
+      return false;
+    }
+    if (!book?.id) {
+      showToast("This e-book is missing its saved file record.", "error");
+      return false;
+    }
+    try {
+      const blob = await apiFileRequest(`/ebooks/${encodeURIComponent(book.id)}/file`, { token });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = book.fileName || "AMG-Library-ebook.epub";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 30000);
+      showToast("Your e-book download has started.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not download this e-book.", "error");
+      return false;
+    }
+  }, [token, showToast]);
+
   const registerBook = useCallback(async (data) => {
     if (!token) {
       showToast("Sign in with a librarian account to register physical books.", "error");
@@ -534,7 +561,7 @@ export function LibraryProvider({ children }) {
     myRequests, myLoans, publicPosts, scanMemberCode,
     refreshPublic, refreshMember, refreshAdmin, resetScanMember, requestBook,
     reviewLearner, changeMemberStatus, processRequest, returnLoan, registerBook, updateBook, getBookCopies, addBookCopy, updateBookCopy, deleteBookCopy, deleteBook,
-    processUnifiedCode, updateCapacity, uploadEbook, removeEbook, resolveEbookUrl,
+    processUnifiedCode, updateCapacity, uploadEbook, removeEbook, resolveEbookUrl, downloadEbook, downloadEbook,
     publishNews, deletePost
   }), [
     books, announcements, events, ebooks, members, requests, loans, attendance, attendanceSummary, capacity,
