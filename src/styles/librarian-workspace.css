@@ -674,3 +674,138 @@
   #librarianSection .book-editor-form input,
   #librarianSection .book-editor-form select { transition:none; }
 }
+
+/* Mobile-first hardening for every librarian workspace module. */
+#librarianSection,
+#librarianSection .workspace-home,
+#librarianSection .workspace-panel,
+#librarianSection .workspace-panel > *,
+#librarianSection .tab-content,
+#librarianSection .attendance-card,
+#librarianSection .insight-panel {
+  min-width: 0;
+  max-width: 100%;
+}
+#librarianSection .workspace-panel-heading {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+#librarianSection .workspace-panel-heading > div { min-width: 0; }
+#librarianSection .workspace-panel-heading h2,
+#librarianSection .workspace-panel-heading p { overflow-wrap: anywhere; }
+#librarianSection .table-responsive {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+#librarianSection .table-responsive .data-table { width: max-content; min-width: 100%; }
+#librarianSection .book-admin-actions,
+#librarianSection .book-actions,
+#librarianSection .insight-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+#librarianSection .book-admin-actions .btn,
+#librarianSection .book-actions .btn { flex: 0 0 auto; }
+#librarianSection input,
+#librarianSection select,
+#librarianSection textarea { min-width: 0; max-width: 100%; }
+#librarianSection .form-grid,
+#librarianSection .form-stack,
+#librarianSection .inline-form { min-width: 0; }
+#librarianSection .form-grid > *,
+#librarianSection .form-stack > *,
+#librarianSection .inline-form > * { min-width: 0; }
+#librarianSection .full-span { min-width: 0; }
+#librarianSection .book-cover-actions { display:flex; flex-wrap:wrap; gap:8px; }
+#librarianSection .book-cover-preview { min-width:0; max-width:100%; flex-wrap:wrap; }
+#librarianSection .book-cover-preview > div { min-width:0; overflow-wrap:anywhere; }
+#librarianSection .copy-label-grid { grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
+#librarianSection .copy-label { min-width:0; }
+#librarianSection .stack-item,
+#librarianSection .ebook-admin-item { min-width:0; }
+#librarianSection .stack-item > *,
+#librarianSection .ebook-admin-item > * { min-width:0; }
+#librarianSection .stack-item h4,
+#librarianSection .stack-item p { overflow-wrap:anywhere; }
+#librarianSection .attendance-camera-box { width:100%; }
+#librarianSection .attendance-camera-box video,
+#librarianSection #scannerVideo { display:block; width:100%; max-width:100%; height:auto; }
+#librarianSection .attendance-capacity-visual,
+#librarianSection .attendance-capacity-form { min-width:0; }
+
+@media (max-width: 680px) {
+  #librarianSection { width:100%; }
+  #librarianSection .workspace-home { gap:14px; }
+  #librarianSection .workspace-hero { padding:22px 18px; }
+  #librarianSection .workspace-hero h2 { max-width:100%; overflow-wrap:anywhere; }
+  #librarianSection .workspace-metrics { gap:8px; }
+  #librarianSection .workspace-metric { min-width:0; padding:12px; }
+  #librarianSection .workspace-metric span { font-size:10px; line-height:1.35; }
+  #librarianSection .workspace-module-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #librarianSection .workspace-module { min-width:0; min-height:138px; }
+  #librarianSection .workspace-module strong,
+  #librarianSection .workspace-module small { overflow-wrap:anywhere; }
+  #librarianSection .workspace-panel { gap:12px; }
+  #librarianSection .workspace-panel-heading { gap:10px; }
+  #librarianSection .workspace-back { min-height:40px; }
+  #librarianSection .workspace-panel .tab-content { padding:13px 10px; }
+  #librarianSection .book-registration-panel,
+  #librarianSection .attendance-card,
+  #librarianSection .insight-panel { border-radius:14px; }
+  #librarianSection .book-registration-form,
+  #librarianSection .form-grid,
+  #librarianSection .form-stack {
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:12px;
+  }
+  #librarianSection .book-registration-form > *,
+  #librarianSection .form-grid > *,
+  #librarianSection .form-stack > * { grid-column:1 / -1; }
+  #librarianSection .book-registration-form .btn,
+  #librarianSection .form-grid > .btn,
+  #librarianSection .form-stack > .btn { width:100%; min-height:44px; }
+  #librarianSection .book-cover-actions .btn { width:auto; min-height:40px; }
+  #librarianSection .book-cover-preview img { width:64px; height:84px; object-fit:cover; }
+  #librarianSection .book-admin-actions,
+  #librarianSection .book-actions { gap:6px; }
+  #librarianSection .book-admin-actions .btn,
+  #librarianSection .book-actions .btn { min-height:36px; padding:7px 9px; font-size:10px; }
+  #librarianSection .attendance-header,
+  #librarianSection .insight-header { align-items:flex-start; }
+  #librarianSection .attendance-live,
+  #librarianSection .insight-live { white-space:normal; }
+  #librarianSection .attendance-overview { gap:8px; }
+  #librarianSection .attendance-overview-card { min-width:0; padding:12px; }
+  #librarianSection .attendance-overview-card strong { font-size:23px; }
+  #librarianSection .attendance-scan-form { grid-template-columns:minmax(0,1fr); }
+  #librarianSection .attendance-scan-form > *,
+  #librarianSection .attendance-capacity-form > * { width:100%; }
+  #librarianSection .attendance-scan-form .btn,
+  #librarianSection .attendance-capacity-form .btn { width:100%; min-height:44px; }
+  #librarianSection .scanner-method-hints { grid-template-columns:minmax(0,1fr); }
+  #librarianSection .attendance-capacity-visual { grid-template-columns:minmax(0,1fr); }
+  #librarianSection .insight-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #librarianSection .insight-chart-grid { grid-template-columns:minmax(0,1fr); }
+  #librarianSection .insight-period-switch { max-width:100%; flex-wrap:wrap; }
+  #librarianSection .insight-header-actions { width:100%; justify-content:flex-start; }
+  #librarianSection .insight-export-button { min-height:40px; }
+  #librarianSection .book-edit-card { width:100% !important; max-height:calc(100dvh - 20px) !important; }
+  #librarianSection .copy-label-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+
+@media (max-width: 380px) {
+  #librarianSection .workspace-module-grid,
+  #librarianSection .workspace-metrics { grid-template-columns:minmax(0,1fr); }
+  #librarianSection .workspace-module { min-height:116px; }
+  #librarianSection .workspace-module strong { margin-top:8px; }
+  #librarianSection .attendance-overview,
+  #librarianSection .insight-summary-grid { grid-template-columns:minmax(0,1fr); }
+  #librarianSection .copy-label-grid { grid-template-columns:minmax(0,1fr); }
+  #librarianSection .book-admin-actions .btn,
+  #librarianSection .book-actions .btn { flex:1 1 auto; }
+}
