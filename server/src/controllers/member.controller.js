@@ -19,6 +19,13 @@ export async function getMembers(req, res, next) {
         mp.membership_number,
         mp.phone,
         mp.address,
+        mp.gender,
+        mp.school,
+        mp.study_level,
+        mp.edu_level,
+        mp.guardian_name,
+        mp.guardian_relation,
+        mp.guardian_phone,
         mp.approved_at
        FROM users u
        LEFT JOIN member_profiles mp ON mp.user_id = u.id
