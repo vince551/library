@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { pool } from "../config/database.js";
 import { nextAmgNumber } from "../domain/amg-numbering.js";
+import { canReduceAvailableStock } from "../domain/library-rules.js";
 
 const createCopySchema = z.object({
   bookId: z.string().uuid(),
@@ -130,7 +131,7 @@ export async function setBookCopyQuantity(req, res, next) {
 
       // Approved requests represent expected handovers. Do not remove stock
       // that is needed to fulfil those requests.
-      if (availableCount - removeCount < approvedRequestCount) {
+      if (!canReduceAvailableStock(availableCount, removeCount, approvedRequestCount)) {
         await client.query("ROLLBACK");
         return res.status(409).json({
           success: false,
