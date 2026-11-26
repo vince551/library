@@ -1141,3 +1141,128 @@ html:not([data-theme="dark"]) #librarianSection input::placeholder,
 html:not([data-theme="dark"]) #librarianSection textarea::placeholder {
   color:#91aeb3;
 }
+
+
+/* Mobile table layout: show every column as a labelled row, without sideways clipping. */
+@media (max-width:680px) {
+  #librarianSection .table-responsive {
+    overflow:visible !important;
+    max-width:100%;
+    border:0;
+  }
+  #librarianSection .table-responsive > .data-table,
+  #librarianSection .physical-inventory-wrap > .physical-inventory-table {
+    display:block;
+    width:100% !important;
+    min-width:0 !important;
+    table-layout:auto;
+    border:0;
+    border-collapse:separate;
+    border-spacing:0;
+  }
+  #librarianSection .table-responsive > .data-table thead,
+  #librarianSection .physical-inventory-wrap > .physical-inventory-table thead {
+    display:none;
+  }
+  #librarianSection .table-responsive > .data-table tbody,
+  #librarianSection .physical-inventory-wrap > .physical-inventory-table tbody {
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:12px;
+    width:100%;
+  }
+  #librarianSection .table-responsive > .data-table tbody tr,
+  #librarianSection .physical-inventory-wrap > .physical-inventory-table tbody tr {
+    display:block;
+    width:100%;
+    min-width:0;
+    overflow:hidden;
+    border:1px solid #dcebe5;
+    border-radius:14px;
+    background:#fff;
+    box-shadow:0 3px 12px rgba(20,70,50,.055);
+  }
+  #librarianSection .table-responsive > .data-table tbody td,
+  #librarianSection .physical-inventory-wrap > .physical-inventory-table tbody td {
+    display:grid;
+    grid-template-columns:minmax(92px,34%) minmax(0,1fr);
+    align-items:start;
+    gap:10px;
+    width:100% !important;
+    min-width:0 !important;
+    padding:11px 12px;
+    border:0;
+    border-bottom:1px solid #edf3f0;
+    text-align:left;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+    white-space:normal;
+    position:static;
+    box-shadow:none;
+    background:transparent;
+  }
+  #librarianSection .table-responsive > .data-table tbody td:last-child,
+  #librarianSection .physical-inventory-wrap > .physical-inventory-table tbody td:last-child {
+    border-bottom:0;
+  }
+  #librarianSection .table-responsive > .data-table tbody td[data-label]::before,
+  #librarianSection .physical-inventory-wrap > .physical-inventory-table tbody td[data-label]::before {
+    content:attr(data-label);
+    display:block;
+    color:#52736a;
+    font-size:10px;
+    line-height:1.4;
+    font-weight:800;
+    letter-spacing:.045em;
+    text-transform:uppercase;
+    overflow-wrap:anywhere;
+  }
+  #librarianSection .table-responsive > .data-table tbody td[colspan],
+  #librarianSection .physical-inventory-wrap > .physical-inventory-table tbody td[colspan] {
+    display:block;
+    text-align:center;
+  }
+  #librarianSection .physical-inventory-table .physical-id-cell,
+  #librarianSection .physical-inventory-table .physical-book-cell,
+  #librarianSection .physical-inventory-table .physical-category-cell,
+  #librarianSection .physical-inventory-table .physical-stock-cell,
+  #librarianSection .physical-inventory-table .physical-actions-cell {
+    width:100% !important;
+    min-width:0 !important;
+    padding:11px 12px !important;
+  }
+  #librarianSection .physical-inventory-table .physical-book-cell .book-inventory-title {
+    align-items:flex-start;
+  }
+  #librarianSection .physical-inventory-table .physical-actions-cell .book-admin-actions {
+    display:flex !important;
+    flex-direction:column;
+    align-items:stretch;
+    width:100%;
+  }
+  #librarianSection .physical-inventory-table .physical-actions-cell .physical-action-btn {
+    width:100%;
+    min-height:40px;
+  }
+  #librarianSection .table-responsive .data-table td[data-label="Actions"] > button,
+  #librarianSection .table-responsive .data-table td[data-label="Actions"] .btn {
+    max-width:100%;
+    white-space:normal;
+    margin:2px 4px 2px 0;
+  }
+  html[data-theme="dark"] #librarianSection .table-responsive > .data-table tbody tr,
+  html[data-theme="dark"] #librarianSection .physical-inventory-wrap > .physical-inventory-table tbody tr {
+    border-color:#1E3D2F;
+    background:#122E22;
+    box-shadow:0 3px 12px rgba(0,0,0,.16);
+  }
+  html[data-theme="dark"] #librarianSection .table-responsive > .data-table tbody td,
+  html[data-theme="dark"] #librarianSection .physical-inventory-wrap > .physical-inventory-table tbody td {
+    border-bottom-color:#1E3D2F;
+    color:#F0FDF4;
+  }
+  html[data-theme="dark"] #librarianSection .table-responsive > .data-table tbody td[data-label]::before,
+  html[data-theme="dark"] #librarianSection .physical-inventory-wrap > .physical-inventory-table tbody td[data-label]::before {
+    color:#9AB3A6;
+  }
+}
