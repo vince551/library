@@ -90,16 +90,24 @@ export async function recordAttendanceScan(req, res, next) {
 export async function getAttendanceRecords(req, res, next) {
   try {
     const result = await pool.query(
-      `SELECT ar.id, ar.attendance_number AS "attendanceNumber", u.full_name AS "memberName", mp.membership_number AS "libraryNumber",
-              ar.action,
-              CASE WHEN ar.action = 'check-in' THEN ar.scanned_at END AS "checkInAt",
-              CASE WHEN ar.action = 'check-out' THEN ar.scanned_at END AS "checkOutAt",
-              CASE WHEN ar.action = 'check-in' THEN 'In library' ELSE 'Checked out' END AS status,
-              ar.scanned_at AS "scannedAt"
-       FROM attendance_records ar
-       JOIN users u ON u.id = ar.member_id
+      `WITH ordered_events AS (
+         SELECT ar.*,
+                LEAD(ar.action) OVER (PARTITION BY ar.member_id ORDER BY ar.scanned_at, ar.id) AS next_action,
+                LEAD(ar.scanned_at) OVER (PARTITION BY ar.member_id ORDER BY ar.scanned_at, ar.id) AS next_scanned_at
+         FROM attendance_records ar
+       )
+       SELECT event.id, event.attendance_number AS "attendanceNumber",
+              u.full_name AS "memberName", mp.membership_number AS "libraryNumber",
+              event.scanned_at AS "checkInAt",
+              CASE WHEN event.next_action = 'check-out' THEN event.next_scanned_at END AS "checkOutAt",
+              CASE WHEN event.next_action = 'check-out' THEN 'Checked out' ELSE 'In library' END AS status,
+              event.scanned_at AS "scannedAt"
+       FROM ordered_events event
+       JOIN users u ON u.id = event.member_id
        JOIN member_profiles mp ON mp.user_id = u.id
-       ORDER BY ar.scanned_at DESC, ar.id DESC LIMIT 200`
+       WHERE event.action = 'check-in'
+       ORDER BY event.scanned_at DESC, event.id DESC
+       LIMIT 200`
     );
     return res.json({ success: true, count: result.rowCount, attendance: result.rows });
   } catch (error) { return next(error); }
