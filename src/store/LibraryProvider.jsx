@@ -226,14 +226,10 @@ export function LibraryProvider({ children }) {
         isbn: String(data.isbn || "").trim() || null,
         category: String(data.category || "").trim(),
         description: String(data.description || "").trim() || null,
+        ...(Number.isInteger(data.quantity) ? { quantity: data.quantity } : {}),
         ...(data.coverFile ? { coverType: data.coverFile.type, coverData: await fileToBase64(data.coverFile) } : {})
       };
       const result = await apiRequest(`/books/${encodeURIComponent(id)}`, { token, method: "PATCH", body });
-      if (Number.isInteger(data.quantity)) {
-        await apiRequest(`/copies/book/${encodeURIComponent(id)}/quantity`, {
-          token, method: "PATCH", body: { quantity: data.quantity }
-        });
-      }
       await Promise.all([refreshPublic(), refreshAdmin()]);
       showToast(result.message || "Book updated successfully.");
       return true;
