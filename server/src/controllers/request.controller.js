@@ -98,11 +98,10 @@ export async function decideBorrowRequest(req, res, next) {
   try {
     await client.query("BEGIN");
     const result = await client.query(
-      `SELECT r.*, u.status AS member_status, b.title
+      `SELECT r.*
        FROM borrow_requests r
-       JOIN users u ON u.id = r.member_id
-       JOIN books b ON b.id = r.book_id
-       WHERE r.id = $1 FOR UPDATE OF r`,
+       WHERE r.id = $1
+       FOR UPDATE`,
       [id.data]
     );
     if (!result.rowCount) {
@@ -110,15 +109,35 @@ export async function decideBorrowRequest(req, res, next) {
       return res.status(404).json({ success:false, message:"Borrowing request not found." });
     }
     const request = result.rows[0];
+    const titleResult = await client.query("SELECT title FROM books WHERE id = $1", [request.book_id]);
+    request.title = titleResult.rows[0]?.title || "the requested book";
     if (request.status !== "pending") {
       await client.query("ROLLBACK");
       return res.status(409).json({ success:false, message:"This request has already been processed." });
     }
     if (parsed.data.decision === "approved") {
-      if (request.member_status !== "active") {
+      // Serialize approvals for the same member so concurrent decisions cannot
+      // bypass the three-book borrowing limit.
+      const member = await client.query(
+        "SELECT id, role, status FROM users WHERE id = $1 FOR UPDATE",
+        [request.member_id]
+      );
+      if (!member.rowCount || member.rows[0].role !== "member" || member.rows[0].status !== "active") {
         await client.query("ROLLBACK");
         return res.status(409).json({ success:false, message:"Only active, approved members can borrow books." });
       }
+
+      // Serialize approvals for the same title so the available-copy check
+      // cannot approve more requests than there are physical copies.
+      const book = await client.query(
+        "SELECT id, title, is_published FROM books WHERE id = $1 FOR UPDATE",
+        [request.book_id]
+      );
+      if (!book.rowCount || !book.rows[0].is_published) {
+        await client.query("ROLLBACK");
+        return res.status(409).json({ success:false, message:"This book is no longer available in the catalogue." });
+      }
+
       const activeLoans = await client.query(
         "SELECT COUNT(*)::int AS total FROM loans WHERE member_id = $1 AND status IN ('active', 'overdue')",
         [request.member_id]
