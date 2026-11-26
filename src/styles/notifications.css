@@ -1,0 +1,23 @@
+.amg-notifications{position:relative;display:flex;align-items:center;z-index:80}
+.amg-notification-trigger{position:relative;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border-color,#d7e5dc);border-radius:999px;padding:9px 13px;background:var(--card-bg,#fff);color:var(--text-color,inherit);font:inherit;font-weight:700;cursor:pointer}
+.amg-notification-trigger>span:first-child{font-size:18px;color:#10b981}
+.amg-notification-count{display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#10b981;color:#052e1b;font-size:11px}
+.amg-notification-panel{position:absolute;top:calc(100% + 12px);right:0;width:min(380px,calc(100vw - 24px));max-height:min(520px,75vh);display:flex;flex-direction:column;overflow:hidden;border:1px solid #1e3d2f;border-radius:18px;background:#0a1f16;color:#f0fdf4;box-shadow:0 20px 55px #0005}
+.amg-notification-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px;border-bottom:1px solid #1e3d2f}
+.amg-notification-heading>div:first-child{display:grid;gap:3px}
+.amg-notification-heading strong{font-size:15px}
+.amg-notification-heading small,.amg-notification-item small{color:#9ab3a6;font-size:11px}
+.amg-notification-tools{display:flex;align-items:center;gap:8px}
+.amg-notification-tools button{border:0;background:transparent;color:#34d399;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.amg-notification-tools button:first-child{font-size:20px}
+.amg-notification-list{overflow:auto}
+.amg-notification-item{display:flex;width:100%;gap:11px;padding:14px 16px;border:0;border-bottom:1px solid #1e3d2f;background:transparent;color:inherit;text-align:left;cursor:pointer}
+.amg-notification-item:hover,.amg-notification-item.is-unread{background:#122e22}
+.amg-notification-dot{width:8px;height:8px;flex:0 0 8px;margin-top:6px;border-radius:50%;background:transparent}
+.amg-notification-item.is-unread .amg-notification-dot{background:#34d399;box-shadow:0 0 0 3px #10b98122}
+.amg-notification-copy{display:grid;gap:5px;min-width:0}
+.amg-notification-copy strong{font-size:13px}
+.amg-notification-copy>span{font-size:12px;line-height:1.5;color:#c5d8ce;overflow-wrap:anywhere}
+.amg-notification-empty,.amg-notification-error{padding:20px 16px;margin:0;color:#9ab3a6;font-size:13px;line-height:1.5}
+.amg-notification-error{color:#fca5a5}
+@media(max-width:760px){.amg-notification-panel{position:fixed;top:72px;right:12px;max-height:calc(100dvh - 92px)}.amg-notification-trigger{padding:8px 10px}}
