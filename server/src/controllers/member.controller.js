@@ -26,6 +26,8 @@ export async function getMembers(req, res, next) {
         mp.guardian_name,
         mp.guardian_relation,
         mp.guardian_phone,
+        mp.avatar_choice,
+        mp.photo_storage_key,
         mp.approved_at
        FROM users u
        LEFT JOIN member_profiles mp ON mp.user_id = u.id
