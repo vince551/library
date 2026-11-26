@@ -76,16 +76,22 @@ export function PendingLearnersTab({ active }) {
       <div className="table-responsive">
         <table className="data-table">
           <thead>
-            <tr><th>Name</th><th>Email</th><th>Phone</th><th>Applied</th><th>Actions</th></tr>
+            <tr><th>Name</th><th>Email</th><th>Phone</th><th>School</th><th>Education level</th><th>Study level</th><th>Gender</th><th>Guardian</th><th>Guardian phone</th><th>Applied</th><th>Actions</th></tr>
           </thead>
           <tbody id="pendingLearnersTable">
             {pending.length === 0 ? (
-              <tr><td colSpan="5">There are no pending membership applications.</td></tr>
+              <tr><td colSpan="11">There are no pending membership applications.</td></tr>
             ) : pending.map(member => (
               <tr key={member.id}>
                 <td data-label="Name">{member.full_name}</td>
                 <td data-label="Email">{member.email}</td>
                 <td data-label="Phone">{member.phone || "—"}</td>
+                <td data-label="School">{member.school || "—"}</td>
+                <td data-label="Education level">{member.edu_level || "—"}</td>
+                <td data-label="Study level">{member.study_level || "—"}</td>
+                <td data-label="Gender">{member.gender || "—"}</td>
+                <td data-label="Guardian">{member.guardian_name ? `${member.guardian_name}${member.guardian_relation ? " · " + member.guardian_relation : ""}` : "—"}</td>
+                <td data-label="Guardian phone">{member.guardian_phone || "—"}</td>
                 <td data-label="Applied">{member.created_at ? new Date(member.created_at).toLocaleDateString("en-KE") : "—"}</td>
                 <td data-label="Actions">
                   <button className="btn btn-sm btn-success" type="button" onClick={() => decide(member, "Approved")}>Approve</button>
