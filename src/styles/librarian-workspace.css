@@ -1042,3 +1042,72 @@ html[data-theme="dark"] #librarianSection .physical-actions-cell .book-admin-act
   border-color:rgba(248,113,113,.35);
   background:rgba(127,29,29,.22);
 }
+
+
+/* Ensure every published-book action remains visible on narrow screens. */
+#librarianSection .physical-actions-cell { overflow:visible; }
+#librarianSection .physical-actions-cell .book-admin-actions {
+  display:flex !important;
+  flex-direction:column;
+  flex-wrap:nowrap;
+  align-items:stretch;
+  justify-content:center;
+  gap:7px;
+  width:100%;
+  min-width:0;
+}
+#librarianSection .physical-actions-cell .book-admin-actions > .physical-action-btn {
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  position:relative;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-width:0;
+  min-height:38px;
+  margin:0;
+  padding:8px 6px;
+  border-radius:9px;
+  font-size:11px;
+  font-weight:750;
+  line-height:1.2;
+  white-space:normal;
+  text-align:center;
+}
+#librarianSection .physical-actions-cell .physical-action-edit,
+#librarianSection .physical-actions-cell .physical-action-copies {
+  color:#176b49;
+  border:1px solid #b9d9c6;
+  background:#eff8f2;
+}
+#librarianSection .physical-actions-cell .physical-action-remove {
+  color:#a52c2c;
+  border:1px solid #f0caca;
+  background:#fff1f1;
+}
+@media(max-width:680px) {
+  #librarianSection .physical-inventory-table .physical-col-actions,
+  #librarianSection .physical-inventory-table .physical-actions-cell {
+    width:142px !important;
+    min-width:142px !important;
+    padding:9px 8px !important;
+  }
+  #librarianSection .physical-actions-cell .book-admin-actions > .physical-action-btn {
+    display:flex !important;
+    min-height:40px;
+    font-size:11px;
+  }
+}
+html[data-theme="dark"] #librarianSection .physical-actions-cell .physical-action-edit,
+html[data-theme="dark"] #librarianSection .physical-actions-cell .physical-action-copies {
+  color:#34D399;
+  border-color:#1E3D2F;
+  background:#122E22;
+}
+html[data-theme="dark"] #librarianSection .physical-actions-cell .physical-action-remove {
+  color:#fecaca;
+  border-color:rgba(248,113,113,.35);
+  background:rgba(127,29,29,.22);
+}
