@@ -24,7 +24,7 @@ async function startServer() {
       console.log(`AMG API running on port ${PORT}`);
     });
   } catch (error) {
-    console.error("Database startup failed:", error.message);
+    console.error("API startup validation failed:", error.message);
     process.exit(1);
   }
 }
