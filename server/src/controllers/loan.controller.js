@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { pool } from "../config/database.js";
 import { withEffectiveLoanStatus } from "../domain/library-rules.js";
+import { createNotification } from "../services/notification.service.js";
 
 const issueSchema = z.object({
   barcode: z.string().trim().min(3).max(100),
@@ -233,6 +234,12 @@ if (activeLoans.rows[0].total >= 3) {
       ]
     );
 
+    await createNotification(client, {
+      userId: memberId, type: "book_issued", title: "Book checked out",
+      message: `“${copy.title}” has been issued to you. Please return it by ${new Date(loanResult.rows[0].due_at).toLocaleDateString("en-KE")}.`,
+      link: "profileSection", entityType: "loan", entityId: loanResult.rows[0].id
+    });
+
     await client.query("COMMIT");
 
     return res.status(201).json({
@@ -385,6 +392,12 @@ export async function returnBook(req, res, next) {
         })
       ]
     );
+
+    await createNotification(client, {
+      userId: loan.member_id, type: "book_returned", title: "Book returned",
+      message: `Your return of “${loan.title}” has been recorded successfully.`,
+      link: "profileSection", entityType: "loan", entityId: loan.id
+    });
 
     await client.query("COMMIT");
 
