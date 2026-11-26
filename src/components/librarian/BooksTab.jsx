@@ -106,6 +106,7 @@ export function BooksTab({ active }) {
       author: String(form.get("author") || "").trim(),
       isbn: String(form.get("isbn") || "").trim(),
       category: String(form.get("category") || ""),
+      quantity: Number(form.get("quantity")),
       description: String(form.get("description") || "").trim(),
       coverFile: editCover?.file || null
     });
@@ -228,6 +229,7 @@ export function BooksTab({ active }) {
             <label>Author<input name="author" defaultValue={editing.author || ""} required maxLength="255" /></label>
             <label>ISBN<input name="isbn" defaultValue={editing.isbn || ""} maxLength="32" /></label>
             <label>Category<select name="category" defaultValue={editing.category || BOOK_CATEGORIES[0]}>{BOOK_CATEGORIES.map(name => <option key={name} value={name}>{name}</option>)}</select></label>
+            <label>Total physical copies<input name="quantity" type="number" min="1" max="400" step="1" defaultValue={Number(editing.quantity || 1)} required /><small>Increasing adds new copies and barcodes. Reducing only removes unused available copies.</small></label>
             <label className="full-span">Description<input name="description" defaultValue={editing.description || ""} maxLength="10000" /></label>
             <div className="book-cover-field full-span">
               <span className="book-cover-label">Replace cover image <small>Take a new photo or choose an image · JPEG, PNG or WebP · up to 5 MB</small></span>
