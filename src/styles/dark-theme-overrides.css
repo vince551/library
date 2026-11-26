@@ -1759,3 +1759,296 @@ html[data-theme="dark"] #libShelfSection .catalogue-card .book-actions .btn-outl
 html[data-theme="dark"] #libShelfSection .catalogue-card .book-actions .btn:disabled{opacity:.48}
 html[data-theme="dark"] .catalogue-modal-backdrop{background:rgba(0,10,18,.78)}
 html[data-theme="dark"] .catalogue-detail-modal{border-color:rgba(104,190,196,.22);box-shadow:0 30px 90px rgba(0,0,0,.48)}
+
+/* AMG Deep Forest palette — unified dark-mode design tokens and surfaces. */
+html[data-theme="dark"] {
+  color-scheme:dark;
+  --amg-forest-bg:#0A1F16;
+  --amg-forest-card:#122E22;
+  --amg-forest-border:#1E3D2F;
+  --amg-forest-green:#10B981;
+  --amg-forest-bright:#34D399;
+  --amg-forest-text:#F0FDF4;
+  --amg-forest-muted:#9AB3A6;
+  --amg-ink:var(--amg-forest-text);
+  --amg-muted:var(--amg-forest-muted);
+  --amg-text:var(--amg-forest-text);
+  --amg-text-muted:var(--amg-forest-muted);
+  --amg-line:var(--amg-forest-border);
+  --amg-glass:rgba(18,46,34,.88);
+  --amg-glass-strong:#122E22;
+  --amg-glass-border:var(--amg-forest-border);
+  --amg-glass-shadow:0 16px 42px rgba(0,0,0,.28);
+  --amg-surface:#122E22;
+  --amg-surface-strong:#163b2b;
+  --amg-surface-soft:#10291e;
+  --amg-glass-edge:var(--amg-forest-border);
+  --amg-glass-elevation:0 16px 42px rgba(0,0,0,.25);
+  --amg-dropdown-bg:#122E22;
+  --amg-dropdown-text:#F0FDF4;
+  --amg-dropdown-muted:#9AB3A6;
+  --amg-dropdown-border:#1E3D2F;
+  --amg-dropdown-hover:rgba(16,185,129,.13);
+  --amg-dropdown-active:rgba(16,185,129,.2);
+  --amg-dropdown-shadow:0 20px 48px rgba(0,0,0,.4);
+  background:#0A1F16;
+}
+html[data-theme="dark"],
+html[data-theme="dark"] body {
+  color:#F0FDF4;
+  background:#0A1F16;
+}
+html[data-theme="dark"] body {
+  background:
+    radial-gradient(ellipse at 8% 0%,rgba(16,185,129,.09),transparent 34rem),
+    radial-gradient(ellipse at 95% 18%,rgba(16,185,129,.055),transparent 34rem),
+    linear-gradient(145deg,#0A1F16 0%,#0A1F16 58%,#0d261b 100%);
+  background-attachment:fixed;
+}
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] h5,
+html[data-theme="dark"] h6,
+html[data-theme="dark"] strong,
+html[data-theme="dark"] b,
+html[data-theme="dark"] .nav-brand,
+html[data-theme="dark"] .nav-brand > span {
+  color:#F0FDF4;
+}
+html[data-theme="dark"] p,
+html[data-theme="dark"] small,
+html[data-theme="dark"] label,
+html[data-theme="dark"] .muted,
+html[data-theme="dark"] .text-muted,
+html[data-theme="dark"] .workspace-hero p,
+html[data-theme="dark"] .workspace-module small {
+  color:#9AB3A6;
+}
+html[data-theme="dark"] .navbar,
+html[data-theme="dark"] .nav-links,
+html[data-theme="dark"] .mobile-nav-toggle,
+html[data-theme="dark"] .dropdown-content,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .home-featured-section,
+html[data-theme="dark"] .home-intro,
+html[data-theme="dark"] .home-services,
+html[data-theme="dark"] .home-journey,
+html[data-theme="dark"] .home-levels,
+html[data-theme="dark"] .home-values,
+html[data-theme="dark"] .purpose-card,
+html[data-theme="dark"] .home-feature,
+html[data-theme="dark"] .values-grid article,
+html[data-theme="dark"] .journey-grid article,
+html[data-theme="dark"] .featured-book-card,
+html[data-theme="dark"] .book-card,
+html[data-theme="dark"] .catalogue-card,
+html[data-theme="dark"] #profileSection .profile-layout > .panel,
+html[data-theme="dark"] #newsSection #announcementsList > *,
+html[data-theme="dark"] #librarianSection .admin-overview-panel,
+html[data-theme="dark"] #librarianSection .admin-quick-card,
+html[data-theme="dark"] #librarianSection .tab-content,
+html[data-theme="dark"] #librarianSection .chart-panel,
+html[data-theme="dark"] #librarianSection .workspace-module,
+html[data-theme="dark"] #librarianSection .workspace-metric,
+html[data-theme="dark"] #librarianSection .workspace-panel,
+html[data-theme="dark"] #librarianSection .book-registration-panel,
+html[data-theme="dark"] #librarianSection .attendance-card,
+html[data-theme="dark"] #librarianSection .insight-panel,
+html[data-theme="dark"] .workspace-metric,
+html[data-theme="dark"] .stat-card,
+html[data-theme="dark"] .catalogue-detail-modal,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] #authModal .auth-modal,
+html[data-theme="dark"] #authModal .auth-form-panel {
+  color:#F0FDF4 !important;
+  border-color:#1E3D2F !important;
+  background:#122E22 !important;
+  box-shadow:0 14px 38px rgba(0,0,0,.22);
+}
+html[data-theme="dark"] .navbar {
+  background:rgba(10,31,22,.96) !important;
+}
+html[data-theme="dark"] .nav-brand,
+html[data-theme="dark"] .nav-links,
+html[data-theme="dark"] .mobile-nav-toggle,
+html[data-theme="dark"] .dropdown-content {
+  border-color:#1E3D2F !important;
+  background:#122E22 !important;
+}
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] #authModal input:not([type="file"]),
+html[data-theme="dark"] #authModal select {
+  color:#F0FDF4 !important;
+  border-color:#1E3D2F !important;
+  background:#0A1F16 !important;
+}
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color:#9AB3A6 !important;
+  opacity:.85;
+}
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] select:focus,
+html[data-theme="dark"] textarea:focus {
+  border-color:#10B981 !important;
+  box-shadow:0 0 0 3px rgba(16,185,129,.16) !important;
+}
+html[data-theme="dark"] select option,
+html[data-theme="dark"] select optgroup {
+  color:#F0FDF4;
+  background:#122E22;
+}
+html[data-theme="dark"] .data-table,
+html[data-theme="dark"] .data-table tbody td {
+  color:#F0FDF4;
+  background:#122E22;
+}
+html[data-theme="dark"] .data-table th {
+  color:#34D399;
+  background:#10291e;
+}
+html[data-theme="dark"] .data-table td,
+html[data-theme="dark"] .data-table th {
+  border-color:#1E3D2F;
+}
+html[data-theme="dark"] .data-table tbody tr:nth-child(even) td {
+  background:#10291e;
+}
+html[data-theme="dark"] .data-table tbody tr:hover td {
+  background:rgba(16,185,129,.1);
+}
+html[data-theme="dark"] button.btn-primary,
+html[data-theme="dark"] .btn-primary,
+html[data-theme="dark"] button[type="submit"],
+html[data-theme="dark"] .workspace-hero .btn,
+html[data-theme="dark"] .amg-theme-float {
+  color:#062417 !important;
+  border-color:#34D399 !important;
+  background:#34D399 !important;
+  box-shadow:0 8px 22px rgba(16,185,129,.16);
+}
+html[data-theme="dark"] button.btn-primary:hover:not(:disabled),
+html[data-theme="dark"] .btn-primary:hover:not(:disabled),
+html[data-theme="dark"] button[type="submit"]:hover:not(:disabled) {
+  border-color:#10B981 !important;
+  background:#10B981 !important;
+}
+html[data-theme="dark"] .btn-outline,
+html[data-theme="dark"] .btn-secondary,
+html[data-theme="dark"] .book-admin-actions .btn,
+html[data-theme="dark"] .book-actions .btn {
+  color:#34D399;
+  border-color:#1E3D2F;
+  background:#122E22;
+}
+html[data-theme="dark"] .btn-outline:hover:not(:disabled),
+html[data-theme="dark"] .btn-secondary:hover:not(:disabled) {
+  color:#F0FDF4;
+  border-color:#10B981;
+  background:rgba(16,185,129,.12);
+}
+html[data-theme="dark"] a,
+html[data-theme="dark"] .nav-btn.active,
+html[data-theme="dark"] .nav-btn:hover,
+html[data-theme="dark"] .workspace-module-arrow,
+html[data-theme="dark"] .book-form-kicker,
+html[data-theme="dark"] .insight-kicker,
+html[data-theme="dark"] .attendance-kicker {
+  color:#34D399;
+}
+html[data-theme="dark"] .workspace-hero {
+  border-color:#1E3D2F;
+  background:linear-gradient(135deg,#122E22,#0d261b) !important;
+}
+html[data-theme="dark"] .workspace-metric strong,
+html[data-theme="dark"] .attendance-overview-card strong,
+html[data-theme="dark"] .insight-summary-card strong {
+  color:#34D399;
+}
+html[data-theme="dark"] .attendance-overview-card,
+html[data-theme="dark"] .insight-summary-card,
+html[data-theme="dark"] .attendance-capacity-visual,
+html[data-theme="dark"] .scanner-connection-status,
+html[data-theme="dark"] .book-cover-preview,
+html[data-theme="dark"] .book-cover-field,
+html[data-theme="dark"] .attendance-history-card .table-responsive {
+  color:#F0FDF4;
+  border-color:#1E3D2F;
+  background:#122E22;
+}
+html[data-theme="dark"] .attendance-history-card .data-table thead th {
+  color:#34D399;
+  background:#10291e;
+  border-bottom-color:#1E3D2F;
+}
+html[data-theme="dark"] .attendance-history-card .data-table tbody td {
+  color:#F0FDF4;
+  background:#122E22;
+  border-bottom-color:#1E3D2F;
+}
+html[data-theme="dark"] .attendance-history-card .data-table tbody tr:nth-child(even) td {
+  background:#10291e;
+}
+html[data-theme="dark"] .attendance-history-card .data-table tbody tr:hover td {
+  background:rgba(16,185,129,.1);
+}
+html[data-theme="dark"] .attendance-status.is-inside {
+  color:#34D399;
+  border-color:rgba(52,211,153,.22);
+  background:rgba(16,185,129,.12);
+}
+html[data-theme="dark"] .attendance-status.is-outside {
+  color:#9AB3A6;
+  border-color:#1E3D2F;
+  background:#10291e;
+}
+html[data-theme="dark"] .catalogue-card,
+html[data-theme="dark"] #libShelfSection .catalogue-card,
+html[data-theme="dark"] #libShelfSection .catalogue-toolbar,
+html[data-theme="dark"] #libShelfSection .catalogue-heading,
+html[data-theme="dark"] .catalogue-detail-modal {
+  color:#F0FDF4;
+  border-color:#1E3D2F;
+  background:#122E22;
+}
+html[data-theme="dark"] #libShelfSection .catalogue-cover,
+html[data-theme="dark"] .catalogue-cover,
+html[data-theme="dark"] .featured-book-cover,
+html[data-theme="dark"] .book-cover {
+  background:#0A1F16;
+}
+html[data-theme="dark"] #libShelfSection .catalogue-card .book-category,
+html[data-theme="dark"] #libShelfSection .catalogue-card .book-stock {
+  color:#34D399;
+  border-color:#1E3D2F;
+  background:rgba(16,185,129,.1);
+}
+html[data-theme="dark"] .site-footer {
+  color:#9AB3A6;
+  border-color:#1E3D2F;
+  background:#0A1F16;
+}
+html[data-theme="dark"] .notice,
+html[data-theme="dark"] .alert,
+html[data-theme="dark"] .copy-label,
+html[data-theme="dark"] .stack-item {
+  color:#F0FDF4;
+  border-color:#1E3D2F;
+  background:#122E22;
+}
+html[data-theme="dark"] hr,
+html[data-theme="dark"] .divider { border-color:#1E3D2F; }
+html[data-theme="dark"] ::selection {
+  color:#062417;
+  background:#34D399;
+}
+@media (max-width:680px) {
+  html[data-theme="dark"] .amg-theme-float {
+    color:#062417 !important;
+    background:#34D399 !important;
+  }
+}
