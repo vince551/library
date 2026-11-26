@@ -135,12 +135,12 @@ export function MemberProfile({ active }) {
         <p>Your membership information, card, requests and loan history.</p>
       </div>
 
-      {user && profile && !profile.isApproved && profile.membershipStatus !== "Denied" ? (
+      {user && profile && !profile.isApproved && profile.membershipStatus !== "rejected" ? (
         <div id="pendingApprovalNotice" className="notice notice-warning">
           Your registration is awaiting librarian approval. You can explore the catalogue while you wait.
         </div>
       ) : null}
-      {user && profile?.membershipStatus === "Denied" ? (
+      {user && profile?.membershipStatus === "rejected" ? (
         <div id="membershipDecisionNotice" className="notice notice-warning">
           Your membership application was denied. Please contact the librarian for assistance.
         </div>
