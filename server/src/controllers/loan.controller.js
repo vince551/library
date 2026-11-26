@@ -1,7 +1,7 @@
 
 import { z } from "zod";
 import { pool } from "../config/database.js";
-import { withEffectiveLoanStatus } from "../domain/library-rules.js";
+import { canIssueCopy, canReturnLoan, hasBorrowingCapacity, withEffectiveLoanStatus } from "../domain/library-rules.js";
 import { createNotification } from "../services/notification.service.js";
 
 const issueSchema = z.object({
@@ -102,7 +102,7 @@ export async function issueBook(req, res, next) {
 
     const copy = copyResult.rows[0];
 
-    if (copy.status !== "available") {
+    if (!canIssueCopy(copy.status)) {
       await client.query("ROLLBACK");
 
       return res.status(409).json({
@@ -161,7 +161,7 @@ const activeLoans = await client.query(
   [memberId]
 );
 
-if (activeLoans.rows[0].total >= 3) {
+if (!hasBorrowingCapacity(activeLoans.rows[0].total, 3)) {
   await client.query("ROLLBACK");
 
   return res.status(409).json({
@@ -345,7 +345,7 @@ export async function returnBook(req, res, next) {
 
     const loan = loanResult.rows[0];
 
-    if (!["active", "overdue"].includes(loan.status)) {
+    if (!canReturnLoan(loan.status)) {
       await client.query("ROLLBACK");
 
       return res.status(409).json({
