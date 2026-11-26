@@ -14,6 +14,7 @@ import attendanceRoutes from "./routes/attendance.routes.js";
 import requestRoutes from "./routes/request.routes.js";
 import contentRoutes from "./routes/content.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
 
 const app = express();
 
@@ -79,6 +80,7 @@ app.use("/api/members", memberRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/content", contentRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.use((err, req, res, next) => {
   console.error("API error:", err);
