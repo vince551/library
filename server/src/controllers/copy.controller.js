@@ -117,16 +117,14 @@ export async function setBookCopyQuantity(req, res, next) {
       }
     } else if (targetQuantity < currentQuantity) {
       const removeCount = currentQuantity - targetQuantity;
-      const [availableResult, approvedResult] = await Promise.all([
-        client.query(
-          "SELECT COUNT(*)::int AS total FROM book_copies WHERE book_id = $1 AND status = 'available'",
-          [parsedId.data]
-        ),
-        client.query(
-          "SELECT COUNT(*)::int AS total FROM borrow_requests WHERE book_id = $1 AND status = 'approved'",
-          [parsedId.data]
-        )
-      ]);
+      const availableResult = await client.query(
+        "SELECT COUNT(*)::int AS total FROM book_copies WHERE book_id = $1 AND status = 'available'",
+        [parsedId.data]
+      );
+      const approvedResult = await client.query(
+        "SELECT COUNT(*)::int AS total FROM borrow_requests WHERE book_id = $1 AND status = 'approved'",
+        [parsedId.data]
+      );
       const availableCount = Number(availableResult.rows[0].total);
       const approvedRequestCount = Number(approvedResult.rows[0].total);
 
