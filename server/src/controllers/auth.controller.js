@@ -140,7 +140,7 @@ export async function register(req, res, next) {
       });
     }
 
-    const { fullName, email, password, gender, school, studyLevel, eduLevel, guardianName, guardianRelation, guardianPhone } = parsed.data;
+    const { fullName, email, password, gender, school, studyLevel, eduLevel, guardianName, guardianRelation, guardianPhone, photoType, photoData } = parsed.data;
     const normalizedEmail = email.toLowerCase();
 
     await client.query("BEGIN");
