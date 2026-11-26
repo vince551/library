@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { pool } from "../config/database.js";
 import { nextAmgNumber } from "../domain/amg-numbering.js";
+import { createNotification } from "../services/notification.service.js";
 
 // List and search members.
 export async function getMembers(req, res, next) {
@@ -129,6 +130,13 @@ export async function approveMember(req, res, next) {
         JSON.stringify({ membershipNumber })
       ]
     );
+
+    await createNotification(client, {
+      userId: member.id, type: "membership_approved",
+      title: "Membership approved",
+      message: "Your AMG Library membership is active. Your membership number is " + membershipNumber + ".",
+      link: "profileSection", entityType: "user", entityId: member.id
+    });
 
     await client.query("COMMIT");
 
