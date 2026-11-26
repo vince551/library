@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useToast } from "./ToastProvider";
 import { apiRequest } from "../lib/api";
+import { avatarSeedUrl } from "../lib/format";
 
 const AuthContext = createContext(null);
 
@@ -31,7 +32,7 @@ function toProfile(user) {
     guardianName: user.guardian_name || user.guardianName || "",
     guardianRelation: user.guardian_relation || user.guardianRelation || "",
     guardianPhone: user.guardian_phone || user.guardianPhone || "",
-    photoURL: user.photoURL || user.photo_url || "",
+    photoURL: user.photoURL || user.photo_url || (user.avatar_choice ? avatarSeedUrl(user.avatar_choice) : ""),
     isApproved: user.status === "active",
     approvedAt: user.approved_at || user.approvedAt || null,
     membershipStatus: user.status || "pending"
@@ -124,6 +125,7 @@ export function AuthProvider({ children }) {
           guardianName: String(form.get("guardianName") || "").trim(),
           guardianRelation: String(form.get("guardianRelation") || ""),
           guardianPhone: String(form.get("guardianPhone") || "").trim(),
+          avatarChoice: String(form.get("avatarChoice") || "scholar"),
           ...(form.get("photo") instanceof File && form.get("photo").size > 0 ? {
             photoType: form.get("photo").type,
             photoData: await photoFileToBase64(form.get("photo"))
