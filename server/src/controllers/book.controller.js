@@ -63,7 +63,11 @@ async function signedBookCover(key) {
   if (!signed) throw new Error("Storage did not return a signed cover URL.");
   return signed.startsWith("http") ? signed : `${config.baseUrl}/storage/v1${signed.startsWith("/") ? "" : "/"}${signed}`;
 }
-function withCoverUrl(row) { return { ...row, coverUrl: row.cover_image_key ? `/api/books/${row.id}/cover` : "" }; }
+function withCoverUrl(row) {
+  // Each replacement gets a new URL so browsers cannot keep showing the previous cover.
+  const coverRevision = row.cover_image_key ? row.cover_image_key.split("/").pop() : "";
+  return { ...row, coverUrl: row.cover_image_key ? `/api/books/${row.id}/cover?v=${encodeURIComponent(coverRevision)}` : "" };
+}
 
 const bookSchema = z.object({
   title: z.string().trim().min(1).max(255),
@@ -445,6 +449,10 @@ export async function streamBookCover(req, res, next) {
       `SELECT cover_image_key FROM books WHERE id = $1 AND is_published = TRUE
        AND NOT EXISTS (SELECT 1 FROM ebooks WHERE ebooks.book_id = books.id)`, [id.data]);
     if (!result.rowCount || !result.rows[0].cover_image_key) return res.status(404).end();
+    // The underlying object changes when a cover is replaced; never cache this redirect.
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
     return res.redirect(302, await signedBookCover(result.rows[0].cover_image_key));
   } catch (error) { next(error); }
 }
