@@ -20,7 +20,7 @@ export async function authenticate(req, res, next) {
       `SELECT u.id, u.full_name, u.email, u.role, u.status,
               mp.membership_number, mp.approved_at, mp.phone, mp.address,
               mp.gender, mp.school, mp.study_level, mp.edu_level,
-              mp.guardian_name, mp.guardian_relation, mp.guardian_phone
+              mp.guardian_name, mp.guardian_relation, mp.guardian_phone, mp.photo_storage_key
        FROM users u
        LEFT JOIN member_profiles mp ON mp.user_id = u.id
        WHERE u.id = $1`,
