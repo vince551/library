@@ -149,10 +149,14 @@ export function BooksTab({ active }) {
 
   return (
     <div id="booksAdminTab" className={"tab-content" + (active ? " active" : "")}>
-      <h3>Add a physical book</h3>
-      <p className="muted">Add print titles and manage the number of copies available to borrow.</p>
-      <div className="notice notice-success">Book details, cover images and copy barcodes are saved to the AMG Library database.</div>
-      <form id="bookForm" ref={formRef} className="form-grid" onSubmit={submit}>
+      <section className="book-registration-panel">
+        <div className="book-registration-heading">
+          <span className="book-form-kicker">INVENTORY MANAGEMENT</span>
+          <h3>Add a physical book</h3>
+          <p className="muted">Create a catalogue record, add the number of copies, and generate a barcode label for each copy.</p>
+        </div>
+        <div className="notice notice-success">Book details, cover images and copy barcodes are saved to the AMG Library database.</div>
+      <form id="bookForm" ref={formRef} className="form-grid book-registration-form" onSubmit={submit}>
         <label>Book title<input name="title" required maxLength="160" /></label>
         <label>Author<input name="author" required maxLength="120" /></label>
         <label>ISBN (optional)<input name="isbn" maxLength="32" placeholder="ISBN-13 or ISBN-10" /></label>
@@ -171,6 +175,7 @@ export function BooksTab({ active }) {
         <label>Short description (optional)<input name="description" maxLength="500" /></label>
         <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Saving book…" : "Add book & generate copy labels"}</button>
       </form>
+      </section>
 
       {labels ? <div id="copyLabelsPanel" className="copy-labels-panel">
         <h4>Copy labels — {labels.title}</h4>
@@ -205,12 +210,12 @@ export function BooksTab({ active }) {
         onMouseDown={event => { if (event.target === event.currentTarget) { if (editCover?.url) URL.revokeObjectURL(editCover.url); setEditCover(null); setEditing(null); } }}
         style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(5, 12, 10, 0.78)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px", overflowY: "auto" }}
       >
-        <section className="card" role="dialog" aria-modal="true" aria-label="Edit physical book" style={{ width: "min(100%, 680px)", maxHeight: "min(90vh, 850px)", overflowY: "auto", margin: "auto", padding: "clamp(16px, 4vw, 28px)", background: "var(--surface, #fff)", color: "var(--text, #17211d)", boxShadow: "0 24px 80px rgba(0,0,0,.4)" }}>
+        <section className="card book-edit-card" role="dialog" aria-modal="true" aria-label="Edit physical book" style={{ width: "min(100%, 680px)", maxHeight: "min(90vh, 850px)", overflowY: "auto", margin: "auto", padding: "clamp(16px, 4vw, 28px)", background: "var(--surface, #fff)", color: "var(--text, #17211d)", boxShadow: "0 24px 80px rgba(0,0,0,.4)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
             <div><h3 style={{ margin: 0 }}>Edit book details</h3><p className="muted" style={{ margin: "6px 0 0" }}>Update the published book record.</p></div>
             <button className="btn btn-outline" type="button" onClick={() => { if (editCover?.url) URL.revokeObjectURL(editCover.url); setEditCover(null); setEditing(null); }}>Close</button>
           </div>
-          <form className="form-grid" key={editing.id} onSubmit={submitEdit}>
+          <form className="form-grid book-editor-form" key={editing.id} onSubmit={submitEdit}>
             <label>Book title<input name="title" defaultValue={editing.title || ""} required maxLength="255" /></label>
             <label>Author<input name="author" defaultValue={editing.author || ""} required maxLength="255" /></label>
             <label>ISBN<input name="isbn" defaultValue={editing.isbn || ""} maxLength="32" /></label>
