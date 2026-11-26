@@ -12,6 +12,8 @@ export function BooksTab({ active }) {
   const formRef = useRef(null);
   const galleryRef = useRef(null);
   const cameraRef = useRef(null);
+  const editGalleryRef = useRef(null);
+  const editCameraRef = useRef(null);
   const [cover, setCover] = useState({ file: null, url: "", name: "" });
   const [labels, setLabels] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -56,7 +58,13 @@ export function BooksTab({ active }) {
       return;
     }
     if (editingMode) {
-      setEditCover({ file, url: URL.createObjectURL(file), name: file.name || "Camera photo" });
+      input.value = "";
+      if (input === editGalleryRef.current && editCameraRef.current) editCameraRef.current.value = "";
+      if (input === editCameraRef.current && editGalleryRef.current) editGalleryRef.current.value = "";
+      setEditCover(current => {
+        if (current?.url) URL.revokeObjectURL(current.url);
+        return { file, url: URL.createObjectURL(file), name: file.name || "Camera photo" };
+      });
       return;
     }
     if (input === galleryRef.current && cameraRef.current) cameraRef.current.value = "";
@@ -222,10 +230,15 @@ export function BooksTab({ active }) {
             <label>Category<select name="category" defaultValue={editing.category || BOOK_CATEGORIES[0]}>{BOOK_CATEGORIES.map(name => <option key={name} value={name}>{name}</option>)}</select></label>
             <label className="full-span">Description<input name="description" defaultValue={editing.description || ""} maxLength="10000" /></label>
             <div className="book-cover-field full-span">
-              <span className="book-cover-label">Replace cover image <small>Leave empty to keep the current cover</small></span>
-              {editing.coverUrl && !editCover ? <img src={editing.coverUrl} alt="Current book cover" style={{ width: 90, height: 120, objectFit: "cover", borderRadius: 8 }} /> : null}
-              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => pickCover(event, true)} />
-              {editCover ? <div className="book-cover-preview"><img src={editCover.url} alt="New cover preview" /><strong>{editCover.name}</strong><button type="button" className="btn btn-sm btn-outline" onClick={() => { URL.revokeObjectURL(editCover.url); setEditCover(null); }}>Cancel replacement</button></div> : null}
+              <span className="book-cover-label">Replace cover image <small>Take a new photo or choose an image · JPEG, PNG or WebP · up to 5 MB</small></span>
+              {editing.coverUrl && !editCover ? <div className="book-cover-preview"><img src={editing.coverUrl} alt="Current book cover" /><div><strong>Current cover</strong><small>Choose a new photo or upload a replacement</small></div></div> : null}
+              <div className="book-cover-actions">
+                <label className="btn btn-outline" htmlFor="editBookCoverGalleryInput">Choose from device</label>
+                <input id="editBookCoverGalleryInput" ref={editGalleryRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => pickCover(event, true)} />
+                <label className="btn btn-outline" htmlFor="editBookCoverCameraInput">Take cover photo</label>
+                <input id="editBookCoverCameraInput" ref={editCameraRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden onChange={event => pickCover(event, true)} />
+              </div>
+              {editCover ? <div className="book-cover-preview"><img src={editCover.url} alt="New cover preview" /><div><strong>{editCover.name}</strong><small>New cover preview</small><button type="button" className="btn btn-sm btn-outline" onClick={() => { URL.revokeObjectURL(editCover.url); setEditCover(null); }}>Cancel replacement</button></div></div> : null}
             </div>
             <div className="full-span" style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
               <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</button>
