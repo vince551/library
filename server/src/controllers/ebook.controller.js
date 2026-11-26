@@ -262,6 +262,15 @@ export async function uploadEbook(req, res, next) {
          RETURNING id, book_id, ebook_number, file_format, file_size_bytes, created_at`,
         [bookResult.rows[0].id, fileKey, fileType.format, fileBuffer.length]
       );
+      await client.query(
+        `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details)
+         VALUES ($1, 'EBOOK_UPLOADED', 'ebook', $2, $3::jsonb)`,
+        [req.user.id, ebookResult.rows[0].id, JSON.stringify({
+          title: input.title,
+          format: fileType.format,
+          fileSizeBytes: fileBuffer.length
+        })]
+      );
       created = {
         ...ebookResult.rows[0],
         catalogue_number: bookResult.rows[0].catalogue_number,
@@ -294,8 +303,7 @@ export async function uploadEbook(req, res, next) {
       return res.status(error.status).json({
         success: false,
         message: error.status === 503 || error.status === 400 ? error.message : "The file storage service could not complete the request.",
-        ...(error.storageStatus ? { storageStatus: error.storageStatus } : {}),
-        ...(error.storageDetail ? { storageDetail: error.storageDetail } : {})
+        ...(error.storageStatus ? { storageStatus: error.storageStatus } : {})
       });
     }
     if (error.message?.includes("file") || error.message?.includes("image")) {
@@ -351,7 +359,7 @@ export async function deleteEbook(req, res, next) {
     try {
       await client.query("BEGIN");
       const result = await client.query(
-        `SELECT e.id, e.book_id, e.file_key, b.cover_image_key
+        `SELECT e.id, e.book_id, e.file_key, e.file_format, b.title, b.cover_image_key
          FROM ebooks e
          JOIN books b ON b.id = e.book_id
          WHERE e.id = $1
@@ -365,6 +373,14 @@ export async function deleteEbook(req, res, next) {
 
       deleted = result.rows[0];
       await client.query("DELETE FROM ebooks WHERE id = $1", [id.data]);
+      await client.query(
+        `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details)
+         VALUES ($1, 'EBOOK_DELETED', 'ebook', $2, $3::jsonb)`,
+        [req.user.id, deleted.id, JSON.stringify({
+          title: deleted.title,
+          format: deleted.file_format
+        })]
+      );
       // Each uploaded e-book creates its own catalogue metadata row.
       // Remove that row too, so it cannot reappear as a physical print book.
       await client.query("DELETE FROM books WHERE id = $1", [deleted.book_id]);
