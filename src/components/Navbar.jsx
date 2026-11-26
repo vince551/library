@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../store/AuthProvider";
+import { NotificationBell } from "./NotificationBell";
 
 const SECTIONS = [
   { id: "heroSection", label: "Home" },
@@ -125,6 +126,8 @@ export function Navbar({ section, onNavigate, onOpenAuth }) {
             </button>
           );
         })}
+
+        {user && profile?.role === "member" ? <NotificationBell onNavigate={navigate} /> : null}
 
         {user ? (
           <div id="userBadge" className="user-badge">
