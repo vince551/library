@@ -8,4 +8,5 @@ ALTER TABLE member_profiles
   ADD COLUMN IF NOT EXISTS guardian_name VARCHAR(120),
   ADD COLUMN IF NOT EXISTS guardian_relation VARCHAR(40),
   ADD COLUMN IF NOT EXISTS guardian_phone VARCHAR(30),
-  ADD COLUMN IF NOT EXISTS photo_storage_key VARCHAR(500);
+  ADD COLUMN IF NOT EXISTS photo_storage_key VARCHAR(500),
+  ADD COLUMN IF NOT EXISTS avatar_choice VARCHAR(30);
