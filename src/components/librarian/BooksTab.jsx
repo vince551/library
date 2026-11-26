@@ -97,6 +97,7 @@ export function BooksTab({ active }) {
       title: String(form.get("title") || "").trim(),
       author: String(form.get("author") || "").trim(),
       isbn: String(form.get("isbn") || "").trim(),
+      category: String(form.get("category") || ""),
       description: String(form.get("description") || "").trim(),
       coverFile: editCover?.file || null
     });
@@ -190,7 +191,7 @@ export function BooksTab({ active }) {
               <td>{book.category}</td>
               <td>{Number(book.available || 0) + " / " + Number(book.quantity || 0)}</td>
               <td><div className="book-admin-actions">
-                <button className="btn btn-sm btn-outline" type="button" onClick={() => { setCopiesBook(null); setEditing(book); setEditCover(null); }}>Edit</button>
+                <button className="btn btn-sm btn-outline" type="button" onClick={() => { setCopiesBook(null); setEditCover(null); setEditing(book); }}>Edit</button>
                 <button className="btn btn-sm btn-outline" type="button" onClick={() => manageCopies(book)}>Copies</button>
                 <button className="btn btn-sm btn-danger" type="button" onClick={() => remove(book)}>Remove</button>
               </div></td>
@@ -199,23 +200,35 @@ export function BooksTab({ active }) {
         </table>
       </div>
 
-      {editing ? <section className="card top-gap" aria-label="Edit physical book">
-        <h3>Edit book details</h3>
-        <form className="form-grid" key={editing.id} onSubmit={submitEdit}>
-          <label>Book title<input name="title" defaultValue={editing.title || ""} required maxLength="255" /></label>
-          <label>Author<input name="author" defaultValue={editing.author || ""} required maxLength="255" /></label>
-          <label>ISBN<input name="isbn" defaultValue={editing.isbn || ""} maxLength="20" /></label>
-          <label>Category<select name="category" defaultValue={editing.category || BOOK_CATEGORIES[0]}>{BOOK_CATEGORIES.map(name => <option key={name} value={name}>{name}</option>)}</select></label>
-          <label className="full-span">Description<input name="description" defaultValue={editing.description || ""} maxLength="10000" /></label>
-          <div className="book-cover-field full-span">
-            <span className="book-cover-label">Replace cover image <small>Leave empty to keep the current cover</small></span>
-            {editing.coverUrl && !editCover ? <img src={editing.coverUrl} alt="Current book cover" style={{ width: 90, height: 120, objectFit: "cover", borderRadius: 8 }} /> : null}
-            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => pickCover(event, true)} />
-            {editCover ? <div className="book-cover-preview"><img src={editCover.url} alt="New cover preview" /><strong>{editCover.name}</strong><button type="button" className="btn btn-sm btn-outline" onClick={() => { URL.revokeObjectURL(editCover.url); setEditCover(null); }}>Cancel replacement</button></div> : null}
+      {editing ? <div
+        role="presentation"
+        onMouseDown={event => { if (event.target === event.currentTarget) { if (editCover?.url) URL.revokeObjectURL(editCover.url); setEditCover(null); setEditing(null); } }}
+        style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(5, 12, 10, 0.78)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px", overflowY: "auto" }}
+      >
+        <section className="card" role="dialog" aria-modal="true" aria-label="Edit physical book" style={{ width: "min(100%, 680px)", maxHeight: "min(90vh, 850px)", overflowY: "auto", margin: "auto", padding: "clamp(16px, 4vw, 28px)", background: "var(--surface, #fff)", color: "var(--text, #17211d)", boxShadow: "0 24px 80px rgba(0,0,0,.4)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
+            <div><h3 style={{ margin: 0 }}>Edit book details</h3><p className="muted" style={{ margin: "6px 0 0" }}>Update the published book record.</p></div>
+            <button className="btn btn-outline" type="button" onClick={() => { if (editCover?.url) URL.revokeObjectURL(editCover.url); setEditCover(null); setEditing(null); }}>Close</button>
           </div>
-          <div className="full-span"><button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</button> <button className="btn btn-outline" type="button" onClick={() => { if (editCover?.url) URL.revokeObjectURL(editCover.url); setEditCover(null); setEditing(null); }}>Cancel</button></div>
-        </form>
-      </section> : null}
+          <form className="form-grid" key={editing.id} onSubmit={submitEdit}>
+            <label>Book title<input name="title" defaultValue={editing.title || ""} required maxLength="255" /></label>
+            <label>Author<input name="author" defaultValue={editing.author || ""} required maxLength="255" /></label>
+            <label>ISBN<input name="isbn" defaultValue={editing.isbn || ""} maxLength="32" /></label>
+            <label>Category<select name="category" defaultValue={editing.category || BOOK_CATEGORIES[0]}>{BOOK_CATEGORIES.map(name => <option key={name} value={name}>{name}</option>)}</select></label>
+            <label className="full-span">Description<input name="description" defaultValue={editing.description || ""} maxLength="10000" /></label>
+            <div className="book-cover-field full-span">
+              <span className="book-cover-label">Replace cover image <small>Leave empty to keep the current cover</small></span>
+              {editing.coverUrl && !editCover ? <img src={editing.coverUrl} alt="Current book cover" style={{ width: 90, height: 120, objectFit: "cover", borderRadius: 8 }} /> : null}
+              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => pickCover(event, true)} />
+              {editCover ? <div className="book-cover-preview"><img src={editCover.url} alt="New cover preview" /><strong>{editCover.name}</strong><button type="button" className="btn btn-sm btn-outline" onClick={() => { URL.revokeObjectURL(editCover.url); setEditCover(null); }}>Cancel replacement</button></div> : null}
+            </div>
+            <div className="full-span" style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+              <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</button>
+              <button className="btn btn-outline" type="button" onClick={() => { if (editCover?.url) URL.revokeObjectURL(editCover.url); setEditCover(null); setEditing(null); }}>Cancel</button>
+            </div>
+          </form>
+        </section>
+      </div> : null}
 
       {copiesBook ? <section className="card top-gap" aria-label="Manage physical copies">
         <div className="book-copy-heading"><div><h3>Physical copies</h3><p className="muted">{copiesBook.title} · Barcodes remain unchanged.</p></div><button className="btn btn-outline" type="button" onClick={() => setCopiesBook(null)}>Close</button></div>
