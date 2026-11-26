@@ -23,3 +23,27 @@ export function effectiveLoanStatus(status, dueAt, now = Date.now()) {
 export function withEffectiveLoanStatus(loan) {
   return { ...loan, status: effectiveLoanStatus(loan.status, loan.due_at ?? loan.dueAt) };
 }
+
+export function canIssueCopy(copyStatus) {
+  return copyStatus === "available";
+}
+
+export function canReturnLoan(loanStatus) {
+  return loanStatus === "active" || loanStatus === "overdue";
+}
+
+export function hasBorrowingCapacity(activeLoanCount, limit = 3) {
+  const count = Number(activeLoanCount);
+  const maximum = Number(limit);
+  return Number.isInteger(count) && Number.isInteger(maximum) &&
+    count >= 0 && maximum > 0 && count < maximum;
+}
+
+export function canReduceAvailableStock(availableCount, removeCount, approvedRequestCount) {
+  const available = Number(availableCount);
+  const removing = Number(removeCount);
+  const approved = Number(approvedRequestCount);
+  return [available, removing, approved].every(Number.isInteger) &&
+    available >= 0 && removing >= 0 && approved >= 0 &&
+    available - removing >= approved;
+}
