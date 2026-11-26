@@ -147,10 +147,13 @@ export async function decideBorrowRequest(req, res, next) {
         return res.status(409).json({ success:false, message:"This member has reached the maximum borrowing limit of 3 books." });
       }
       const stock = await client.query(
-        "SELECT COUNT(*)::int AS available FROM book_copies WHERE book_id = $1 AND status = 'available'",
+        `SELECT id FROM book_copies
+         WHERE book_id = $1 AND status = 'available'
+         ORDER BY created_at, id
+         FOR UPDATE`,
         [request.book_id]
       );
-      if (stock.rows[0].available < 1) {
+      if (stock.rowCount < 1) {
         await client.query("ROLLBACK");
         return res.status(409).json({ success:false, message:"No copies are currently available. The request has not been approved." });
       }
