@@ -145,14 +145,18 @@ export async function decideBorrowRequest(req, res, next) {
        VALUES ($1, $2, 'borrow_request', $3, $4::jsonb)`,
       [req.user.id, parsed.data.decision === "approved" ? "BORROW_REQUEST_APPROVED" : "BORROW_REQUEST_DECLINED", id.data, JSON.stringify({ memberId:request.member_id, bookId:request.book_id, title:request.title })]
     );
-    await createNotification(client, {
-      userId: request.member_id,
-      type: parsed.data.decision === "approved" ? "request_approved" : "request_declined",
-      title: parsed.data.decision === "approved" ? "Borrowing request approved" : "Borrowing request declined",
-      message: `Your request for “${request.title}” was ${parsed.data.decision}.`,
-      link: "profileSection", entityType: "borrow_request", entityId: id.data
-    });
     await client.query("COMMIT");
+    try {
+      await createNotification(pool, {
+        userId: request.member_id,
+        type: parsed.data.decision === "approved" ? "request_approved" : "request_declined",
+        title: parsed.data.decision === "approved" ? "Borrowing request approved" : "Borrowing request declined",
+        message: `Your request for “${request.title}” was ${parsed.data.decision}.`,
+        link: "profileSection", entityType: "borrow_request", entityId: id.data
+      });
+    } catch (notificationError) {
+      console.error("Could not create borrowing-request notification:", notificationError.message);
+    }
     return res.json({ success:true, message:parsed.data.decision === "approved" ? "Borrowing request approved. Scan the member card and book copy when handing over the book." : "Borrowing request declined.", request:updated.rows[0] });
   } catch (error) {
     await client.query("ROLLBACK").catch(() => {});
