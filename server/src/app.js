@@ -16,6 +16,17 @@ import settingsRoutes from "./routes/settings.routes.js";
 
 const app = express();
 
+// Render terminates TLS at its edge proxy and forwards one trusted hop.
+app.set("trust proxy", 1);
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 600,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { success: false, message: "Too many requests. Please wait a few minutes and try again." }
+});
+
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
@@ -71,7 +82,7 @@ app.use("/api/settings", settingsRoutes);
 app.use((err, req, res, next) => {
   console.error("API error:", err);
 
-  if (err.type === "entity.too.large") {
+  if (err.message?.includes("CORS")) {\n    return res.status(403).json({ success: false, message: "This website is not allowed to access the AMG Library API." });\n  }\n\n  if (err.type === "entity.too.large") {
     return res.status(413).json({
       success: false,
       message: "The upload is too large. E-books are limited to 30 MB and cover images to 5 MB."
