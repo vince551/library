@@ -80,6 +80,87 @@ export async function getBookCopies(req, res, next) {
   }
 }
 
+
+/**
+ * Adjust a title's total physical copy count without changing existing barcodes.
+ * When reducing stock, only unused, available copies with no loan history may be removed.
+ */
+export async function setBookCopyQuantity(req, res, next) {
+  const parsedId = z.string().uuid().safeParse(req.params.bookId);
+  const parsedQuantity = z.number().int().min(1).max(400).safeParse(req.body?.quantity);
+  if (!parsedId.success) return res.status(400).json({ success: false, message: "Invalid book ID." });
+  if (!parsedQuantity.success) return res.status(400).json({ success: false, message: "Total copies must be a whole number between 1 and 400." });
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const book = await client.query("SELECT id FROM books WHERE id = $1 FOR UPDATE", [parsedId.data]);
+    if (!book.rowCount) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ success: false, message: "Physical book not found." });
+    }
+
+    const current = await client.query(
+      "SELECT COUNT(*)::int AS quantity FROM book_copies WHERE book_id = $1",
+      [parsedId.data]
+    );
+    const currentQuantity = Number(current.rows[0].quantity);
+    const targetQuantity = parsedQuantity.data;
+
+    if (targetQuantity > currentQuantity) {
+      for (let index = currentQuantity; index < targetQuantity; index += 1) {
+        const barcode = await nextAmgNumber(client, "C");
+        await client.query(
+          "INSERT INTO book_copies (book_id, barcode, condition, status) VALUES ($1, $2, 'good', 'available')",
+          [parsedId.data, barcode]
+        );
+      }
+    } else if (targetQuantity < currentQuantity) {
+      const removeCount = currentQuantity - targetQuantity;
+      const removable = await client.query(
+        `SELECT bc.id
+         FROM book_copies bc
+         WHERE bc.book_id = $1
+           AND bc.status = 'available'
+           AND NOT EXISTS (SELECT 1 FROM loans l WHERE l.copy_id = bc.id)
+         ORDER BY bc.created_at DESC
+         LIMIT $2
+         FOR UPDATE OF bc`,
+        [parsedId.data, removeCount]
+      );
+      if (removable.rowCount < removeCount) {
+        await client.query("ROLLBACK");
+        return res.status(409).json({
+          success: false,
+          message: "The total cannot be reduced that far. Some copies are borrowed, unavailable, or have loan history. Return them or choose a higher total."
+        });
+      }
+      await client.query(
+        "DELETE FROM book_copies WHERE id = ANY($1::uuid[])",
+        [removable.rows.map(row => row.id)]
+      );
+    }
+
+    const totals = await client.query(
+      `SELECT COUNT(*)::int AS quantity,
+              COUNT(*) FILTER (WHERE status = 'available')::int AS available
+       FROM book_copies WHERE book_id = $1`,
+      [parsedId.data]
+    );
+    await client.query("COMMIT");
+    return res.json({
+      success: true,
+      message: "Physical copy total updated. Existing copy barcodes and loan history were preserved.",
+      ...totals.rows[0]
+    });
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+    handleDatabaseError(error, res, next);
+  } finally {
+    client.release();
+  }
+}
+
 // List all physical inventory
 export async function getAllCopies(req, res, next) {
   try {
