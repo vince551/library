@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useLibrary } from "../../store/LibraryProvider";
 
 const COLORS = ["#087f5b", "#3b82a0", "#8b76b5", "#d29a45", "#c66f79", "#71858d"];
@@ -59,6 +59,59 @@ function BarChart({ entries }) {
         </div>
       ))}
     </div>
+  );
+}
+
+function TrendChart({ title, entries, variant = "line", description }) {
+  const gradientId = useId().replace(/:/g, "");
+  const values = entries.map(([, value]) => Math.max(0, Number(value) || 0));
+  const max = Math.max(1, ...values);
+  const width = 760;
+  const height = 230;
+  const left = 34;
+  const right = 16;
+  const top = 18;
+  const bottom = 34;
+  const plotWidth = width - left - right;
+  const plotHeight = height - top - bottom;
+  const points = values.map((value, index) => ({
+    x: left + (entries.length <= 1 ? plotWidth / 2 : index / (entries.length - 1) * plotWidth),
+    y: top + plotHeight - (value / max) * plotHeight,
+    value,
+    label: entries[index]?.[0] || ""
+  }));
+  const linePath = points.map((point, index) => (index ? "L" : "M") + point.x + " " + point.y).join(" ");
+  const areaPath = points.length
+    ? linePath + " L " + points[points.length - 1].x + " " + (top + plotHeight) + " L " + points[0].x + " " + (top + plotHeight) + " Z"
+    : "";
+  const labelIndexes = [...new Set([0, Math.floor((entries.length - 1) / 2), entries.length - 1])];
+  return (
+    <section className={"insight-panel insight-trend-panel insight-trend-" + variant}>
+      <div className="insight-panel-heading">
+        <div><span className="insight-kicker">{variant === "area" ? "VISITOR FLOW" : "CIRCULATION TREND"}</span><h4>{title}</h4><p>{description}</p></div>
+        <span className="insight-total">{values.reduce((sum, value) => sum + value, 0)}</span>
+      </div>
+      {entries.length ? (
+        <div className="insight-trend-chart" role="img" aria-label={title + ": " + entries.map(([label, value]) => label + ", " + value).join("; ")}>
+          <svg viewBox={"0 0 " + width + " " + height} preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stopColor={variant === "area" ? "#38bdf8" : "#10b981"} stopOpacity=".34" />
+                <stop offset="100%" stopColor={variant === "area" ? "#38bdf8" : "#10b981"} stopOpacity=".015" />
+              </linearGradient>
+            </defs>
+            {[0, 1, 2, 3].map(step => {
+              const y = top + plotHeight * step / 3;
+              return <g key={step}><line x1={left} x2={width - right} y1={y} y2={y} className="insight-trend-gridline" /><text x={left - 9} y={y + 4} textAnchor="end" className="insight-trend-axis">{Math.round(max * (3 - step) / 3)}</text></g>;
+            })}
+            {variant === "area" && <path d={areaPath} fill={"url(#" + gradientId + ")"} />}
+            <path d={linePath} className="insight-trend-line" />
+            {points.map((point, index) => <circle key={index} cx={point.x} cy={point.y} r="4" className="insight-trend-point"><title>{point.label}: {point.value}</title></circle>)}
+            {labelIndexes.map(index => points[index] && <text key={index} x={points[index].x} y={height - 8} textAnchor={index === 0 ? "start" : index === points.length - 1 ? "end" : "middle"} className="insight-trend-axis">{points[index].label}</text>)}
+          </svg>
+        </div>
+      ) : <p className="insight-empty">No records available yet.</p>}
+    </section>
   );
 }
 
@@ -219,14 +272,14 @@ export function StatisticsTab({ active }) {
           <BarChart entries={tally(books, item => item.category).slice(0, 6)} />
         </section>
       </div>
-      <section className="insight-panel insight-wide-panel">
-        <div className="insight-panel-heading insight-period-heading">
-          <div><span className="insight-kicker">CIRCULATION</span><h4>Borrowing activity</h4><p>New loans by issue date, based on the latest loan records loaded.</p></div>
+      <section className="insight-wide-panel">
+        <div className="insight-panel-heading insight-period-heading insight-chart-toolbar">
+          <div><span className="insight-kicker">CIRCULATION</span><h4>Borrowing activity</h4><p>Daily loans by issue date, across the selected period.</p></div>
           <div className="insight-period-switch" aria-label="Borrowing activity period">
             {[7, 30, 90].map(value => <button key={value} type="button" className={period === value ? "is-active" : ""} aria-pressed={period === value} onClick={() => setPeriod(value)}>{value} days</button>)}
           </div>
         </div>
-        <BarChart entries={borrowingDays} />
+        <TrendChart title="Borrowing activity trend" description="Daily issue volume · line chart" entries={borrowingDays} />
       </section>
       <div className="insight-chart-grid insight-secondary-grid">
         <section className="insight-panel">
@@ -248,10 +301,12 @@ export function StatisticsTab({ active }) {
           {overdueList.length ? <div className="insight-alert-list">{overdueList.map(loan => <div className="insight-alert-row" key={loan.id}><span><strong>{loan.book_title || "Book"}</strong><small>{loan.member_name || "Member"} · {loan.loan_number || "Loan record"}</small></span><b className="is-empty">{loan.due_at ? new Date(loan.due_at).toLocaleDateString("en-KE") : "Overdue"}</b></div>)}</div> : <p className="insight-empty">No overdue loans in the loaded records.</p>}
         </section>
       </div>
-      <section className="insight-panel insight-wide-panel">
-        <div className="insight-panel-heading"><div><span className="insight-kicker">VISITS</span><h4>Daily check-ins · last seven days</h4></div></div>
-        <BarChart entries={(attendanceSummary?.days || []).map(day => [day.label, Number(day.visits) || 0])} />
-      </section>
+      <TrendChart
+        title="Daily library visits"
+        description="Visitor check-ins · database attendance summary"
+        variant="area"
+        entries={(attendanceSummary?.days || []).map(day => [day.label, Number(day.visits) || 0])}
+      />
       <p className="insight-footnote">Figures and exports reflect the saved records currently loaded by the librarian workspace. The attendance occupancy and daily visit summaries are calculated by the database.</p>
     </div>
   );
