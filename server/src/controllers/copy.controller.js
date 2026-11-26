@@ -117,6 +117,29 @@ export async function setBookCopyQuantity(req, res, next) {
       }
     } else if (targetQuantity < currentQuantity) {
       const removeCount = currentQuantity - targetQuantity;
+      const [availableResult, approvedResult] = await Promise.all([
+        client.query(
+          "SELECT COUNT(*)::int AS total FROM book_copies WHERE book_id = $1 AND status = 'available'",
+          [parsedId.data]
+        ),
+        client.query(
+          "SELECT COUNT(*)::int AS total FROM borrow_requests WHERE book_id = $1 AND status = 'approved'",
+          [parsedId.data]
+        )
+      ]);
+      const availableCount = Number(availableResult.rows[0].total);
+      const approvedRequestCount = Number(approvedResult.rows[0].total);
+
+      // Approved requests represent expected handovers. Do not remove stock
+      // that is needed to fulfil those requests.
+      if (availableCount - removeCount < approvedRequestCount) {
+        await client.query("ROLLBACK");
+        return res.status(409).json({
+          success: false,
+          message: "The total cannot be reduced because approved borrowing requests still need available copies. Fulfil or decline those requests first."
+        });
+      }
+
       const removable = await client.query(
         `SELECT bc.id
          FROM book_copies bc
