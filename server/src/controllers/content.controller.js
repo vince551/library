@@ -41,12 +41,16 @@ export async function createPost(req, res, next) {
        RETURNING id, type, title, body, event_date, published_at, created_at`,
       [type, title, body, type === "event" ? date || null : null, req.user.id]
     );
-    await notifyActiveMembers(pool, {
-      type: type === "event" ? "library_event" : "library_announcement",
-      title: type === "event" ? "New library event" : "New library announcement",
-      message: title,
-      link: "newsSection", entityType: "library_post", entityId: result.rows[0].id
-    });
+    try {
+      await notifyActiveMembers(pool, {
+        type: type === "event" ? "library_event" : "library_announcement",
+        title: type === "event" ? "New library event" : "New library announcement",
+        message: title,
+        link: "newsSection", entityType: "library_post", entityId: result.rows[0].id
+      });
+    } catch (notificationError) {
+      console.error("Could not broadcast library update notification:", notificationError.message);
+    }
     return res.status(201).json({
       success: true,
       message: type === "event" ? "Event published successfully." : "Announcement published successfully.",
