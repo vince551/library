@@ -23,9 +23,20 @@ const authLimiter = rateLimit({
   }
 });
 
+const profilePhotoLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 10,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many profile photo changes. Please try again later."
+  }
+});
+
 router.post("/register", authLimiter, register);
 router.post("/login", authLimiter, login);
 router.get("/me", authenticate, getMe);
-router.patch("/photo", authenticate, updateProfilePhoto);
+router.patch("/photo", authenticate, profilePhotoLimiter, updateProfilePhoto);
 
 export default router;
