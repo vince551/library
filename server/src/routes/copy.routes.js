@@ -3,6 +3,7 @@ import { Router } from "express";
 
 import {
   getBookCopies,
+  setBookCopyQuantity,
   getAllCopies,
   createCopy,
   updateCopy,
@@ -26,6 +27,9 @@ router.get("/", ...librarianAccess, getAllCopies);
 
 // Copies belonging to a particular book
 router.get("/book/:bookId", ...librarianAccess, getBookCopies);
+
+// Set the total physical copy count for a title
+router.patch("/book/:bookId/quantity", ...librarianAccess, setBookCopyQuantity);
 
 // Add a physical copy
 router.post("/", ...librarianAccess, createCopy);
