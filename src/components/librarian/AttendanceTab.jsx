@@ -241,7 +241,7 @@ export function AttendanceTab({ active }) {
             <thead><tr><th>Attendance #</th><th>Member</th><th>Library #</th><th>Check-in</th><th>Check-out</th><th>Status</th></tr></thead>
             <tbody id="attendanceTable">
               {attendance.length ? attendance.map(item => (
-                <tr key={item.id}><td><strong>{item.attendanceNumber || "—"}</strong></td><td>{item.memberName}</td><td>{item.libraryNumber}</td><td>{formatDate(item.checkInAt)}</td><td>{formatDate(item.checkOutAt)}</td><td><span className={"attendance-status " + (item.status === "In library" ? "is-inside" : "is-outside")}>{item.status}</span></td></tr>
+                <tr key={item.id}><td data-label="Attendance #"><strong>{item.attendanceNumber || "—"}</strong></td><td data-label="Member">{item.memberName}</td><td data-label="Library #">{item.libraryNumber}</td><td data-label="Check-in">{formatDate(item.checkInAt)}</td><td data-label="Check-out">{formatDate(item.checkOutAt)}</td><td data-label="Status"><span className={"attendance-status " + (item.status === "In library" ? "is-inside" : "is-outside")}>{item.status}</span></td></tr>
               )) : <tr><td colSpan="6" className="attendance-empty">No attendance records have been recorded yet.</td></tr>}
             </tbody>
           </table>
