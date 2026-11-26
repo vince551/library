@@ -809,3 +809,140 @@
   #librarianSection .book-admin-actions .btn,
   #librarianSection .book-actions .btn { flex:1 1 auto; }
 }
+
+
+/* Published physical inventory — prevent cramped cells and overlapping actions. */
+#librarianSection .physical-inventory-wrap {
+  width:100%;
+  max-width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;
+  border:1px solid var(--amg-line,#dce7e0);
+  border-radius:16px;
+  background:var(--surface,#fff);
+}
+#librarianSection .physical-inventory-table {
+  width:100%;
+  min-width:900px;
+  table-layout:fixed;
+  border-collapse:separate;
+  border-spacing:0;
+}
+#librarianSection .physical-inventory-table th,
+#librarianSection .physical-inventory-table td {
+  box-sizing:border-box;
+  padding:14px 12px;
+  vertical-align:middle;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+#librarianSection .physical-inventory-table th { line-height:1.35; white-space:normal; }
+#librarianSection .physical-inventory-table .physical-col-id { width:20%; }
+#librarianSection .physical-inventory-table .physical-col-book { width:31%; }
+#librarianSection .physical-inventory-table .physical-col-category { width:15%; }
+#librarianSection .physical-inventory-table .physical-col-stock { width:14%; }
+#librarianSection .physical-inventory-table .physical-col-actions { width:20%; }
+#librarianSection .physical-id-cell { min-width:0; }
+#librarianSection .physical-catalogue-number {
+  display:block;
+  line-height:1.35;
+  overflow-wrap:anywhere;
+}
+#librarianSection .physical-copy-number {
+  display:block;
+  margin-top:5px;
+  line-height:1.4;
+  overflow-wrap:anywhere;
+}
+#librarianSection .physical-barcode {
+  display:flex;
+  align-items:center;
+  max-width:100%;
+  margin-top:8px;
+  overflow:hidden;
+}
+#librarianSection .physical-barcode svg,
+#librarianSection .physical-barcode canvas {
+  display:block;
+  width:100% !important;
+  max-width:150px;
+  height:34px !important;
+  object-fit:fill;
+}
+#librarianSection .physical-book-cell .book-inventory-title {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+#librarianSection .physical-book-cell .book-inventory-title img {
+  flex:0 0 48px;
+  width:48px;
+  height:64px;
+  margin:0;
+  object-fit:cover;
+  border-radius:8px;
+}
+#librarianSection .physical-book-cell .book-inventory-title > span {
+  display:grid;
+  gap:5px;
+  min-width:0;
+  line-height:1.45;
+}
+#librarianSection .physical-book-cell .book-inventory-title strong {
+  display:block;
+  overflow-wrap:anywhere;
+}
+#librarianSection .physical-book-cell .book-inventory-title small {
+  display:block;
+  line-height:1.4;
+}
+#librarianSection .physical-category-pill {
+  display:inline-block;
+  max-width:100%;
+  padding:6px 9px;
+  border:1px solid var(--amg-line,#dce7e0);
+  border-radius:999px;
+  background:var(--surface-soft,#f4f8f5);
+  line-height:1.35;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+#librarianSection .physical-stock-cell > strong,
+#librarianSection .physical-stock-cell > span {
+  display:block;
+  line-height:1.45;
+  white-space:normal;
+}
+#librarianSection .physical-stock-cell > strong { font-size:1.05rem; }
+#librarianSection .physical-stock-cell > strong small {
+  display:block;
+  font-size:.76rem;
+  font-weight:500;
+}
+#librarianSection .physical-stock-cell > span { margin-top:4px; font-size:.82rem; }
+#librarianSection .physical-actions-cell .book-admin-actions {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:7px;
+  min-width:0;
+}
+#librarianSection .physical-actions-cell .book-admin-actions .btn {
+  flex:0 1 auto;
+  min-width:66px;
+  max-width:100%;
+  margin:0;
+  white-space:normal;
+  line-height:1.25;
+}
+@media (max-width:680px) {
+  #librarianSection .physical-inventory-wrap { border-radius:12px; }
+  #librarianSection .physical-inventory-table { min-width:860px; }
+  #librarianSection .physical-inventory-table th,
+  #librarianSection .physical-inventory-table td { padding:12px 10px; }
+  #librarianSection .physical-actions-cell .book-admin-actions { gap:6px; }
+  #librarianSection .physical-actions-cell .book-admin-actions .btn { min-width:62px; }
+}
