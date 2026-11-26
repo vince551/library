@@ -50,7 +50,7 @@ export function LibShelf({ active, onOpenAuth }) {
     });
   }, [items, search, category, stars, format]);
 
-  const isEpub = book => String(book?.fileType || "").toLowerCase().includes("epub") || /\\.epub$/i.test(book?.fileName || "");
+  const isEpub = book => String(book?.fileType || "").toLowerCase().includes("epub") || /\.epub$/i.test(book?.fileName || "");
 
   const openEbook = async book => {
     if (!user) { onOpenAuth?.("login"); return; }
