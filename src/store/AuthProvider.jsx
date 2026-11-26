@@ -49,6 +49,34 @@ export function AuthProvider({ children }) {
   const librarian = user?.role === "librarian" || user?.role === "admin";
 
   useEffect(() => {
+    const handleInvalidSession = (event) => {
+      const invalidToken = event.detail?.token;
+      if (!invalidToken || localStorage.getItem("amg_auth_token") !== invalidToken) return;
+      localStorage.removeItem("amg_auth_token");
+      setToken(null);
+      setUser(null);
+      setProfile(null);
+      setReady(true);
+      showToast("Your session has expired or is no longer active. Please sign in again.", "error");
+    };
+
+    const handleStorageChange = (event) => {
+      if (event.key !== "amg_auth_token") return;
+      setToken(event.newValue);
+      setUser(null);
+      setProfile(null);
+      setReady(!event.newValue);
+    };
+
+    window.addEventListener("amg:session-invalid", handleInvalidSession);
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("amg:session-invalid", handleInvalidSession);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [showToast]);
+
+  useEffect(() => {
     if (!token) {
       setReady(true);
       return undefined;
@@ -63,12 +91,12 @@ export function AuthProvider({ children }) {
         setUser(currentUser);
         setProfile(toProfile(currentUser));
       })
-      .catch(() => {
+      .catch((error) => {
         if (cancelled) return;
-        localStorage.removeItem("amg_auth_token");
-        setToken(null);
-        setUser(null);
-        setProfile(null);
+        // A network outage must not erase a valid saved session.
+        if (error.status !== 401 && !(error.status === 403 && error.message === "This account is not active.")) {
+          showToast("We could not verify your session because the server is unreachable. Check your connection and refresh.", "error");
+        }
       })
       .finally(() => {
         if (!cancelled) setReady(true);
@@ -77,7 +105,7 @@ export function AuthProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [showToast]);
 
   const login = useCallback(async (email, password) => {
     if (!email || !password) {
