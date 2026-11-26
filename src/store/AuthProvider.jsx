@@ -17,6 +17,10 @@ function toProfile(user) {
     studyLevel: user.study_level || user.studyLevel || "Library member",
     school: user.school || "",
     phone: user.phone || "",
+    gender: user.gender || "",
+    guardianName: user.guardian_name || user.guardianName || "",
+    guardianRelation: user.guardian_relation || user.guardianRelation || "",
+    guardianPhone: user.guardian_phone || user.guardianPhone || "",
     isApproved: user.status === "active",
     approvedAt: user.approved_at || user.approvedAt || null,
     membershipStatus: user.status || "pending"
@@ -100,7 +104,16 @@ export function AuthProvider({ children }) {
     try {
       const data = await apiRequest("/auth/register", {
         method: "POST",
-        body: { fullName, email, password }
+        body: {
+          fullName, email, password,
+          gender: String(form.get("gender") || ""),
+          school: String(form.get("school") || "").trim(),
+          studyLevel: String(form.get("studyLevel") || "").trim(),
+          eduLevel: String(form.get("eduLevel") || ""),
+          guardianName: String(form.get("guardianName") || "").trim(),
+          guardianRelation: String(form.get("guardianRelation") || ""),
+          guardianPhone: String(form.get("guardianPhone") || "").trim()
+        }
       });
 
       showToast(data.message || "Registration submitted. Your account is awaiting approval.");
