@@ -105,7 +105,7 @@ export function AuthProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [showToast]);
+  }, [token, showToast]);
 
   const login = useCallback(async (email, password) => {
     if (!email || !password) {
