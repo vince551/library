@@ -81,8 +81,7 @@ export async function getBorrowRequests(req, res, next) {
          SELECT COUNT(*) AS available FROM book_copies
          WHERE book_id = b.id AND status = 'available'
        ) stock ON TRUE
-       ORDER BY CASE r.status WHEN 'pending' THEN 0 WHEN 'approved' THEN 1 ELSE 2 END, r.created_at DESC
-       LIMIT 300`
+       ORDER BY CASE r.status WHEN 'pending' THEN 0 WHEN 'approved' THEN 1 ELSE 2 END, r.created_at DESC`
     );
     return res.json({ success:true, count:result.rowCount, requests:result.rows });
   } catch (error) { return next(error); }
