@@ -12,9 +12,33 @@ export async function authenticate(req, res, next) {
       });
     }
 
-    const token = authorization.split(" ")[1];
+    if (!process.env.JWT_SECRET) {
+      return res.status(503).json({
+        success: false,
+        message: "Authentication is temporarily unavailable."
+      });
+    }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const token = authorization.slice(7).trim();
+    if (!token || token.split(".").length !== 3) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid or expired token."
+      });
+    }
+
+    // Tokens are issued with jsonwebtoken's HS256 default. Pin verification
+    // to that algorithm instead of accepting any algorithm supported by the library.
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ["HS256"]
+    });
+
+    if (!decoded.userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid authentication."
+      });
+    }
 
     const result = await pool.query(
       `SELECT u.id, u.full_name, u.email, u.role, u.status,
@@ -48,7 +72,8 @@ export async function authenticate(req, res, next) {
   } catch (error) {
     if (
       error.name === "TokenExpiredError" ||
-      error.name === "JsonWebTokenError"
+      error.name === "JsonWebTokenError" ||
+      error.name === "NotBeforeError"
     ) {
       return res.status(401).json({
         success: false,
