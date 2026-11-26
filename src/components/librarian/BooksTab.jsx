@@ -200,11 +200,11 @@ export function BooksTab({ active }) {
           <thead><tr><th className="physical-col-id">Book number / First copy</th><th className="physical-col-book">Book details</th><th className="physical-col-category">Category</th><th className="physical-col-stock">Available / Total</th><th className="physical-col-actions">Actions</th></tr></thead>
           <tbody id="inventoryTable">
             {books.map(book => <tr key={book.id}>
-              <td className="physical-id-cell"><strong className="physical-catalogue-number">{book.catalogue_number || book.libraryNumber || "—"}</strong><small className="muted physical-copy-number">Copy: {book.barcode || "—"}</small><div className="physical-barcode"><Barcode value={book.barcode || book.libraryNumber} height={30} width={1} /></div></td>
-              <td className="physical-book-cell"><div className="book-inventory-title">{book.coverUrl ? <img src={book.coverUrl} alt="" loading="lazy" /> : null}<span><strong>{book.title || "Untitled book"}</strong><small>{book.author || "Unknown author"}</small></span></div></td>
-              <td className="physical-category-cell"><span className="physical-category-pill">{book.category || "Uncategorised"}</span></td>
-              <td className="physical-stock-cell"><strong>{Number(book.available || 0)} <small>available</small></strong><span>{Number(book.quantity || 0)} total</span></td>
-              <td className="physical-actions-cell"><div className="book-admin-actions">
+              <td className="physical-id-cell" data-label="Book number / First copy"><strong className="physical-catalogue-number">{book.catalogue_number || book.libraryNumber || "—"}</strong><small className="muted physical-copy-number">Copy: {book.barcode || "—"}</small><div className="physical-barcode"><Barcode value={book.barcode || book.libraryNumber} height={30} width={1} /></div></td>
+              <td className="physical-book-cell" data-label="Book details"><div className="book-inventory-title">{book.coverUrl ? <img src={book.coverUrl} alt="" loading="lazy" /> : null}<span><strong>{book.title || "Untitled book"}</strong><small>{book.author || "Unknown author"}</small></span></div></td>
+              <td className="physical-category-cell" data-label="Category"><span className="physical-category-pill">{book.category || "Uncategorised"}</span></td>
+              <td className="physical-stock-cell" data-label="Available / Total"><strong>{Number(book.available || 0)} <small>available</small></strong><span>{Number(book.quantity || 0)} total</span></td>
+              <td className="physical-actions-cell" data-label="Actions"><div className="book-admin-actions">
                 <button className="btn btn-sm btn-outline physical-action-btn physical-action-edit" type="button" onClick={() => { setCopiesBook(null); setEditCover(null); setEditing(book); }}>Edit book</button>
                 <button className="btn btn-sm btn-outline physical-action-btn physical-action-copies" type="button" onClick={() => manageCopies(book)}>Manage copies</button>
                 <button className="btn btn-sm btn-danger physical-action-btn physical-action-remove" type="button" onClick={() => remove(book)}>Remove</button>
@@ -254,7 +254,7 @@ export function BooksTab({ active }) {
         <div className="book-copy-heading"><div><h3>Physical copies</h3><p className="muted">{copiesBook.title} · Barcodes remain unchanged.</p></div><button className="btn btn-outline" type="button" onClick={() => setCopiesBook(null)}>Close</button></div>
         <button className="btn btn-primary" type="button" onClick={addCopy} disabled={copiesBusy}>Add another copy</button>
         {copiesBusy ? <p className="muted">Loading inventory…</p> : <div className="table-responsive"><table className="data-table"><thead><tr><th>Barcode</th><th>Status</th><th>Shelf</th><th>Condition</th><th>Actions</th></tr></thead><tbody>
-          {copies.map(copy => <tr key={copy.id}><td><strong>{copy.barcode}</strong></td><td>{copy.status}</td><td>{copy.shelf_location || "—"}</td><td>{copy.condition}</td><td><button className="btn btn-sm btn-outline" type="button" onClick={() => editCopy(copy)}>Edit</button> <button className="btn btn-sm btn-danger" type="button" onClick={() => removeCopy(copy)}>Remove</button></td></tr>)}
+          {copies.map(copy => <tr key={copy.id}><td data-label="Barcode"><strong>{copy.barcode}</strong></td><td data-label="Status">{copy.status}</td><td data-label="Shelf">{copy.shelf_location || "—"}</td><td data-label="Condition">{copy.condition}</td><td data-label="Actions"><button className="btn btn-sm btn-outline" type="button" onClick={() => editCopy(copy)}>Edit</button> <button className="btn btn-sm btn-danger" type="button" onClick={() => removeCopy(copy)}>Remove</button></td></tr>)}
           {!copies.length ? <tr><td colSpan="5">No physical copies found.</td></tr> : null}
         </tbody></table></div>}
       </section> : null}
