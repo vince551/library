@@ -131,14 +131,17 @@ export async function approveMember(req, res, next) {
       ]
     );
 
-    await createNotification(client, {
-      userId: member.id, type: "membership_approved",
-      title: "Membership approved",
-      message: "Your AMG Library membership is active. Your membership number is " + membershipNumber + ".",
-      link: "profileSection", entityType: "user", entityId: member.id
-    });
-
     await client.query("COMMIT");
+    try {
+      await createNotification(pool, {
+        userId: member.id, type: "membership_approved",
+        title: "Membership approved",
+        message: "Your AMG Library membership is active. Your membership number is " + membershipNumber + ".",
+        link: "profileSection", entityType: "user", entityId: member.id
+      });
+    } catch (notificationError) {
+      console.error("Could not create membership notification:", notificationError.message);
+    }
 
     return res.json({
       success: true,
