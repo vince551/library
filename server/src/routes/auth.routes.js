@@ -4,7 +4,8 @@ import rateLimit from "express-rate-limit";
 import {
   register,
   login,
-  getMe
+  getMe,
+  updateProfilePhoto
 } from "../controllers/auth.controller.js";
 
 import { authenticate } from "../middleware/auth.middleware.js";
@@ -25,5 +26,6 @@ const authLimiter = rateLimit({
 router.post("/register", authLimiter, register);
 router.post("/login", authLimiter, login);
 router.get("/me", authenticate, getMe);
+router.patch("/photo", authenticate, updateProfilePhoto);
 
 export default router;
