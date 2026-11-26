@@ -121,17 +121,20 @@ export function AllLearnersTab({ active, onViewCard }) {
       <div className="table-responsive">
         <table className="data-table">
           <thead>
-            <tr><th>Membership #</th><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Actions</th></tr>
+            <tr><th>Membership #</th><th>Name</th><th>Email</th><th>Phone</th><th>School</th><th>Education level</th><th>Study level</th><th>Status</th><th>Actions</th></tr>
           </thead>
           <tbody id="allLearnersTable">
             {members.length === 0 ? (
-              <tr><td colSpan="6">No member accounts have been registered yet.</td></tr>
+              <tr><td colSpan="9">No member accounts have been registered yet.</td></tr>
             ) : members.map(member => (
               <tr key={member.id}>
                 <td data-label="Membership #">{member.membership_number || "Not issued"}</td>
                 <td data-label="Name">{member.full_name}</td>
                 <td data-label="Email">{member.email}</td>
                 <td data-label="Phone">{member.phone || "—"}</td>
+                <td data-label="School">{member.school || "—"}</td>
+                <td data-label="Education level">{member.edu_level || "—"}</td>
+                <td data-label="Study level">{member.study_level || "—"}</td>
                 <td data-label="Status">{memberStatus(member)}</td>
                 <td data-label="Actions">
                   {member.status === "active" ? (
