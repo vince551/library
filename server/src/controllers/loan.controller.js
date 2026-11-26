@@ -234,13 +234,16 @@ if (activeLoans.rows[0].total >= 3) {
       ]
     );
 
-    await createNotification(client, {
-      userId: memberId, type: "book_issued", title: "Book checked out",
-      message: `“${copy.title}” has been issued to you. Please return it by ${new Date(loanResult.rows[0].due_at).toLocaleDateString("en-KE")}.`,
-      link: "profileSection", entityType: "loan", entityId: loanResult.rows[0].id
-    });
-
     await client.query("COMMIT");
+    try {
+      await createNotification(pool, {
+        userId: memberId, type: "book_issued", title: "Book checked out",
+        message: `“${copy.title}” has been issued to you. Please return it by ${new Date(loanResult.rows[0].due_at).toLocaleDateString("en-KE")}.`,
+        link: "profileSection", entityType: "loan", entityId: loanResult.rows[0].id
+      });
+    } catch (notificationError) {
+      console.error("Could not create book-issue notification:", notificationError.message);
+    }
 
     return res.status(201).json({
       success: true,
@@ -393,13 +396,16 @@ export async function returnBook(req, res, next) {
       ]
     );
 
-    await createNotification(client, {
-      userId: loan.member_id, type: "book_returned", title: "Book returned",
-      message: `Your return of “${loan.title}” has been recorded successfully.`,
-      link: "profileSection", entityType: "loan", entityId: loan.id
-    });
-
     await client.query("COMMIT");
+    try {
+      await createNotification(pool, {
+        userId: loan.member_id, type: "book_returned", title: "Book returned",
+        message: `Your return of “${loan.title}” has been recorded successfully.`,
+        link: "profileSection", entityType: "loan", entityId: loan.id
+      });
+    } catch (notificationError) {
+      console.error("Could not create book-return notification:", notificationError.message);
+    }
 
     return res.json({
       success: true,
