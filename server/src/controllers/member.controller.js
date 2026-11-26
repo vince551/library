@@ -40,7 +40,7 @@ export async function getMembers(req, res, next) {
            OR mp.membership_number ILIKE $2
          )
        ORDER BY u.created_at DESC
-       LIMIT 100`,
+`,
       [status, search ? `%${search}%` : ""]
     );
 
