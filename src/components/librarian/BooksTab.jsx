@@ -194,16 +194,16 @@ export function BooksTab({ active }) {
       </div> : null}
 
       <h3 className="top-gap">Published physical books</h3>
-      <div className="table-responsive">
-        <table className="data-table">
-          <thead><tr><th>Book number / First copy</th><th>Book</th><th>Category</th><th>Available / Total</th><th>Actions</th></tr></thead>
+      <div className="table-responsive physical-inventory-wrap">
+        <table className="data-table physical-inventory-table">
+          <thead><tr><th className="physical-col-id">Book number / First copy</th><th className="physical-col-book">Book details</th><th className="physical-col-category">Category</th><th className="physical-col-stock">Available / Total</th><th className="physical-col-actions">Actions</th></tr></thead>
           <tbody id="inventoryTable">
             {books.map(book => <tr key={book.id}>
-              <td><strong>{book.catalogue_number || book.libraryNumber || "—"}</strong><small className="muted" style={{ display: "block" }}>Copy: {book.barcode || "—"}</small><Barcode value={book.barcode || book.libraryNumber} height={30} width={1} style={{ width: "130px", height: "35px" }} /></td>
-              <td><div className="book-inventory-title">{book.coverUrl ? <img src={book.coverUrl} alt="" loading="lazy" style={{ width: 48, height: 64, objectFit: "cover", borderRadius: 6, verticalAlign: "middle", marginRight: 10 }} /> : null}<span>{(book.title || "") + " — " + (book.author || "Unknown author")}</span></div></td>
-              <td>{book.category}</td>
-              <td>{Number(book.available || 0) + " / " + Number(book.quantity || 0)}</td>
-              <td><div className="book-admin-actions">
+              <td className="physical-id-cell"><strong className="physical-catalogue-number">{book.catalogue_number || book.libraryNumber || "—"}</strong><small className="muted physical-copy-number">Copy: {book.barcode || "—"}</small><div className="physical-barcode"><Barcode value={book.barcode || book.libraryNumber} height={30} width={1} /></div></td>
+              <td className="physical-book-cell"><div className="book-inventory-title">{book.coverUrl ? <img src={book.coverUrl} alt="" loading="lazy" /> : null}<span><strong>{book.title || "Untitled book"}</strong><small>{book.author || "Unknown author"}</small></span></div></td>
+              <td className="physical-category-cell"><span className="physical-category-pill">{book.category || "Uncategorised"}</span></td>
+              <td className="physical-stock-cell"><strong>{Number(book.available || 0)} <small>available</small></strong><span>{Number(book.quantity || 0)} total</span></td>
+              <td className="physical-actions-cell"><div className="book-admin-actions">
                 <button className="btn btn-sm btn-outline" type="button" onClick={() => { setCopiesBook(null); setEditCover(null); setEditing(book); }}>Edit</button>
                 <button className="btn btn-sm btn-outline" type="button" onClick={() => manageCopies(book)}>Copies</button>
                 <button className="btn btn-sm btn-danger" type="button" onClick={() => remove(book)}>Remove</button>
