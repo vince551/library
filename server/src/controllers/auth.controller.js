@@ -8,7 +8,14 @@ const registerSchema = z.object({
   fullName: z.string().trim().min(2).max(150),
   email: z.string().trim().email().max(255),
   // Keep this aligned with the registration form's visible 8-character rule.
-  password: z.string().min(8, "Password must contain at least 8 characters.").max(128)
+  password: z.string().min(8, "Password must contain at least 8 characters.").max(128),
+  gender: z.string().trim().max(40).optional().default(""),
+  school: z.string().trim().min(1).max(160),
+  studyLevel: z.string().trim().min(1).max(80),
+  eduLevel: z.string().trim().max(80).optional().default(""),
+  guardianName: z.string().trim().min(1).max(120),
+  guardianRelation: z.string().trim().max(40).optional().default(""),
+  guardianPhone: z.string().trim().min(5).max(30)
 });
 
 const loginSchema = z.object({
@@ -46,7 +53,7 @@ export async function register(req, res, next) {
       });
     }
 
-    const { fullName, email, password } = parsed.data;
+    const { fullName, email, password, gender, school, studyLevel, eduLevel, guardianName, guardianRelation, guardianPhone } = parsed.data;
     const normalizedEmail = email.toLowerCase();
 
     await client.query("BEGIN");
@@ -80,9 +87,12 @@ export async function register(req, res, next) {
     const membershipNumber = await nextAmgNumber(client, "M");
 
     await client.query(
-      `INSERT INTO member_profiles (user_id, membership_number)
-       VALUES ($1, $2)`,
-      [user.id, membershipNumber]
+      `INSERT INTO member_profiles
+        (user_id, membership_number, gender, school, study_level, edu_level,
+         guardian_name, guardian_relation, guardian_phone)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [user.id, membershipNumber, gender || null, school, studyLevel, eduLevel || null,
+       guardianName, guardianRelation || null, guardianPhone]
     );
 
     await client.query("COMMIT");
@@ -115,7 +125,9 @@ export async function login(req, res, next) {
 
     const result = await pool.query(
       `SELECT u.id, u.full_name, u.email, u.password_hash, u.role, u.status,
-              mp.membership_number, mp.approved_at, mp.phone, mp.address
+              mp.membership_number, mp.approved_at, mp.phone, mp.address,
+              mp.gender, mp.school, mp.study_level, mp.edu_level,
+              mp.guardian_name, mp.guardian_relation, mp.guardian_phone
        FROM users u
        LEFT JOIN member_profiles mp ON mp.user_id = u.id
        WHERE u.email = $1`,
@@ -166,7 +178,14 @@ export async function login(req, res, next) {
         membership_number: user.membership_number,
         approved_at: user.approved_at,
         phone: user.phone,
-        address: user.address
+        address: user.address,
+        gender: user.gender,
+        school: user.school,
+        study_level: user.study_level,
+        edu_level: user.edu_level,
+        guardian_name: user.guardian_name,
+        guardian_relation: user.guardian_relation,
+        guardian_phone: user.guardian_phone
       }
     });
   } catch (error) {
@@ -186,7 +205,14 @@ export async function getMe(req, res) {
       membership_number: req.user.membership_number,
       approved_at: req.user.approved_at,
       phone: req.user.phone,
-      address: req.user.address
+      address: req.user.address,
+      gender: req.user.gender,
+      school: req.user.school,
+      study_level: req.user.study_level,
+      edu_level: req.user.edu_level,
+      guardian_name: req.user.guardian_name,
+      guardian_relation: req.user.guardian_relation,
+      guardian_phone: req.user.guardian_phone
     }
   });
 }
