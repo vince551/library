@@ -15,6 +15,7 @@ import requestRoutes from "./routes/request.routes.js";
 import contentRoutes from "./routes/content.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
+import { pool } from "./config/database.js";
 
 const app = express();
 
@@ -62,12 +63,25 @@ app.use("/api", apiLimiter);
 app.use(express.json({ limit: "55mb" }));
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
-app.get("/api/health", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "AMG Library API is running",
-    timestamp: new Date().toISOString()
-  });
+app.get("/api/health", async (req, res) => {
+  try {
+    await pool.query("SELECT 1");
+    return res.status(200).json({
+      success: true,
+      status: "ok",
+      message: "AMG Library API and database are responding.",
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    // Keep internal database diagnostics out of the public health response.
+    console.error("Health check database query failed:", error.message);
+    return res.status(503).json({
+      success: false,
+      status: "unavailable",
+      message: "The library service is temporarily unavailable.",
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 app.use("/api/auth", authRoutes);
