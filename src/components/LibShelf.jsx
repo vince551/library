@@ -16,7 +16,7 @@ const formatSize = bytes => {
 
 export function LibShelf({ active, onOpenAuth }) {
   const { user, profile } = useAuth();
-  const { books, ebooks, requestBook, resolveEbookUrl } = useLibrary();
+  const { books, ebooks, requestBook, resolveEbookUrl, downloadEbook } = useLibrary();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [format, setFormat] = useState("All");
@@ -50,12 +50,19 @@ export function LibShelf({ active, onOpenAuth }) {
     });
   }, [items, search, category, stars, format]);
 
+  const isEpub = book => String(book?.fileType || "").toLowerCase().includes("epub") || /\\.epub$/i.test(book?.fileName || "");
+
   const openEbook = async book => {
     if (!user) { onOpenAuth?.("login"); return; }
+    if (isEpub(book)) {
+      await downloadEbook(book);
+      return;
+    }
     const preview = window.open("about:blank", "_blank");
+    if (!preview) return;
     const url = await resolveEbookUrl(book);
-    if (url && preview) preview.location.href = url;
-    else if (preview) preview.close();
+    if (url) preview.location.href = url;
+    else preview.close();
   };
 
   const requestPhysical = book => {
@@ -149,7 +156,7 @@ export function LibShelf({ active, onOpenAuth }) {
                 <div className="book-actions">
                   <button className="btn btn-primary" type="button" onClick={() => setSelected(item)}>Details</button>
                   {isEbook ? (
-                    <button className="btn btn-outline" type="button" onClick={() => void openEbook(item)}>{user ? "Open e-book" : "Sign in to read"}</button>
+                    <button className="btn btn-outline" type="button" onClick={() => void openEbook(item)}>{user ? (isEpub(item) ? "Download EPUB" : "Read PDF") : "Sign in to read"}</button>
                   ) : (
                     <button className="btn btn-outline" type="button" disabled={available < 1 || (user && !approved)} title={!user ? "Sign in to request this book" : !approved ? "Await librarian approval" : available < 1 ? "No copies currently available" : "Request this book"} onClick={() => requestPhysical(item)}>Request book</button>
                   )}
@@ -175,7 +182,7 @@ export function LibShelf({ active, onOpenAuth }) {
               {selected.catalogueType === "physical" ? <div><dt>Available copies</dt><dd>{selected.available} / {selected.quantity}</dd></div> : <div><dt>File</dt><dd>{selected.fileName || "Digital resource"}</dd></div>}
             </dl>
             <div className="book-actions">
-              {selected.catalogueType === "ebook" ? <button className="btn btn-primary" type="button" onClick={() => void openEbook(selected)}>Open e-book</button> : <button className="btn btn-primary" type="button" disabled={Number(selected.available) < 1} onClick={() => requestPhysical(selected)}>Request book</button>}
+              {selected.catalogueType === "ebook" ? <button className="btn btn-primary" type="button" onClick={() => void openEbook(selected)}>{isEpub(selected) ? "Download EPUB" : "Read PDF"}</button> : <button className="btn btn-primary" type="button" disabled={Number(selected.available) < 1} onClick={() => requestPhysical(selected)}>Request book</button>}
               <button className="btn btn-outline" type="button" onClick={() => setSelected(null)}>Close</button>
             </div>
           </section>
