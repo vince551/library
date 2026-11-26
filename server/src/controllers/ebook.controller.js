@@ -293,7 +293,7 @@ export async function uploadEbook(req, res, next) {
     if (error.status) {
       return res.status(error.status).json({
         success: false,
-        message: error.status === 503 ? error.message : "The file storage service could not complete the request.",
+        message: error.status === 503 || error.status === 400 ? error.message : "The file storage service could not complete the request.",
         ...(error.storageStatus ? { storageStatus: error.storageStatus } : {}),
         ...(error.storageDetail ? { storageDetail: error.storageDetail } : {})
       });
