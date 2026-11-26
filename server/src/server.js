@@ -6,6 +6,9 @@ const PORT = process.env.PORT || 5000;
 
 async function startServer() {
   try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is not configured. Set a strong secret in the Render environment before starting the API.");
+    }
     // Verify PostgreSQL connectivity. The existing Neon schema is managed
     // separately; startup must never create or mutate application tables.
     const result = await pool.query("SELECT NOW() AS database_time");
