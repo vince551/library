@@ -205,9 +205,9 @@ export function BooksTab({ active }) {
               <td className="physical-category-cell"><span className="physical-category-pill">{book.category || "Uncategorised"}</span></td>
               <td className="physical-stock-cell"><strong>{Number(book.available || 0)} <small>available</small></strong><span>{Number(book.quantity || 0)} total</span></td>
               <td className="physical-actions-cell"><div className="book-admin-actions">
-                <button className="btn btn-sm btn-outline" type="button" onClick={() => { setCopiesBook(null); setEditCover(null); setEditing(book); }}>Edit</button>
-                <button className="btn btn-sm btn-outline" type="button" onClick={() => manageCopies(book)}>Copies</button>
-                <button className="btn btn-sm btn-danger" type="button" onClick={() => remove(book)}>Remove</button>
+                <button className="btn btn-sm btn-outline physical-action-btn physical-action-edit" type="button" onClick={() => { setCopiesBook(null); setEditCover(null); setEditing(book); }}>Edit book</button>
+                <button className="btn btn-sm btn-outline physical-action-btn physical-action-copies" type="button" onClick={() => manageCopies(book)}>Manage copies</button>
+                <button className="btn btn-sm btn-danger physical-action-btn physical-action-remove" type="button" onClick={() => remove(book)}>Remove</button>
               </div></td>
             </tr>)}
           </tbody>
