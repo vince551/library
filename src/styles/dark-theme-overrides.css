@@ -2052,3 +2052,39 @@ html[data-theme="dark"] ::selection {
     background:#34D399 !important;
   }
 }
+
+
+/* Published physical inventory — Deep Forest dark theme. */
+html[data-theme="dark"] #librarianSection .physical-inventory-wrap {
+  border-color:#1E3D2F;
+  background:#122E22;
+}
+html[data-theme="dark"] #librarianSection .physical-inventory-table th {
+  color:#34D399;
+  background:#10291e;
+}
+html[data-theme="dark"] #librarianSection .physical-inventory-table td {
+  color:#F0FDF4;
+  border-color:#1E3D2F;
+}
+html[data-theme="dark"] #librarianSection .physical-inventory-table tbody tr:nth-child(even) td {
+  background:#10291e;
+}
+html[data-theme="dark"] #librarianSection .physical-inventory-table tbody tr:hover td {
+  background:rgba(16,185,129,.1);
+}
+html[data-theme="dark"] #librarianSection .physical-copy-number,
+html[data-theme="dark"] #librarianSection .physical-stock-cell small,
+html[data-theme="dark"] #librarianSection .physical-stock-cell > span {
+  color:#9AB3A6;
+}
+html[data-theme="dark"] #librarianSection .physical-category-pill {
+  color:#34D399;
+  border-color:#1E3D2F;
+  background:rgba(16,185,129,.1);
+}
+html[data-theme="dark"] #librarianSection .physical-actions-cell .book-admin-actions .btn {
+  color:#34D399;
+  border-color:#1E3D2F;
+  background:#122E22;
+}
