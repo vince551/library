@@ -101,7 +101,8 @@ const registerSchema = z.object({
   guardianRelation: z.string().trim().max(40).optional().default(""),
   guardianPhone: z.string().trim().min(5).max(30),
   photoType: z.string().optional().default(""),
-  photoData: z.string().optional().default("")
+  photoData: z.string().optional().default(""),
+  avatarChoice: z.enum(["scholar", "reader", "explorer", "creative", "classic"]).optional().default("scholar")
 });
 
 const loginSchema = z.object({
@@ -140,7 +141,7 @@ export async function register(req, res, next) {
       });
     }
 
-    const { fullName, email, password, gender, school, studyLevel, eduLevel, guardianName, guardianRelation, guardianPhone, photoType, photoData } = parsed.data;
+    const { fullName, email, password, gender, school, studyLevel, eduLevel, guardianName, guardianRelation, guardianPhone, photoType, photoData, avatarChoice } = parsed.data;
     const normalizedEmail = email.toLowerCase();
 
     await client.query("BEGIN");
@@ -176,10 +177,10 @@ export async function register(req, res, next) {
     await client.query(
       `INSERT INTO member_profiles
         (user_id, membership_number, gender, school, study_level, edu_level,
-         guardian_name, guardian_relation, guardian_phone)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+         guardian_name, guardian_relation, guardian_phone, avatar_choice)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [user.id, membershipNumber, gender || null, school, studyLevel, eduLevel || null,
-       guardianName, guardianRelation || null, guardianPhone]
+       guardianName, guardianRelation || null, guardianPhone, avatarChoice]
     );
 
     if (photoData) {
@@ -221,7 +222,7 @@ export async function login(req, res, next) {
       `SELECT u.id, u.full_name, u.email, u.password_hash, u.role, u.status,
               mp.membership_number, mp.approved_at, mp.phone, mp.address,
               mp.gender, mp.school, mp.study_level, mp.edu_level,
-              mp.guardian_name, mp.guardian_relation, mp.guardian_phone, mp.photo_storage_key
+              mp.guardian_name, mp.guardian_relation, mp.guardian_phone, mp.photo_storage_key, mp.avatar_choice
        FROM users u
        LEFT JOIN member_profiles mp ON mp.user_id = u.id
        WHERE u.email = $1`,
@@ -280,6 +281,7 @@ export async function login(req, res, next) {
         guardian_name: user.guardian_name,
         guardian_relation: user.guardian_relation,
         guardian_phone: user.guardian_phone,
+        avatar_choice: user.avatar_choice,
         photoURL: await signedProfilePhoto(user.photo_storage_key).catch(() => "")
       }
     });
@@ -308,6 +310,7 @@ export async function getMe(req, res) {
       guardian_name: req.user.guardian_name,
       guardian_relation: req.user.guardian_relation,
       guardian_phone: req.user.guardian_phone,
+      avatar_choice: req.user.avatar_choice,
       photoURL: await signedProfilePhoto(req.user.photo_storage_key).catch(() => "")
     }
   });
