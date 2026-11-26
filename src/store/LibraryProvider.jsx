@@ -561,14 +561,14 @@ export function LibraryProvider({ children }) {
     myRequests, myLoans, publicPosts, scanMemberCode,
     refreshPublic, refreshMember, refreshAdmin, resetScanMember, requestBook,
     reviewLearner, changeMemberStatus, processRequest, returnLoan, registerBook, updateBook, getBookCopies, addBookCopy, updateBookCopy, deleteBookCopy, deleteBook,
-    processUnifiedCode, updateCapacity, uploadEbook, removeEbook, resolveEbookUrl, downloadEbook, downloadEbook,
+    processUnifiedCode, updateCapacity, uploadEbook, removeEbook, resolveEbookUrl, downloadEbook,
     publishNews, deletePost
   }), [
     books, announcements, events, ebooks, members, requests, loans, attendance, attendanceSummary, capacity,
     myRequests, myLoans, publicPosts, scanMemberCode,
     refreshPublic, refreshMember, refreshAdmin, resetScanMember, requestBook,
     reviewLearner, changeMemberStatus, processRequest, returnLoan, registerBook, updateBook, getBookCopies, addBookCopy, updateBookCopy, deleteBookCopy, deleteBook,
-    processUnifiedCode, updateCapacity, uploadEbook, removeEbook, resolveEbookUrl,
+    processUnifiedCode, updateCapacity, uploadEbook, removeEbook, resolveEbookUrl, downloadEbook,
     publishNews, deletePost
   ]);
 
