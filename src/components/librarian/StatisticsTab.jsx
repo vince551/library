@@ -136,24 +136,62 @@ export function StatisticsTab({ active }) {
   const overdueList = loans.filter(loan => statusOf(loan) === "overdue").slice(0, 8);
 
   const exportReport = () => {
-    const rows = [
-      ["AMG Library report", "Generated", new Date().toISOString()],
-      [],
-      ["Metric", "Value"],
-      ...summary.map(([label, value]) => [label, value]),
-      [],
-      ["Loan number", "Book", "Member", "Membership number", "Issued", "Due", "Status"],
-      ...loans.map(loan => [loan.loan_number || loan.loanNumber, loan.book_title || loan.bookTitle, loan.member_name || loan.memberName, loan.membership_number || loan.membershipNumber, loan.issued_at || loan.issuedAt, loan.due_at || loan.dueAt, loan.status])
+    const section = (title, headers, records) => [
+      [title],
+      headers,
+      ...records
     ];
-    const csv = rows.map(row => row.map(csvCell).join(",")).join("\r\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const rows = [
+      ["AMG Library comprehensive report", "Generated", new Date().toISOString()],
+      ["Reporting period", "Current saved records; borrowing chart uses the selected " + period + " days"],
+      [],
+      ...section("OVERVIEW", ["Metric", "Value"], summary.map(([label, value]) => [label, value])),
+      [],
+      ...section("PHYSICAL INVENTORY", ["Title", "Author", "Category", "Total copies", "Available copies", "Status"], books.map(book => [
+        book.title, book.author, book.category, book.quantity, book.available,
+        Number(book.available || 0) <= 0 ? "Unavailable" : "Available"
+      ])),
+      [],
+      ...section("LOAN HISTORY", ["Loan number", "Book", "Member", "Membership number", "Issued", "Due", "Returned", "Status"], loans.map(loan => [
+        loan.loan_number || loan.loanNumber, loan.book_title || loan.bookTitle,
+        loan.member_name || loan.memberName, loan.membership_number || loan.membershipNumber,
+        loan.issued_at || loan.issuedAt, loan.due_at || loan.dueAt,
+        loan.returned_at || loan.returnedAt, loan.status
+      ])),
+      [],
+      ...section("MEMBERSHIP DIRECTORY", ["Full name", "Email", "Membership number", "Status", "School", "Study level"], members.map(member => [
+        member.full_name || member.fullName, member.email,
+        member.membership_number || member.membershipNumber, member.status,
+        member.school, member.study_level || member.studyLevel
+      ])),
+      [],
+      ...section("BORROWING REQUESTS", ["Book", "Member", "Membership number", "Requested", "Status"], requests.map(request => [
+        request.book_title || request.bookTitle, request.member_name || request.memberName,
+        request.membership_number || request.membershipNumber,
+        request.created_at || request.createdAt, request.status
+      ])),
+      [],
+      ...section("ATTENDANCE VISITS", ["Attendance number", "Member", "Membership number", "Check-in", "Check-out", "Status"], attendance.map(visit => [
+        visit.attendanceNumber || visit.attendance_number, visit.memberName || visit.member_name,
+        visit.libraryNumber || visit.membership_number, visit.checkInAt || visit.scannedAt,
+        visit.checkOutAt, visit.status
+      ])),
+      [],
+      ...section("DIGITAL LIBRARY", ["Title", "Author", "Category", "Format", "File size", "Published"], ebooks.map(book => [
+        book.title, book.author, book.category, book.fileType || book.file_type,
+        book.fileSize || book.file_size, book.createdAt || book.created_at
+      ]))
+    ];
+    const csv = rows.map(row => row.map(csvCell).join(",")).join("\\r\\n");
+    const blob = new Blob(["\\uFEFF", csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "amg-library-report-" + localDateKey(new Date()) + ".csv";
+    link.download = "amg-library-comprehensive-report-" + localDateKey(new Date()) + ".csv";
     document.body.appendChild(link);
     link.click();
     link.remove();
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   return (
@@ -214,7 +252,7 @@ export function StatisticsTab({ active }) {
         <div className="insight-panel-heading"><div><span className="insight-kicker">VISITS</span><h4>Daily check-ins · last seven days</h4></div></div>
         <BarChart entries={(attendanceSummary?.days || []).map(day => [day.label, Number(day.visits) || 0])} />
       </section>
-      <p className="insight-footnote">Figures are calculated from saved records currently loaded by the librarian workspace. Loan-based rankings and CSV exports reflect the latest 200 loan records returned by the API; attendance occupancy uses the database summary.</p>
+      <p className="insight-footnote">Figures and exports reflect the saved records currently loaded by the librarian workspace. The attendance occupancy and daily visit summaries are calculated by the database.</p>
     </div>
   );
 }
