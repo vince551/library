@@ -223,7 +223,9 @@ export function LibraryProvider({ children }) {
     try {
       const body = {
         title: String(data.title || "").trim(), author: String(data.author || "").trim(),
-        isbn: String(data.isbn || "").trim() || null, description: String(data.description || "").trim() || null,
+        isbn: String(data.isbn || "").trim() || null,
+        category: String(data.category || "").trim(),
+        description: String(data.description || "").trim() || null,
         ...(data.coverFile ? { coverType: data.coverFile.type, coverData: await fileToBase64(data.coverFile) } : {})
       };
       const result = await apiRequest(`/books/${encodeURIComponent(id)}`, { token, method: "PATCH", body });
