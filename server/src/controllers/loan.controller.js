@@ -280,8 +280,7 @@ export async function getLoans(req, res, next) {
        JOIN book_copies bc ON bc.id = l.copy_id
        JOIN books b ON b.id = bc.book_id
        LEFT JOIN users issuer ON issuer.id = l.issued_by
-       ORDER BY l.issued_at DESC
-       LIMIT 200`
+       ORDER BY l.issued_at DESC`
     );
 
     return res.json({
