@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../store/AuthProvider";
 import { apiRequest } from "../lib/api";
-import "./notifications.css";
 
 const formatTime = value => {
   if (!value) return "";
