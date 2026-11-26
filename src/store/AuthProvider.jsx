@@ -3,6 +3,16 @@ import { useToast } from "./ToastProvider";
 import { apiRequest } from "../lib/api";
 
 const AuthContext = createContext(null);
+
+async function photoFileToBase64(file) {
+  const buffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+  }
+  return btoa(binary);
+}
 export const useAuth = () => useContext(AuthContext);
 
 function toProfile(user) {
@@ -21,6 +31,7 @@ function toProfile(user) {
     guardianName: user.guardian_name || user.guardianName || "",
     guardianRelation: user.guardian_relation || user.guardianRelation || "",
     guardianPhone: user.guardian_phone || user.guardianPhone || "",
+    photoURL: user.photoURL || user.photo_url || "",
     isApproved: user.status === "active",
     approvedAt: user.approved_at || user.approvedAt || null,
     membershipStatus: user.status || "pending"
@@ -112,7 +123,11 @@ export function AuthProvider({ children }) {
           eduLevel: String(form.get("eduLevel") || ""),
           guardianName: String(form.get("guardianName") || "").trim(),
           guardianRelation: String(form.get("guardianRelation") || ""),
-          guardianPhone: String(form.get("guardianPhone") || "").trim()
+          guardianPhone: String(form.get("guardianPhone") || "").trim(),
+          ...(form.get("photo") instanceof File && form.get("photo").size > 0 ? {
+            photoType: form.get("photo").type,
+            photoData: await photoFileToBase64(form.get("photo"))
+          } : {})
         }
       });
 
@@ -145,11 +160,25 @@ export function AuthProvider({ children }) {
 
   const updatePhoto = useCallback(async (file) => {
     if (!file) return false;
-    const photoURL = URL.createObjectURL(file);
-    setProfile(current => ({ ...current, photoURL }));
-    showToast("Photo preview updated for this session.");
-    return true;
-  }, [showToast]);
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      showToast("Choose a JPEG, PNG or WebP photo up to 5 MB.", "error");
+      return false;
+    }
+    try {
+      const data = await apiRequest("/auth/photo", {
+        token,
+        method: "PATCH",
+        body: { photoType: file.type, photoData: await photoFileToBase64(file) }
+      });
+      setProfile(current => ({ ...current, photoURL: data.photoURL || "" }));
+      setUser(current => current ? { ...current, photoURL: data.photoURL || "" } : current);
+      showToast(data.message || "Profile photo saved.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not save your profile photo.", "error");
+      return false;
+    }
+  }, [token, showToast]);
 
   const refreshProfile = useCallback(async () => {
     if (!token) return null;
