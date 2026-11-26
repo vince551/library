@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import rateLimit from "express-rate-limit";
 
 import authRoutes from "./routes/auth.routes.js";
 import bookRoutes from "./routes/book.routes.js";
@@ -47,18 +48,18 @@ const allowedOrigins = new Set([
 
 app.use(cors({
   origin(origin, callback) {
-    // Allow server-to-server and same-origin requests with no Origin header.
-    if (!origin || allowedOrigins.has(origin)) {
-      return callback(null, true);
-    }
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
     return callback(new Error("This origin is not allowed by AMG Library CORS."));
   }
 }));
 
+// Apply a general API request limit before parsing potentially large bodies.
+app.use("/api", apiLimiter);
+
 // Base64 file uploads are JSON-encoded. Keep the limit just above the
 // 30 MB e-book + 5 MB cover allowance after base64 expansion.
 app.use(express.json({ limit: "55mb" }));
-app.use(morgan("dev"));
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({
@@ -82,7 +83,14 @@ app.use("/api/settings", settingsRoutes);
 app.use((err, req, res, next) => {
   console.error("API error:", err);
 
-  if (err.message?.includes("CORS")) {\n    return res.status(403).json({ success: false, message: "This website is not allowed to access the AMG Library API." });\n  }\n\n  if (err.type === "entity.too.large") {
+  if (err.message?.includes("CORS")) {
+    return res.status(403).json({
+      success: false,
+      message: "This website is not allowed to access the AMG Library API."
+    });
+  }
+
+  if (err.type === "entity.too.large") {
     return res.status(413).json({
       success: false,
       message: "The upload is too large. E-books are limited to 30 MB and cover images to 5 MB."
