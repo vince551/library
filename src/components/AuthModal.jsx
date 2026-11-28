@@ -70,11 +70,14 @@ function validateFields(container) {
 }
 
 export function AuthModal({ open, mode, onClose, onModeChange }) {
-  const { login, register, resetPassword } = useAuth();
+  const { login, register, resetPassword, completePasswordReset } = useAuth();
   const [step, setStep] = useState(1);
   const [avatarChoice, setAvatarChoice] = useState("scholar");
   const [busy, setBusy] = useState(false);
   const [registrationResult, setRegistrationResult] = useState(null);
+  const [resetView, setResetView] = useState("none");
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetToken, setResetToken] = useState("");
 
   const loginFormRef = useRef(null);
   const registerFormRef = useRef(null);
@@ -85,7 +88,12 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
   const registerMode = mode === "register";
 
   useEffect(() => {
-    if (open) setStep(1);
+    if (!open) return;
+    setStep(1);
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("resetToken") || "";
+    setResetToken(token);
+    setResetView(token ? "complete" : "none");
   }, [open, mode]);
 
   // Only the visible registration step keeps its original `required` flags, so
@@ -147,7 +155,39 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
 
   const forgotPassword = () => {
     const value = loginFormRef.current?.elements.loginName?.value || "";
-    void resetPassword(value);
+    setResetEmail(value.includes("@") ? value.trim() : "");
+    setResetView("request");
+  };
+
+  const submitResetRequest = async (event) => {
+    event.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    const ok = await resetPassword(resetEmail);
+    setBusy(false);
+    if (ok) setResetView("sent");
+  };
+
+  const submitNewPassword = async (event) => {
+    event.preventDefault();
+    if (busy) return;
+    const form = new FormData(event.currentTarget);
+    const password = String(form.get("newPassword") || "");
+    const confirm = String(form.get("confirmPassword") || "");
+    if (password.length < 8) return;
+    if (password !== confirm) {
+      window.alert("The passwords do not match.");
+      return;
+    }
+    setBusy(true);
+    const ok = await completePasswordReset(resetToken, password);
+    setBusy(false);
+    if (ok) {
+      window.history.replaceState({}, "", window.location.pathname);
+      setResetToken("");
+      setResetView("none");
+      onModeChange("login");
+    }
   };
 
   return (
@@ -201,7 +241,7 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
           <form
             id="loginForm"
             ref={loginFormRef}
-            className={"form-stack" + (registerMode ? " hidden" : "")}
+            className={"form-stack" + (registerMode || resetView !== "none" ? " hidden" : "")}
             onSubmit={submitLogin}
           >
             <label>
@@ -212,6 +252,38 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
             <button className="btn btn-primary" type="submit" disabled={busy}>Log In</button>
             <button className="text-button" type="button" onClick={forgotPassword}>Forgot password?</button>
           </form>
+
+          {resetView !== "none" ? (
+            <div className="form-stack password-recovery-panel">
+              {resetView === "request" ? (
+                <>
+                  <h3>Reset your password</h3>
+                  <p className="muted">Enter the email address registered with your AMG Library account. If it matches, we will send a secure reset link.</p>
+                  <form className="form-stack" onSubmit={submitResetRequest}>
+                    <label>Email address<input type="email" required autoComplete="email" value={resetEmail} onChange={event => setResetEmail(event.target.value)} /></label>
+                    <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Sending…" : "Send reset link"}</button>
+                  </form>
+                  <button className="text-button" type="button" onClick={() => setResetView("none")}>Back to Log In</button>
+                </>
+              ) : resetView === "sent" ? (
+                <>
+                  <h3>Check your email</h3>
+                  <p className="muted">If an account matches that email, password reset instructions will arrive shortly. The link expires after 30 minutes and can only be used once.</p>
+                  <button className="btn btn-primary" type="button" onClick={() => setResetView("none")}>Back to Log In</button>
+                </>
+              ) : (
+                <>
+                  <h3>Choose a new password</h3>
+                  <p className="muted">Use at least 8 characters. This reset link can only be used once.</p>
+                  <form className="form-stack" onSubmit={submitNewPassword}>
+                    <label>New password<input name="newPassword" type="password" minLength="8" maxLength="128" required autoComplete="new-password" /></label>
+                    <label>Confirm new password<input name="confirmPassword" type="password" minLength="8" maxLength="128" required autoComplete="new-password" /></label>
+                    <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Updating…" : "Update password"}</button>
+                  </form>
+                </>
+              )}
+            </div>
+          ) : null}
 
           {registerMode && registrationResult ? (
             <div className="registration-success" role="status" aria-live="polite">
@@ -230,7 +302,7 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
           <form
             id="registerForm"
             ref={registerFormRef}
-            className={"form-stack" + (registerMode && !registrationResult ? "" : " hidden")}
+            className={"form-stack" + (registerMode && !registrationResult && resetView === "none" ? "" : " hidden")}
             onSubmit={submitRegister}
           >
             <div id="registrationStepOne" ref={stepOneRef} className={"registration-step" + (step === 1 ? "" : " hidden")}>
