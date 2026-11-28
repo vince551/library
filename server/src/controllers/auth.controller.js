@@ -522,6 +522,13 @@ export async function requestPasswordReset(req, res, next) {
   const email = parsed.data.email.toLowerCase();
   let resetRecord = null;
   try {
+    // Fail consistently before looking up the address if delivery is not configured.
+    if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) {
+      return res.status(503).json({
+        success: false,
+        message: "Password recovery is temporarily unavailable. Please contact the library administrator."
+      });
+    }
     const found = await pool.query(
       "SELECT id, full_name, email FROM users WHERE LOWER(email) = $1 LIMIT 1",
       [email]
