@@ -66,7 +66,10 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let cancelled = false;
 
-    apiRequest("/auth/me")
+    // A 401 here simply means this browser has no active login yet. Keep the
+    // sign-in screen quiet; only show expiry notices after an active session
+    // makes a request and is rejected.
+    apiRequest("/auth/me", { suppressSessionNotice: true })
       .then(data => {
         if (cancelled) return;
         const currentUser = data.user || data;
@@ -75,7 +78,6 @@ export function AuthProvider({ children }) {
       })
       .catch((error) => {
         if (cancelled) return;
-        // A network outage must not erase a valid saved session.
         if (error.status !== 401 && !(error.status === 403 && error.message === "This account is not active.")) {
           showToast("We could not verify your session because the server is unreachable. Check your connection and refresh.", "error");
         }
@@ -182,7 +184,6 @@ export function AuthProvider({ children }) {
     }
     try {
       const data = await apiRequest("/auth/photo", {
-        token,
         method: "PATCH",
         body: { photoType: file.type, photoData: await photoFileToBase64(file) }
       });
@@ -194,13 +195,13 @@ export function AuthProvider({ children }) {
       showToast(error.message || "Could not save your profile photo.", "error");
       return false;
     }
-  }, [token, showToast]);
+  }, [showToast]);
 
   const refreshProfile = useCallback(async () => {
     if (!token) return null;
 
     try {
-      const data = await apiRequest("/auth/me", { token });
+      const data = await apiRequest("/auth/me");
       const currentUser = data.user || data;
       setUser(currentUser);
       const nextProfile = toProfile(currentUser);

@@ -6,9 +6,9 @@ const API_BASE_URL = (import.meta.env.DEV
 
 export const apiUrl = path => `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 
-function notifyInvalidSession(token, status, message) {
+function notifyInvalidSession(token, status, message, suppressSessionNotice = false) {
   const accountInactive = status === 403 && message === "This account is not active.";
-  if ((status !== 401 && !accountInactive) || typeof window === "undefined") return;
+  if (suppressSessionNotice || (status !== 401 && !accountInactive) || typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent("amg:session-invalid", { detail: { token, status, message } }));
 }
 
@@ -18,7 +18,7 @@ function requestError(message, status) {
   return error;
 }
 
-export async function apiRequest(path, { token, method = "GET", body, headers = {} } = {}) {
+export async function apiRequest(path, { token, method = "GET", body, headers = {}, suppressSessionNotice = false } = {}) {
   let response;
 
   try {
@@ -40,7 +40,7 @@ export async function apiRequest(path, { token, method = "GET", body, headers = 
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok || data.success === false) {
-    notifyInvalidSession(token, response.status, data.message);
+    notifyInvalidSession(token, response.status, data.message, suppressSessionNotice);
     throw requestError(data.message || `Request failed with status ${response.status}.`, response.status);
   }
 
