@@ -15,7 +15,7 @@ async function resetPassword() {
 
     const result = await pool.query(
       `UPDATE users
-       SET password_hash = $1, updated_at = NOW()
+       SET password_hash = $1, session_version = COALESCE(session_version, 0) + 1, updated_at = NOW()
        WHERE email = $2 AND role = 'librarian'
        RETURNING email`,
       [passwordHash, email.trim().toLowerCase()]
