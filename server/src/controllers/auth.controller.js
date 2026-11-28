@@ -53,7 +53,8 @@ async function profileStorageRequest(path, options = {}) {
   });
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
-    const error = new Error("Profile photo storage failed" + (detail ? `: ${detail.slice(0, 200)}` : "."));
+    console.error("Profile photo storage rejected request:", { status: response.status, detail: detail.slice(0, 500) });
+    const error = new Error("Profile photo storage is temporarily unavailable.");
     error.status = response.status === 413 ? 413 : 502;
     throw error;
   }
@@ -254,9 +255,11 @@ export async function login(req, res, next) {
     );
 
     if (result.rows.length > 1 && !/^\d{3}$/.test(normalizedIdentifier) && !normalizedIdentifier.includes("@")) {
+      await bcrypt.compare(password, DUMMY_PASSWORD_HASH);
       return res.status(409).json({ success: false, message: "More than one member has that name. Please sign in with your 3-digit login ID." });
     }
     if (result.rows.length === 0) {
+      await bcrypt.compare(password, DUMMY_PASSWORD_HASH);
       return res.status(401).json({
         success: false,
         message: "Invalid login ID or password."
@@ -272,7 +275,7 @@ export async function login(req, res, next) {
     if (!passwordMatches) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password."
+        message: "Invalid login ID or password."
       });
     }
 
