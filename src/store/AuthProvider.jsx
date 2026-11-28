@@ -42,50 +42,31 @@ function toProfile(user) {
 
 export function AuthProvider({ children }) {
   const { showToast } = useToast();
-  const [token, setToken] = useState(() => localStorage.getItem("amg_auth_token"));
+  const [token, setToken] = useState("cookie-session");
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [ready, setReady] = useState(() => !localStorage.getItem("amg_auth_token"));
+  const [ready, setReady] = useState(false);
 
   const librarian = user?.role === "librarian" || user?.role === "admin";
 
   useEffect(() => {
     const handleInvalidSession = (event) => {
-      const invalidToken = event.detail?.token;
-      if (!invalidToken || localStorage.getItem("amg_auth_token") !== invalidToken) return;
-      localStorage.removeItem("amg_auth_token");
-      setToken(null);
+      if (event.detail?.status !== 401 && event.detail?.status !== 403) return;
+      setToken("cookie-session");
       setUser(null);
       setProfile(null);
       setReady(true);
       showToast("Your session has expired or is no longer active. Please sign in again.", "error");
     };
 
-    const handleStorageChange = (event) => {
-      if (event.key !== "amg_auth_token") return;
-      setToken(event.newValue);
-      setUser(null);
-      setProfile(null);
-      setReady(!event.newValue);
-    };
-
     window.addEventListener("amg:session-invalid", handleInvalidSession);
-    window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("amg:session-invalid", handleInvalidSession);
-      window.removeEventListener("storage", handleStorageChange);
-    };
+    return () => window.removeEventListener("amg:session-invalid", handleInvalidSession);
   }, [showToast]);
 
   useEffect(() => {
-    if (!token) {
-      setReady(true);
-      return undefined;
-    }
-
     let cancelled = false;
 
-    apiRequest("/auth/me", { token })
+    apiRequest("/auth/me")
       .then(data => {
         if (cancelled) return;
         const currentUser = data.user || data;
@@ -120,12 +101,11 @@ export function AuthProvider({ children }) {
         body: { identifier: identifier.trim(), password }
       });
 
-      if (!data.token || !data.user) {
+      if (!data.user) {
         throw new Error("The server returned an incomplete sign-in response.");
       }
 
-      localStorage.setItem("amg_auth_token", data.token);
-      setToken(data.token);
+      setToken("cookie-session");
       setUser(data.user);
       setProfile(toProfile(data.user));
       setReady(true);
@@ -171,9 +151,13 @@ export function AuthProvider({ children }) {
     }
   }, [showToast]);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem("amg_auth_token");
-    setToken(null);
+  const logout = useCallback(async () => {
+    try {
+      await apiRequest("/auth/logout", { method: "POST" });
+    } catch {
+      // Clear local UI state even if the network is unavailable; the cookie expires naturally.
+    }
+    setToken("cookie-session");
     setUser(null);
     setProfile(null);
     setReady(true);
