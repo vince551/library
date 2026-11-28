@@ -74,6 +74,7 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
   const [step, setStep] = useState(1);
   const [avatarChoice, setAvatarChoice] = useState("scholar");
   const [busy, setBusy] = useState(false);
+  const [registrationResult, setRegistrationResult] = useState(null);
 
   const loginFormRef = useRef(null);
   const registerFormRef = useRef(null);
@@ -127,12 +128,12 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
     if (busy || !validateFields(stepTwoRef.current)) return;
     const form = new FormData(event.currentTarget);
     setBusy(true);
-    const ok = await register(form);
+    const result = await register(form);
     setBusy(false);
-    if (ok) {
+    if (result?.success) {
       registerFormRef.current?.reset();
       setStep(1);
-      onClose();
+      setRegistrationResult(result);
     }
   };
 
@@ -212,10 +213,24 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
             <button className="text-button" type="button" onClick={forgotPassword}>Forgot password?</button>
           </form>
 
+          {registerMode && registrationResult ? (
+            <div className="registration-success" role="status" aria-live="polite">
+              <div className="success-icon" aria-hidden="true">✓</div>
+              <h3>Registration submitted</h3>
+              <p>{registrationResult.message} A librarian must approve your membership before you can sign in.</p>
+              <p className="muted">Your 3-digit login ID</p>
+              <div className="registration-login-code">{registrationResult.loginCode || "Not provided"}</div>
+              <p className="muted">Save this ID. You will need it together with your password when your account is approved.</p>
+              <button className="btn btn-primary" type="button" onClick={() => { setRegistrationResult(null); onModeChange("login"); }}>
+                Continue to Log In
+              </button>
+            </div>
+          ) : null}
+
           <form
             id="registerForm"
             ref={registerFormRef}
-            className={"form-stack" + (registerMode ? "" : " hidden")}
+            className={"form-stack" + (registerMode && !registrationResult ? "" : " hidden")}
             onSubmit={submitRegister}
           >
             <div id="registrationStepOne" ref={stepOneRef} className={"registration-step" + (step === 1 ? "" : " hidden")}>
