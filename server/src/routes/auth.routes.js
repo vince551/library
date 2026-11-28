@@ -4,6 +4,7 @@ import rateLimit from "express-rate-limit";
 import {
   register,
   login,
+  logout,
   getMe,
   updateProfilePhoto
 } from "../controllers/auth.controller.js";
