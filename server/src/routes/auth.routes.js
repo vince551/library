@@ -37,6 +37,7 @@ const profilePhotoLimiter = rateLimit({
 
 router.post("/register", authLimiter, register);
 router.post("/login", authLimiter, login);
+router.post("/logout", logout);
 router.get("/me", authenticate, getMe);
 router.patch("/photo", authenticate, profilePhotoLimiter, updateProfilePhoto);
 
