@@ -107,16 +107,16 @@ export function AuthProvider({ children }) {
     };
   }, [token, showToast]);
 
-  const login = useCallback(async (email, password) => {
-    if (!email || !password) {
-      showToast("Enter your email and password.", "error");
+  const login = useCallback(async (identifier, password) => {
+    if (!identifier || !password) {
+      showToast("Enter your login ID, full name or email and password.", "error");
       return false;
     }
 
     try {
       const data = await apiRequest("/auth/login", {
         method: "POST",
-        body: { email: email.trim().toLowerCase(), password }
+        body: { identifier: identifier.trim(), password }
       });
 
       if (!data.token || !data.user) {
@@ -139,13 +139,14 @@ export function AuthProvider({ children }) {
   const register = useCallback(async (form) => {
     const fullName = String(form.get("fullName") || "").trim();
     const email = String(form.get("email") || "").trim().toLowerCase();
+    const dateOfBirth = String(form.get("dateOfBirth") || "");
     const password = String(form.get("password") || "");
 
     try {
       const data = await apiRequest("/auth/register", {
         method: "POST",
         body: {
-          fullName, email, password,
+          fullName, email, dateOfBirth, password,
           gender: String(form.get("gender") || ""),
           school: String(form.get("school") || "").trim(),
           studyLevel: String(form.get("studyLevel") || "").trim(),
@@ -161,7 +162,7 @@ export function AuthProvider({ children }) {
         }
       });
 
-      showToast(data.message || "Registration submitted. Your account is awaiting approval.");
+      showToast((data.message || "Registration submitted. Your account is awaiting approval.") + (data.loginCode ? " Your 3-digit login ID is " + data.loginCode + ". Keep it safe." : ""));
       return true;
     } catch (error) {
       showToast(error.message || "Unable to submit your registration.", "error");
