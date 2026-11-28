@@ -90,7 +90,11 @@ async function signedProfilePhoto(key) {
 
 const registerSchema = z.object({
   fullName: z.string().trim().min(2).max(150),
-  email: z.string().trim().email().max(255),
+  email: z.union([z.string().trim().email().max(255), z.literal("")]).optional().default(""),
+  dateOfBirth: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/).refine(value => {
+    const date = new Date(value + "T00:00:00.000Z");
+    return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value && date <= new Date();
+  }, "Enter a valid date of birth."),
   // Keep this aligned with the registration form's visible 8-character rule.
   password: z.string().min(8, "Password must contain at least 8 characters.").max(128),
   gender: z.string().trim().max(40).optional().default(""),
@@ -106,7 +110,7 @@ const registerSchema = z.object({
 });
 
 const loginSchema = z.object({
-  email: z.string().trim().email().max(255),
+  identifier: z.string().trim().min(1).max(255),
   password: z.string().min(1).max(128)
 });
 
@@ -141,33 +145,28 @@ export async function register(req, res, next) {
       });
     }
 
-    const { fullName, email, password, gender, school, studyLevel, eduLevel, guardianName, guardianRelation, guardianPhone, photoType, photoData, avatarChoice } = parsed.data;
-    const normalizedEmail = email.toLowerCase();
+    const { fullName, email, dateOfBirth, password, gender, school, studyLevel, eduLevel, guardianName, guardianRelation, guardianPhone, photoType, photoData, avatarChoice } = parsed.data;
+    const normalizedEmail = email ? email.toLowerCase() : null;
 
     await client.query("BEGIN");
-
-    const existing = await client.query(
-      "SELECT id FROM users WHERE email = $1",
-      [normalizedEmail]
-    );
-
-    if (existing.rows.length > 0) {
-      await client.query("ROLLBACK");
-
-      return res.status(409).json({
-        success: false,
-        message: "An account with this email already exists."
-      });
+    if (normalizedEmail) {
+      const existing = await client.query("SELECT id FROM users WHERE email = $1", [normalizedEmail]);
+      if (existing.rows.length > 0) {
+        await client.query("ROLLBACK");
+        return res.status(409).json({ success: false, message: "An account with this email already exists." });
+      }
     }
 
+    const loginCodeResult = await client.query("SELECT LPAD(nextval('amg_login_code_seq')::TEXT, 3, '0') AS login_code");
+    const loginCode = loginCodeResult.rows[0].login_code;
     const passwordHash = await bcrypt.hash(password, 12);
 
     const userResult = await client.query(
       `INSERT INTO users
-        (full_name, email, password_hash, role, status)
-       VALUES ($1, $2, $3, 'member', 'pending')
-       RETURNING id, full_name, email, role, status`,
-      [fullName, normalizedEmail, passwordHash]
+        (full_name, email, login_code, password_hash, role, status)
+       VALUES ($1, $2, $3, $4, 'member', 'pending')
+       RETURNING id, full_name, email, login_code, role, status`,
+      [fullName, normalizedEmail, loginCode, passwordHash]
     );
 
     const user = userResult.rows[0];
@@ -176,10 +175,10 @@ export async function register(req, res, next) {
 
     await client.query(
       `INSERT INTO member_profiles
-        (user_id, membership_number, gender, school, study_level, edu_level,
+        (user_id, membership_number, date_of_birth, gender, school, study_level, edu_level,
          guardian_name, guardian_relation, guardian_phone, avatar_choice)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [user.id, membershipNumber, gender || null, school, studyLevel, eduLevel || null,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [user.id, membershipNumber, dateOfBirth, gender || null, school, studyLevel, eduLevel || null,
        guardianName, guardianRelation || null, guardianPhone, avatarChoice]
     );
 
@@ -193,11 +192,15 @@ export async function register(req, res, next) {
     return res.status(201).json({
       success: true,
       message: "Registration submitted. Your account is awaiting approval.",
+      loginCode,
       user
     });
   } catch (error) {
     await client.query("ROLLBACK").catch(() => {});
     if (newPhotoKey) await removeProfilePhoto(newPhotoKey).catch(() => {});
+    if (error.code === "2200H") {
+      return res.status(409).json({ success: false, message: "The 3-digit login ID range (001–999) is full. Please contact the library administrator." });
+    }
     if (error.status) return res.status(error.status).json({ success: false, message: error.message });
     next(error);
   } finally {
@@ -216,19 +219,26 @@ export async function login(req, res, next) {
       });
     }
 
-    const { email, password } = parsed.data;
-
+    const { identifier, password } = parsed.data;
+    const normalizedIdentifier = identifier.trim();
     const result = await pool.query(
-      `SELECT u.id, u.full_name, u.email, u.password_hash, u.role, u.status,
-              mp.membership_number, mp.approved_at, mp.phone, mp.address,
+      `SELECT u.id, u.full_name, u.email, u.login_code, u.password_hash, u.role, u.status,
+              mp.membership_number, mp.date_of_birth, mp.approved_at, mp.phone, mp.address,
               mp.gender, mp.school, mp.study_level, mp.edu_level,
               mp.guardian_name, mp.guardian_relation, mp.guardian_phone, mp.photo_storage_key, mp.avatar_choice
        FROM users u
        LEFT JOIN member_profiles mp ON mp.user_id = u.id
-       WHERE u.email = $1`,
-      [email.toLowerCase()]
+       WHERE (u.email IS NOT NULL AND LOWER(u.email) = LOWER($1))
+          OR u.login_code = $1
+          OR LOWER(TRIM(u.full_name)) = LOWER(TRIM($1))
+       ORDER BY u.id
+       LIMIT 2`,
+      [normalizedIdentifier]
     );
 
+    if (result.rows.length > 1 && !/^\\d{3}$/.test(normalizedIdentifier) && !normalizedIdentifier.includes("@")) {
+      return res.status(409).json({ success: false, message: "More than one member has that name. Please sign in with your 3-digit login ID." });
+    }
     if (result.rows.length === 0) {
       return res.status(401).json({
         success: false,
@@ -271,6 +281,7 @@ export async function login(req, res, next) {
         role: user.role,
         status: user.status,
         membership_number: user.membership_number,
+        login_code: user.login_code,
         approved_at: user.approved_at,
         phone: user.phone,
         address: user.address,
@@ -300,6 +311,7 @@ export async function getMe(req, res) {
       role: req.user.role,
       status: req.user.status,
       membership_number: req.user.membership_number,
+      login_code: req.user.login_code,
       approved_at: req.user.approved_at,
       phone: req.user.phone,
       address: req.user.address,
