@@ -145,8 +145,8 @@ export function AuthProvider({ children }) {
         }
       });
 
-      showToast((data.message || "Registration submitted. Your account is awaiting approval.") + (data.loginCode ? " Your 3-digit login ID is " + data.loginCode + ". Keep it safe." : ""));
-      return true;
+      showToast(data.message || "Registration submitted. Your account is awaiting approval.");
+      return { success: true, message: data.message || "Registration submitted.", loginCode: data.loginCode || "" };
     } catch (error) {
       showToast(error.message || "Unable to submit your registration.", "error");
       return false;
