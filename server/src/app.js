@@ -49,11 +49,23 @@ const allowedOrigins = new Set([
 ]);
 
 app.use(cors({
+  credentials: true,
   origin(origin, callback) {
     if (!origin || allowedOrigins.has(origin)) return callback(null, true);
     return callback(new Error("This origin is not allowed by AMG Library CORS."));
   }
 }));
+
+// Cookie-authenticated mutations must come from an explicitly allowed web origin
+// and carry a non-simple custom header. This blocks cross-site form submissions.
+app.use((req, res, next) => {
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
+  const origin = req.get("origin");
+  if (!origin || !allowedOrigins.has(origin) || req.get("x-amg-request") !== "1") {
+    return res.status(403).json({ success: false, message: "This request could not be verified. Refresh the page and try again." });
+  }
+  return next();
+});
 
 // Apply a general API request limit before parsing potentially large bodies.
 app.use("/api", apiLimiter);
