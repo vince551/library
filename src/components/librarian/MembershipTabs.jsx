@@ -1,4 +1,5 @@
 import { useLibrary } from "../../store/LibraryProvider";
+import { useState } from "react";
 
 const tabClass = (active) => "tab-content" + (active ? " active" : "");
 
@@ -84,6 +85,30 @@ export function PendingLearnersTab({ active }) {
             ) : pending.map(member => (
               <tr key={member.id}>
                 <td data-label="Name">{member.full_name}</td>
+                <td data-label="Date of birth">
+                  {editingDob === member.id ? (
+                    <div className="stack-list">
+                      <input aria-label={`Date of birth for ${member.full_name}`} type="date" value={dobValue} max={new Date().toISOString().slice(0, 10)} onChange={event => setDobValue(event.target.value)} />
+                      <div className="button-row">
+                        <button className="btn btn-sm btn-success" type="button" disabled={!dobValue || savingDob} onClick={async () => {
+                          setSavingDob(true);
+                          const ok = await updateMemberDateOfBirth(member.id, dobValue);
+                          setSavingDob(false);
+                          if (ok) setEditingDob("");
+                        }}>{savingDob ? "Saving…" : "Save DOB"}</button>
+                        <button className="btn btn-sm btn-outline" type="button" disabled={savingDob} onClick={() => setEditingDob("")}>Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="button-row">
+                      <span>{member.date_of_birth ? new Date(member.date_of_birth).toLocaleDateString("en-CA", { timeZone: "UTC" }) : "Not recorded"}</span>
+                      <button className="btn btn-sm btn-outline" type="button" onClick={() => {
+                        setEditingDob(member.id);
+                        setDobValue(member.date_of_birth ? String(member.date_of_birth).slice(0, 10) : "");
+                      }}>{member.date_of_birth ? "Edit" : "Add DOB"}</button>
+                    </div>
+                  )}
+                </td>
                 <td data-label="Email">{member.email}</td>
                 <td data-label="Phone">{member.phone || "—"}</td>
                 <td data-label="School">{member.school || "—"}</td>
@@ -107,7 +132,10 @@ export function PendingLearnersTab({ active }) {
 }
 
 export function AllLearnersTab({ active, onViewCard }) {
-  const { members, changeMemberStatus } = useLibrary();
+  const { members, changeMemberStatus, updateMemberDateOfBirth } = useLibrary();
+  const [editingDob, setEditingDob] = useState("");
+  const [dobValue, setDobValue] = useState("");
+  const [savingDob, setSavingDob] = useState(false);
 
   const updateStatus = (member) => {
     const action = member.status === "suspended" ? "reactivate" : "suspend";
@@ -121,11 +149,11 @@ export function AllLearnersTab({ active, onViewCard }) {
       <div className="table-responsive">
         <table className="data-table">
           <thead>
-            <tr><th>Membership #</th><th>Name</th><th>Email</th><th>Phone</th><th>School</th><th>Education level</th><th>Study level</th><th>Status</th><th>Actions</th></tr>
+            <tr><th>Membership #</th><th>Name</th><th>Date of birth</th><th>Email</th><th>Phone</th><th>School</th><th>Education level</th><th>Study level</th><th>Status</th><th>Actions</th></tr>
           </thead>
           <tbody id="allLearnersTable">
             {members.length === 0 ? (
-              <tr><td colSpan="9">No member accounts have been registered yet.</td></tr>
+              <tr><td colSpan="10">No member accounts have been registered yet.</td></tr>
             ) : members.map(member => (
               <tr key={member.id}>
                 <td data-label="Membership #">{member.membership_number || "Not issued"}</td>
