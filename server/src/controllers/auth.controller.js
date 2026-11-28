@@ -289,11 +289,18 @@ export async function login(req, res, next) {
     }
 
     const token = createToken(user);
+    const production = process.env.NODE_ENV === "production";
+    res.cookie("amg_session", token, {
+      httpOnly: true,
+      secure: production,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 8 * 60 * 60 * 1000
+    });
 
     return res.status(200).json({
       success: true,
       message: "Login successful.",
-      token,
       user: {
         id: user.id,
         fullName: user.full_name,
@@ -319,6 +326,17 @@ export async function login(req, res, next) {
   } catch (error) {
     next(error);
   }
+}
+
+export function logout(req, res) {
+  const production = process.env.NODE_ENV === "production";
+  res.clearCookie("amg_session", {
+    httpOnly: true,
+    secure: production,
+    sameSite: "lax",
+    path: "/"
+  });
+  return res.status(200).json({ success: true, message: "You have been signed out." });
 }
 
 export async function getMe(req, res) {
