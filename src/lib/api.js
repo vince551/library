@@ -22,10 +22,11 @@ export async function apiRequest(path, { token, method = "GET", body, headers = 
       method,
       headers: {
         Accept: "application/json",
+        "X-AMG-Request": "1",
         ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...headers
       },
+      credentials: "include",
       ...(body !== undefined ? { body: JSON.stringify(body) } : {})
     });
   } catch {
@@ -48,8 +49,9 @@ export async function apiFileRequest(path, { token } = {}) {
     response = await fetch(apiUrl(path), {
       headers: {
         Accept: "application/pdf, application/epub+zip, application/octet-stream",
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
-      }
+        "X-AMG-Request": "1"
+      },
+      credentials: "include"
     });
   } catch {
     throw requestError("Cannot reach the AMG Library server.", 0);
