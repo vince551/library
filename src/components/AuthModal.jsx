@@ -193,7 +193,7 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
 
           {registerMode ? null : (
             <p className="muted auth-help">
-              Sign in with your registered AMG Library account. New membership applications must be approved by a librarian before members can access their accounts.
+              Sign in with your 3-digit login ID, full name or email and password. New membership applications must be approved by a librarian before members can access their accounts.
             </p>
           )}
 
@@ -204,8 +204,8 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
             onSubmit={submitLogin}
           >
             <label>
-              Email address
-              <input name="loginName" type="email" autoComplete="username" required placeholder="your@email.com" />
+              Login ID, full name or email
+              <input name="loginName" type="text" autoComplete="username" required placeholder="e.g. 024, your full name or email" />
             </label>
             <PasswordField id="loginPasswordInput" name="password" label="Password" autoComplete="current-password" />
             <button className="btn btn-primary" type="submit" disabled={busy}>Log In</button>
@@ -227,7 +227,8 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
               </div>
               <h3>Step 1 — Learner details</h3>
               <label>Full name<input name="fullName" required minLength="2" maxLength="120" autoComplete="name" /></label>
-              <label>Email address<input name="email" type="email" required autoComplete="email" /></label>
+              <label>Email address <span className="muted">(optional)</span><input name="email" type="email" autoComplete="email" placeholder="If you have one" /></label>
+              <label>Date of birth<input name="dateOfBirth" type="date" required min="1900-01-01" max={new Date().toISOString().slice(0, 10)} autoComplete="bday" /></label>
               <label>
                 Gender
                 <select name="gender" defaultValue="Male">
