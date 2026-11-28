@@ -398,7 +398,7 @@ export function LibraryProvider({ children }) {
     }
   }, [token, showToast]);
 
-  const uploadEbook = useCallback(async ({ title, author, category, description, file, coverFile }) => {
+  const uploadEbook = useCallback(async ({ title, author, category, description, minimumAge = 0, file, coverFile }) => {
     if (!file) {
       showToast("Choose a PDF or EPUB file first.", "error");
       return false;
@@ -438,6 +438,7 @@ export function LibraryProvider({ children }) {
           author: String(author || "").trim(),
           category: String(category || "").trim(),
           description: String(description || "").trim(),
+          minimumAge: Number(minimumAge) || 0,
           fileName: file.name,
           fileType: file.type || (/\.epub$/i.test(file.name) ? "application/epub+zip" : "application/pdf"),
           fileData,
