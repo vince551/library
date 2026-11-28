@@ -15,6 +15,7 @@ const uploadSchema = z.object({
   author: z.string().trim().min(1).max(255),
   category: z.string().trim().min(1).max(80),
   description: z.string().trim().max(500).optional().default(""),
+  minimumAge: z.coerce.number().int().refine(value => [0, 10, 13, 16, 18].includes(value), "Choose a valid age restriction.").optional().default(0),
   fileName: z.string().trim().min(1).max(255),
   fileType: z.string().trim().min(1).max(100),
   fileData: z.string().min(1),
@@ -160,13 +161,14 @@ function publicEbook(row) {
     fileType: extension === "epub" ? "application/epub+zip" : "application/pdf",
     fileSize: Number(row.file_size_bytes),
     coverUrl: row.cover_image_key ? `/api/ebooks/${row.id}/cover` : "",
-    createdAt: row.created_at
+    createdAt: row.created_at,
+    minimumAge: Number(row.minimum_age) || 0
   };
 }
 
 const ebookSelect = `
   SELECT e.id, e.book_id, e.file_format, e.file_size_bytes, e.created_at,
-         e.ebook_number, b.catalogue_number, b.title, b.author, b.description, b.cover_image_key,
+         e.ebook_number, e.minimum_age, b.catalogue_number, b.title, b.author, b.description, b.cover_image_key,
          c.name AS category, e.is_published
   FROM ebooks e
   JOIN books b ON b.id = e.book_id
@@ -257,10 +259,10 @@ export async function uploadEbook(req, res, next) {
         [input.title, input.author, input.description || null, categoryResult.rows[0].id, coverKey, req.user.id]
       );
       const ebookResult = await client.query(
-        `INSERT INTO ebooks (book_id, file_key, file_format, file_size_bytes, is_published, ebook_number)
-         VALUES ($1, $2, $3, $4, TRUE, next_amg_number('E'))
-         RETURNING id, book_id, ebook_number, file_format, file_size_bytes, created_at`,
-        [bookResult.rows[0].id, fileKey, fileType.format, fileBuffer.length]
+        `INSERT INTO ebooks (book_id, file_key, file_format, file_size_bytes, minimum_age, is_published, ebook_number)
+         VALUES ($1, $2, $3, $4, $5, TRUE, next_amg_number('E'))
+         RETURNING id, book_id, ebook_number, file_format, file_size_bytes, minimum_age, created_at`,
+        [bookResult.rows[0].id, fileKey, fileType.format, fileBuffer.length, input.minimumAge]
       );
       await client.query(
         `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details)
@@ -278,6 +280,7 @@ export async function uploadEbook(req, res, next) {
         author: input.author,
         description: input.description,
         category: input.category,
+        minimum_age: input.minimumAge,
         cover_image_key: coverKey
       };
       await client.query("COMMIT");
@@ -319,12 +322,30 @@ export async function streamEbook(req, res, next) {
     if (!id.success) return res.status(400).json({ success: false, message: "Invalid e-book ID." });
 
     const result = await pool.query(
-      `SELECT e.file_key FROM ebooks e
+      `SELECT e.file_key, e.minimum_age, mp.date_of_birth
+       FROM ebooks e
        JOIN books b ON b.id = e.book_id
+       LEFT JOIN member_profiles mp ON mp.user_id = $2
        WHERE e.id = $1 AND e.is_published = TRUE AND b.is_published = TRUE`,
-      [id.data]
+      [id.data, req.user.id]
     );
     if (!result.rowCount) return res.status(404).json({ success: false, message: "E-book not found." });
+
+    const minimumAge = Number(result.rows[0].minimum_age) || 0;
+    if (minimumAge > 0 && req.user.role === "member") {
+      const dateOfBirth = result.rows[0].date_of_birth;
+      if (!dateOfBirth) {
+        return res.status(403).json({ success: false, message: "Your date of birth is not on your member profile. Please ask a librarian or guardian to update it before opening this age-restricted e-book." });
+      }
+      const birth = new Date(String(dateOfBirth).slice(0, 10) + "T00:00:00.000Z");
+      const today = new Date();
+      let age = today.getUTCFullYear() - birth.getUTCFullYear();
+      const monthDifference = today.getUTCMonth() - birth.getUTCMonth();
+      if (monthDifference < 0 || (monthDifference === 0 && today.getUTCDate() < birth.getUTCDate())) age -= 1;
+      if (age < minimumAge) {
+        return res.status(403).json({ success: false, message: "This e-book is restricted to readers aged " + minimumAge + " and above." });
+      }
+    }
     return res.redirect(302, await signedObjectUrl(result.rows[0].file_key));
   } catch (error) {
     next(error);
