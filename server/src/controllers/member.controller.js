@@ -250,6 +250,7 @@ export async function suspendMember(req, res, next) {
     const result = await client.query(
       `UPDATE users
        SET status = 'suspended',
+           session_version = COALESCE(session_version, 0) + 1,
            updated_at = NOW()
        WHERE id = $1
          AND role = 'member'
@@ -317,6 +318,7 @@ export async function reactivateMember(req, res, next) {
     const result = await client.query(
       `UPDATE users
        SET status = 'active',
+           session_version = COALESCE(session_version, 0) + 1,
            updated_at = NOW()
        WHERE id = $1
          AND role = 'member'
