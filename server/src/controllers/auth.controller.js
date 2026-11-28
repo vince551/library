@@ -132,11 +132,25 @@ const loginSchema = z.object({
   password: z.string().min(1).max(128)
 });
 
+function recordSecurityEvent({ userId = null, eventType, req, details = {} }) {
+  return pool.query(
+    `INSERT INTO security_events (user_id, event_type, ip_address, user_agent, details)
+     VALUES ($1, $2, $3, $4, $5::jsonb)`,
+    [userId, eventType, req.ip || null, String(req.get("user-agent") || "").slice(0, 500), JSON.stringify(details)]
+  ).catch(error => console.error("Security event could not be recorded:", error.message));
+}
+
+function readSessionCookie(req) {
+  const value = req.headers.cookie?.split(";").map(part => part.trim())
+    .find(part => part.startsWith("amg_session="))?.slice("amg_session=".length);
+  try { return value ? decodeURIComponent(value) : ""; } catch { return ""; }
+}
+
 function createToken(user) {
   return jwt.sign(
-    { userId: user.id },
+    { userId: user.id, sessionVersion: Number(user.session_version) || 0 },
     process.env.JWT_SECRET,
-    { expiresIn: "8h" }
+    { expiresIn: "8h", algorithm: "HS256" }
   );
 }
 
@@ -240,7 +254,7 @@ export async function login(req, res, next) {
     const { identifier, password } = parsed.data;
     const normalizedIdentifier = identifier.trim();
     const result = await pool.query(
-      `SELECT u.id, u.full_name, u.email, u.login_code, u.password_hash, u.role, u.status,
+      `SELECT u.id, u.full_name, u.email, u.login_code, u.password_hash, u.role, u.status, u.session_version,
               mp.membership_number, mp.date_of_birth, mp.approved_at, mp.phone, mp.address,
               mp.gender, mp.school, mp.study_level, mp.edu_level,
               mp.guardian_name, mp.guardian_relation, mp.guardian_phone, mp.photo_storage_key, mp.avatar_choice
@@ -260,6 +274,7 @@ export async function login(req, res, next) {
     }
     if (result.rows.length === 0) {
       await bcrypt.compare(password, DUMMY_PASSWORD_HASH);
+      await recordSecurityEvent({ eventType: "LOGIN_FAILED", req, details: { reason: "unknown_identifier" } });
       return res.status(401).json({
         success: false,
         message: "Invalid login ID or password."
@@ -273,6 +288,7 @@ export async function login(req, res, next) {
     );
 
     if (!passwordMatches) {
+      await recordSecurityEvent({ userId: user.id, eventType: "LOGIN_FAILED", req, details: { reason: "invalid_password" } });
       return res.status(401).json({
         success: false,
         message: "Invalid login ID or password."
@@ -289,6 +305,7 @@ export async function login(req, res, next) {
     }
 
     const token = createToken(user);
+    await recordSecurityEvent({ userId: user.id, eventType: "LOGIN_SUCCEEDED", req, details: { role: user.role } });
     const production = process.env.NODE_ENV === "production";
     res.cookie("amg_session", token, {
       httpOnly: true,
@@ -328,7 +345,22 @@ export async function login(req, res, next) {
   }
 }
 
-export function logout(req, res) {
+export async function logout(req, res) {
+  const token = readSessionCookie(req);
+  if (token && process.env.JWT_SECRET) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ["HS256"] });
+      if (decoded.userId) {
+        await pool.query("UPDATE users SET session_version = COALESCE(session_version, 0) + 1 WHERE id = $1", [decoded.userId]);
+        await recordSecurityEvent({ userId: decoded.userId, eventType: "LOGOUT", req });
+      }
+    } catch (error) {
+      // Clearing an invalid or expired cookie must still succeed.
+      if (error.name !== "TokenExpiredError" && error.name !== "JsonWebTokenError" && error.name !== "NotBeforeError") {
+        console.error("Session revocation failed during logout:", error.message);
+      }
+    }
+  }
   const production = process.env.NODE_ENV === "production";
   res.clearCookie("amg_session", {
     httpOnly: true,
