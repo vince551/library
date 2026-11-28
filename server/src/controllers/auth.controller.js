@@ -328,6 +328,17 @@ export async function login(req, res, next) {
   }
 }
 
+export function logout(req, res) {
+  const production = process.env.NODE_ENV === "production";
+  res.clearCookie("amg_session", {
+    httpOnly: true,
+    secure: production,
+    sameSite: production ? "none" : "lax",
+    path: "/"
+  });
+  return res.status(200).json({ success: true, message: "You have been signed out." });
+}
+
 export async function getMe(req, res) {
   return res.status(200).json({
     success: true,
