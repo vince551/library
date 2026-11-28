@@ -229,7 +229,7 @@ export async function login(req, res, next) {
        FROM users u
        LEFT JOIN member_profiles mp ON mp.user_id = u.id
        WHERE (u.email IS NOT NULL AND LOWER(u.email) = LOWER($1))
-          OR u.login_code = $1
+          OR u.login_code::TEXT = $1
           OR LOWER(TRIM(u.full_name)) = LOWER(TRIM($1))
        ORDER BY u.id
        LIMIT 2`,
