@@ -11,6 +11,24 @@ import { AuthModal } from "./components/AuthModal";
 import { Desk } from "./components/librarian/Desk";
 import { FloatingThemeToggle } from "./components/FloatingThemeToggle";
 
+// Capture and immediately remove password-reset credentials from the address bar.
+// New reset links use the URL fragment; legacy query-string links are scrubbed too.
+const INITIAL_RESET_TOKEN = (() => {
+  if (typeof window === "undefined") return "";
+  const url = new URL(window.location.href);
+  const queryToken = url.searchParams.get("resetToken") || "";
+  const hashParams = new URLSearchParams(url.hash.replace(/^#/, ""));
+  const hashToken = hashParams.get("resetToken") || "";
+  const token = hashToken || queryToken;
+  if (token) {
+    url.searchParams.delete("resetToken");
+    hashParams.delete("resetToken");
+    url.hash = hashParams.toString() ? hashParams.toString() : "";
+    window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+  }
+  return token;
+})();
+
 const MemoNavbar = memo(Navbar);
 const MemoHero = memo(Hero);
 const MemoLibShelf = memo(LibShelf);
@@ -44,7 +62,7 @@ function Shell() {
   const [authMode, setAuthMode] = useState("login");
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).has("resetToken")) {
+    if (INITIAL_RESET_TOKEN) {
       setAuthMode("login");
       setAuthOpen(true);
     }
@@ -102,7 +120,7 @@ function Shell() {
       <span>© {new Date().getFullYear()} AMG Library</span>
       <span>Learn. Discover. Grow.</span>
     </footer>
-    <AuthModal open={authOpen} mode={authMode} onClose={() => setAuthOpen(false)} onModeChange={setAuthMode} />
+    <AuthModal initialResetToken={INITIAL_RESET_TOKEN} open={authOpen} mode={authMode} onClose={() => setAuthOpen(false)} onModeChange={setAuthMode} />
     <FloatingThemeToggle />
   </>;
 }
