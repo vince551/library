@@ -44,6 +44,13 @@ function Shell() {
   const [authMode, setAuthMode] = useState("login");
 
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).has("resetToken")) {
+      setAuthMode("login");
+      setAuthOpen(true);
+    }
+  }, []);
+
+  useEffect(() => {
     try {
       sessionStorage.setItem("amg_current_section", section);
     } catch {
