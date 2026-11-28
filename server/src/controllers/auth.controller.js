@@ -293,7 +293,7 @@ export async function login(req, res, next) {
     res.cookie("amg_session", token, {
       httpOnly: true,
       secure: production,
-      sameSite: production ? "none" : "lax",
+      sameSite: "lax",
       path: "/",
       maxAge: 8 * 60 * 60 * 1000
     });
@@ -333,7 +333,7 @@ export function logout(req, res) {
   res.clearCookie("amg_session", {
     httpOnly: true,
     secure: production,
-    sameSite: production ? "none" : "lax",
+    sameSite: "lax",
     path: "/"
   });
   return res.status(200).json({ success: true, message: "You have been signed out." });
