@@ -6,7 +6,9 @@ import {
   login,
   logout,
   getMe,
-  updateProfilePhoto
+  updateProfilePhoto,
+  requestPasswordReset,
+  completePasswordReset
 } from "../controllers/auth.controller.js";
 
 import { authenticate } from "../middleware/auth.middleware.js";
@@ -24,6 +26,14 @@ const authLimiter = rateLimit({
   }
 });
 
+const passwordResetLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { success: false, message: "Too many password reset attempts. Please try again later." }
+});
+
 const profilePhotoLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   limit: 10,
@@ -37,6 +47,8 @@ const profilePhotoLimiter = rateLimit({
 
 router.post("/register", authLimiter, register);
 router.post("/login", authLimiter, login);
+router.post("/password-reset/request", passwordResetLimiter, requestPasswordReset);
+router.post("/password-reset/complete", passwordResetLimiter, completePasswordReset);
 router.post("/logout", logout);
 router.get("/me", authenticate, getMe);
 router.patch("/photo", authenticate, profilePhotoLimiter, updateProfilePhoto);
