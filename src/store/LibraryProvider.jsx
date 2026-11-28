@@ -523,6 +523,22 @@ export function LibraryProvider({ children }) {
     }
   }, [token, refreshAdmin, showToast]);
 
+
+  const updateMemberDateOfBirth = useCallback(async (memberId, dateOfBirth) => {
+    if (!token) { showToast("Sign in with a librarian account to update member details.", "error"); return false; }
+    try {
+      const result = await apiRequest(`/members/${encodeURIComponent(memberId)}/date-of-birth`, {
+        token, method: "PATCH", body: { dateOfBirth }
+      });
+      await refreshAdmin();
+      showToast(result.message || "Member date of birth updated.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not update this member's date of birth.", "error");
+      return false;
+    }
+  }, [token, refreshAdmin, showToast]);
+
   const changeMemberStatus = useCallback(async (member) => {
     const action = member.status === "suspended" ? "reactivate" : "suspend";
 
@@ -573,14 +589,14 @@ export function LibraryProvider({ children }) {
     books, announcements, events, ebooks, members, requests, loans, attendance, attendanceSummary, capacity,
     myRequests, myLoans, publicPosts, scanMemberCode,
     refreshPublic, refreshMember, refreshAdmin, resetScanMember, requestBook,
-    reviewLearner, changeMemberStatus, processRequest, returnLoan, registerBook, updateBook, getBookCopies, addBookCopy, updateBookCopy, deleteBookCopy, deleteBook,
+    reviewLearner, updateMemberDateOfBirth, changeMemberStatus, processRequest, returnLoan, registerBook, updateBook, getBookCopies, addBookCopy, updateBookCopy, deleteBookCopy, deleteBook,
     processUnifiedCode, updateCapacity, uploadEbook, removeEbook, resolveEbookUrl, downloadEbook,
     publishNews, deletePost
   }), [
     books, announcements, events, ebooks, members, requests, loans, attendance, attendanceSummary, capacity,
     myRequests, myLoans, publicPosts, scanMemberCode,
     refreshPublic, refreshMember, refreshAdmin, resetScanMember, requestBook,
-    reviewLearner, changeMemberStatus, processRequest, returnLoan, registerBook, updateBook, getBookCopies, addBookCopy, updateBookCopy, deleteBookCopy, deleteBook,
+    reviewLearner, updateMemberDateOfBirth, changeMemberStatus, processRequest, returnLoan, registerBook, updateBook, getBookCopies, addBookCopy, updateBookCopy, deleteBookCopy, deleteBook,
     processUnifiedCode, updateCapacity, uploadEbook, removeEbook, resolveEbookUrl, downloadEbook,
     publishNews, deletePost
   ]);
