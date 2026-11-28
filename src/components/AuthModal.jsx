@@ -69,7 +69,7 @@ function validateFields(container) {
   return true;
 }
 
-export function AuthModal({ open, mode, onClose, onModeChange }) {
+export function AuthModal({ open, mode, onClose, onModeChange, initialResetToken = "" }) {
   const { login, register, resetPassword, completePasswordReset } = useAuth();
   const [step, setStep] = useState(1);
   const [avatarChoice, setAvatarChoice] = useState("scholar");
@@ -90,8 +90,7 @@ export function AuthModal({ open, mode, onClose, onModeChange }) {
   useEffect(() => {
     if (!open) return;
     setStep(1);
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("resetToken") || "";
+    const token = initialResetToken;
     setResetToken(token);
     setResetView(token ? "complete" : "none");
   }, [open, mode]);
