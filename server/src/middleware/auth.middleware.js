@@ -3,15 +3,12 @@ import { pool } from "../config/database.js";
 
 export async function authenticate(req, res, next) {
   try {
-    const authorization = req.headers.authorization;
     const cookieToken = req.headers.cookie
       ?.split(";")
       .map(part => part.trim())
       .find(part => part.startsWith("amg_session="))
       ?.slice("amg_session=".length);
-    // Bearer support remains temporarily for already-open clients during rollout.
-    const tokenFromCookie = cookieToken ? decodeURIComponent(cookieToken) : "";
-    const token = tokenFromCookie || (authorization?.startsWith("Bearer ") ? authorization.slice(7).trim() : "");
+    const token = cookieToken ? decodeURIComponent(cookieToken) : "";
 
     if (!token) {
       return res.status(401).json({
@@ -27,15 +24,14 @@ export async function authenticate(req, res, next) {
       });
     }
 
-    if (!token || token.split(".").length !== 3) {
+    if (token.split(".").length !== 3) {
       return res.status(401).json({
         success: false,
-        message: "Invalid or expired token."
+        message: "Invalid or expired session."
       });
     }
 
-    // Tokens are issued with jsonwebtoken's HS256 default. Pin verification
-    // to that algorithm instead of accepting any algorithm supported by the library.
+    // Tokens are issued with HS256. Pin verification to that algorithm.
     const decoded = jwt.verify(token, process.env.JWT_SECRET, {
       algorithms: ["HS256"]
     });
@@ -84,7 +80,7 @@ export async function authenticate(req, res, next) {
     ) {
       return res.status(401).json({
         success: false,
-        message: "Invalid or expired token."
+        message: "Invalid or expired session."
       });
     }
 
