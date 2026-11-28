@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { randomUUID } from "node:crypto";
+import { randomUUID, randomBytes, createHash } from "node:crypto";
 import { z } from "zod";
 import { pool } from "../config/database.js";
 import { nextAmgNumber } from "../domain/amg-numbering.js";
@@ -453,5 +453,176 @@ export async function updateProfilePhoto(req, res, next) {
     if (newKey) await removeProfilePhoto(newKey).catch(() => {});
     if (error.status) return res.status(error.status).json({ success: false, message: error.message });
     return next(error);
+  }
+}
+
+
+const passwordResetSchema = z.object({
+  email: z.string().trim().email().max(255)
+});
+
+const passwordChangeSchema = z.object({
+  token: z.string().min(40).max(200),
+  password: z.string().min(8, "Password must contain at least 8 characters.").max(128)
+});
+
+function hashResetToken(token) {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, character => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[character]);
+}
+
+async function sendPasswordResetEmail({ email, fullName, token }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.RESEND_FROM_EMAIL;
+  if (!apiKey || !from) {
+    const error = new Error("Password recovery email is not configured.");
+    error.status = 503;
+    throw error;
+  }
+
+  const frontend = (process.env.FRONTEND_URL || "https://amg-library-frontend.vercel.app")
+    .split(",")[0].trim().replace(/\/+$/, "");
+  const resetUrl = `${frontend}/?resetToken=${encodeURIComponent(token)}`;
+  const safeName = escapeHtml(fullName || "AMG Library member");
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from,
+      to: [email],
+      subject: "Reset your AMG Library password",
+      html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#173b2b"><h2>AMG Library password reset</h2><p>Hello ${safeName},</p><p>We received a request to reset your AMG Library password.</p><p><a href="${resetUrl}" style="display:inline-block;padding:12px 20px;background:#176b45;color:#fff;text-decoration:none;border-radius:8px">Reset password</a></p><p>This link expires in 30 minutes and can only be used once.</p><p>If you did not request this, you can ignore this email. Your current password will remain unchanged.</p></div>`
+    })
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    console.error("Password reset email delivery failed:", response.status, detail.slice(0, 300));
+    const error = new Error("Password recovery email could not be delivered.");
+    error.status = 502;
+    throw error;
+  }
+}
+
+export async function requestPasswordReset(req, res, next) {
+  const parsed = passwordResetSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ success: false, message: "Enter a valid email address." });
+  }
+
+  const email = parsed.data.email.toLowerCase();
+  let resetRecord = null;
+  try {
+    const found = await pool.query(
+      "SELECT id, full_name, email FROM users WHERE LOWER(email) = $1 LIMIT 1",
+      [email]
+    );
+
+    if (found.rowCount) {
+      const user = found.rows[0];
+      const rawToken = randomBytes(32).toString("base64url");
+      const tokenHash = hashResetToken(rawToken);
+      const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+
+      await pool.query(
+        "UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = $1 AND used_at IS NULL",
+        [user.id]
+      );
+      await pool.query(
+        `INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
+         VALUES ($1, $2, $3)`,
+        [user.id, tokenHash, expiresAt]
+      );
+      resetRecord = { user, rawToken };
+      await sendPasswordResetEmail({ ...user, token: rawToken });
+      await recordSecurityEvent({
+        userId: user.id, eventType: "PASSWORD_RESET_REQUESTED", req,
+        details: { delivery: "email" }
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "If an account matches that email, password reset instructions will be sent shortly."
+    });
+  } catch (error) {
+    if (resetRecord) {
+      await pool.query(
+        "UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = $1 AND token_hash = $2",
+        [resetRecord.user.id, hashResetToken(resetRecord.rawToken)]
+      ).catch(() => {});
+    }
+    if (error.status) {
+      return res.status(error.status).json({
+        success: false,
+        message: "Password recovery is temporarily unavailable. Please contact the library administrator."
+      });
+    }
+    return next(error);
+  }
+}
+
+export async function completePasswordReset(req, res, next) {
+  const parsed = passwordChangeSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({
+      success: false,
+      message: parsed.error.issues[0]?.message || "Enter a valid reset token and password."
+    });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const tokenHash = hashResetToken(parsed.data.token);
+    const result = await client.query(
+      `SELECT id, user_id FROM password_reset_tokens
+       WHERE token_hash = $1 AND used_at IS NULL AND expires_at > NOW()
+       FOR UPDATE`,
+      [tokenHash]
+    );
+
+    if (!result.rowCount) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({
+        success: false,
+        message: "This password reset link is invalid, expired or already used. Request a new link."
+      });
+    }
+
+    const reset = result.rows[0];
+    const passwordHash = await bcrypt.hash(parsed.data.password, 12);
+    await client.query(
+      "UPDATE users SET password_hash = $1, session_version = COALESCE(session_version, 0) + 1 WHERE id = $2",
+      [passwordHash, reset.user_id]
+    );
+    await client.query(
+      "UPDATE password_reset_tokens SET used_at = NOW() WHERE id = $1",
+      [reset.id]
+    );
+    await client.query("UPDATE password_reset_tokens SET used_at = NOW() WHERE user_id = $1 AND used_at IS NULL", [reset.user_id]);
+    await client.query("COMMIT");
+
+    await recordSecurityEvent({
+      userId: reset.user_id, eventType: "PASSWORD_RESET_COMPLETED", req
+    });
+    return res.status(200).json({
+      success: true,
+      message: "Your password has been changed. Sign in with your new password."
+    });
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+    return next(error);
+  } finally {
+    client.release();
   }
 }
