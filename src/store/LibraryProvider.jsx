@@ -43,6 +43,18 @@ function mapEbook(book) {
   };
 }
 
+async function fetchAllPublicBooks() {
+  const pageSize = 50;
+  const books = [];
+  for (let page = 1; page <= 1000; page += 1) {
+    const result = await apiRequest(`/books?page=${page}&limit=${pageSize}`);
+    const rows = result.books || [];
+    books.push(...rows);
+    if (rows.length < pageSize) return books;
+  }
+  throw new Error("The catalogue is unusually large. Please narrow the catalogue search or contact the administrator.");
+}
+
 export function LibraryProvider({ children }) {
   const { showToast } = useToast();
   const { token } = useAuth();
@@ -62,7 +74,7 @@ export function LibraryProvider({ children }) {
 
   const refreshPublic = useCallback(async () => {
     const [bookResult, ebookResult, postResult] = await Promise.allSettled([
-      apiRequest("/books"), apiRequest("/ebooks"), apiRequest("/content")
+      fetchAllPublicBooks().then(books => ({ books })), apiRequest("/ebooks"), apiRequest("/content")
     ]);
 
     if (bookResult.status === "fulfilled") setBooks((bookResult.value.books || []).map(mapPhysicalBook));
