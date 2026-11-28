@@ -48,10 +48,23 @@ const allowedOrigins = new Set([
     .filter(Boolean)
 ]);
 
+function isAllowedOrigin(origin) {
+  if (!origin) return false;
+  if (allowedOrigins.has(origin)) return true;
+  try {
+    const parsed = new URL(origin);
+    return parsed.protocol === "https:" &&
+      parsed.hostname.startsWith("amg-library-frontend-") &&
+      parsed.hostname.endsWith("-v667225s-projects.vercel.app");
+  } catch {
+    return false;
+  }
+}
+
 app.use(cors({
   credentials: true,
   origin(origin, callback) {
-    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    if (!origin || isAllowedOrigin(origin)) return callback(null, true);
     return callback(new Error("This origin is not allowed by AMG Library CORS."));
   }
 }));
@@ -65,7 +78,7 @@ app.use((req, res, next) => {
   const hasSessionCookie = req.headers.cookie?.split(";").some(part => part.trim().startsWith("amg_session="));
   if (!hasSessionCookie && req.get("authorization")?.startsWith("Bearer ")) return next();
   const origin = req.get("origin");
-  if (!origin || !allowedOrigins.has(origin) || req.get("x-amg-request") !== "1") {
+  if (!isAllowedOrigin(origin) || req.get("x-amg-request") !== "1") {
     return res.status(403).json({ success: false, message: "This request could not be verified. Refresh the page and try again." });
   }
   return next();
