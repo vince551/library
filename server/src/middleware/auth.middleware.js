@@ -41,8 +41,8 @@ export async function authenticate(req, res, next) {
     }
 
     const result = await pool.query(
-      `SELECT u.id, u.full_name, u.email, u.role, u.status,
-              mp.membership_number, mp.approved_at, mp.phone, mp.address,
+      `SELECT u.id, u.full_name, u.email, u.login_code, u.role, u.status,
+              mp.membership_number, mp.date_of_birth, mp.approved_at, mp.phone, mp.address,
               mp.gender, mp.school, mp.study_level, mp.edu_level,
               mp.guardian_name, mp.guardian_relation, mp.guardian_phone, mp.photo_storage_key, mp.avatar_choice
        FROM users u
