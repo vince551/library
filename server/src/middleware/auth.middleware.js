@@ -4,8 +4,16 @@ import { pool } from "../config/database.js";
 export async function authenticate(req, res, next) {
   try {
     const authorization = req.headers.authorization;
+    const cookieToken = req.headers.cookie
+      ?.split(";")
+      .map(part => part.trim())
+      .find(part => part.startsWith("amg_session="))
+      ?.slice("amg_session=".length);
+    // Bearer support remains temporarily for already-open clients during rollout.
+    const tokenFromCookie = cookieToken ? decodeURIComponent(cookieToken) : "";
+    const token = tokenFromCookie || (authorization?.startsWith("Bearer ") ? authorization.slice(7).trim() : "");
 
-    if (!authorization?.startsWith("Bearer ")) {
+    if (!token) {
       return res.status(401).json({
         success: false,
         message: "Authentication required."
