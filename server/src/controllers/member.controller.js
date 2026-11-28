@@ -370,7 +370,7 @@ export async function reactivateMember(req, res, next) {
 export async function updateMemberDateOfBirth(req, res, next) {
   const id = z.string().uuid().safeParse(req.params.memberId);
   const body = z.object({
-    dateOfBirth: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/, "Enter a valid date of birth.")
+    dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid date of birth.")
   }).safeParse(req.body);
 
   if (!id.success || !body.success) {
