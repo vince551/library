@@ -173,13 +173,31 @@ export function AuthProvider({ children }) {
   }, [showToast]);
 
   const resetPassword = useCallback(async (email) => {
-    showToast(
-      email
-        ? "Password reset is not available yet. Please contact the library administrator."
-        : "Enter your email address first.",
-      "error"
-    );
-    return false;
+    try {
+      const data = await apiRequest("/auth/password-reset/request", {
+        method: "POST",
+        body: { email: String(email || "").trim().toLowerCase() }
+      });
+      showToast(data.message || "If an account matches that email, reset instructions will be sent shortly.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Password recovery is temporarily unavailable.", "error");
+      return false;
+    }
+  }, [showToast]);
+
+  const completePasswordReset = useCallback(async (resetToken, password) => {
+    try {
+      const data = await apiRequest("/auth/password-reset/complete", {
+        method: "POST",
+        body: { token: resetToken, password }
+      });
+      showToast(data.message || "Your password has been changed.");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Could not reset your password.", "error");
+      return false;
+    }
   }, [showToast]);
 
   const updatePhoto = useCallback(async (file) => {
@@ -221,10 +239,10 @@ export function AuthProvider({ children }) {
 
   const value = useMemo(() => ({
     user, profile, token, librarian, ready, login, register, logout,
-    resetPassword, updatePhoto, refreshProfile, setProfile
+    resetPassword, completePasswordReset, updatePhoto, refreshProfile, setProfile
   }), [
     user, profile, token, librarian, ready, login, register, logout,
-    resetPassword, updatePhoto, refreshProfile
+    resetPassword, completePasswordReset, updatePhoto, refreshProfile
   ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
