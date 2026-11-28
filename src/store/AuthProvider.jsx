@@ -23,6 +23,7 @@ function toProfile(user) {
     fullName: user.full_name || user.fullName || "",
     role: user.role || "member",
     email: user.email || "",
+    loginCode: user.login_code || user.loginCode || "",
     libraryNumber: user.membership_number || user.membershipNumber || "",
     eduLevel: user.edu_level || user.eduLevel || "Member",
     studyLevel: user.study_level || user.studyLevel || "Library member",
