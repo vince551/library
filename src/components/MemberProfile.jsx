@@ -168,6 +168,10 @@ export function MemberProfile({ active }) {
         </div>
 
         <div className="panel">
+          <div className="notice notice-success">
+            <strong>Your 3-digit login ID: {profile?.loginCode || "Loading…"}</strong>
+            <p className="muted">Use this ID, your full name or your email with your password to sign in. This is separate from your library membership number.</p>
+          </div>
           <h3>My requests and loans</h3>
           <div id="myLoansList" className="stack-list">
             {items.length === 0 ? (
