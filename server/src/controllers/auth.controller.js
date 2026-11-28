@@ -487,7 +487,7 @@ async function sendPasswordResetEmail({ email, fullName, token }) {
 
   const frontend = (process.env.FRONTEND_URL || "https://amg-library-frontend.vercel.app")
     .split(",")[0].trim().replace(/\/+$/, "");
-  const resetUrl = `${frontend}/?resetToken=${encodeURIComponent(token)}`;
+  const resetUrl = `${frontend}/#resetToken=${encodeURIComponent(token)}`;
   const safeName = escapeHtml(fullName || "AMG Library member");
 
   const response = await fetch("https://api.resend.com/emails", {
