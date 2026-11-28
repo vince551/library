@@ -145,10 +145,11 @@ export function LibShelf({ active, onOpenAuth }) {
                   <span className="catalogue-cover-placeholder"><b>{isEbook ? "E-BOOK" : "AMG"}</b><small>{(item.title || "Library resource").slice(0, 42)}</small></span>
                 )}
                 <span className="catalogue-format-badge">{isEbook ? "DIGITAL" : "PRINT"}</span>
+                {isEbook && Number(item.minimumAge) > 0 ? <span className="catalogue-format-badge" style={{ top: "2.6rem", right: ".65rem" }}>{Number(item.minimumAge)}+</span> : null}
                 <button className="star-btn" type="button" aria-label={starred ? "Remove favourite" : "Save to favourites"} aria-pressed={starred} onClick={() => toggleStar(item.id)}>{starred ? "★" : "☆"}</button>
               </div>
               <div className="book-details">
-                <span className="book-category">{item.category || "General reading"}</span>
+                <span className="book-category">{item.category || "General reading"}{isEbook && Number(item.minimumAge) > 0 ? " · " + Number(item.minimumAge) + "+" : ""}</span>
                 <h3 className="book-title">{item.title}</h3>
                 <p className="book-author">{isEbook ? "Digital edition" : "by " + (item.author || "Unknown author")}</p>
                 <p className="book-description">{item.description || (isEbook ? "A digital reading resource from AMG Library." : "A physical title in the AMG Library collection.")}</p>
@@ -179,6 +180,7 @@ export function LibShelf({ active, onOpenAuth }) {
               <div><dt>Category</dt><dd>{selected.category || "General"}</dd></div>
               <div><dt>Format</dt><dd>{selected.catalogueType === "ebook" ? "E-book" : "Physical book"}</dd></div>
               {selected.isbn ? <div><dt>ISBN</dt><dd>{selected.isbn}</dd></div> : null}
+              {selected.catalogueType === "ebook" ? <div><dt>Age restriction</dt><dd>{Number(selected.minimumAge) > 0 ? Number(selected.minimumAge) + " and above" : "All ages"}</dd></div> : null}
               {selected.catalogueType === "physical" ? <div><dt>Available copies</dt><dd>{selected.available} / {selected.quantity}</dd></div> : <div><dt>File</dt><dd>{selected.fileName || "Digital resource"}</dd></div>}
             </dl>
             <div className="book-actions">
