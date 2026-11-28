@@ -91,7 +91,7 @@ async function signedProfilePhoto(key) {
 const registerSchema = z.object({
   fullName: z.string().trim().min(2).max(150),
   email: z.union([z.string().trim().email().max(255), z.literal("")]).optional().default(""),
-  dateOfBirth: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/).refine(value => {
+  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(value => {
     const date = new Date(value + "T00:00:00.000Z");
     return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value && date <= new Date();
   }, "Enter a valid date of birth."),
@@ -236,7 +236,7 @@ export async function login(req, res, next) {
       [normalizedIdentifier]
     );
 
-    if (result.rows.length > 1 && !/^\\d{3}$/.test(normalizedIdentifier) && !normalizedIdentifier.includes("@")) {
+    if (result.rows.length > 1 && !/^\d{3}$/.test(normalizedIdentifier) && !normalizedIdentifier.includes("@")) {
       return res.status(409).json({ success: false, message: "More than one member has that name. Please sign in with your 3-digit login ID." });
     }
     if (result.rows.length === 0) {
