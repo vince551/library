@@ -3,6 +3,7 @@ import { Router } from "express";
 
 import {
   getMembers,
+  updateMemberDateOfBirth,
   approveMember,
   rejectMember,
   suspendMember,
@@ -22,6 +23,7 @@ router.use(
 );
 
 router.get("/", getMembers);
+router.patch("/:memberId/date-of-birth", updateMemberDateOfBirth);
 router.patch("/:memberId/approve", approveMember);
 router.patch("/:memberId/reject", rejectMember);
 router.patch("/:memberId/suspend", suspendMember);
