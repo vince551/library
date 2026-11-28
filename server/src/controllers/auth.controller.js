@@ -347,27 +347,56 @@ export async function login(req, res, next) {
 
 export async function logout(req, res) {
   const token = readSessionCookie(req);
-  if (token && process.env.JWT_SECRET) {
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ["HS256"] });
-      if (decoded.userId) {
-        await pool.query("UPDATE users SET session_version = COALESCE(session_version, 0) + 1 WHERE id = $1", [decoded.userId]);
-        await recordSecurityEvent({ userId: decoded.userId, eventType: "LOGOUT", req });
-      }
-    } catch (error) {
-      // Clearing an invalid or expired cookie must still succeed.
-      if (error.name !== "TokenExpiredError" && error.name !== "JsonWebTokenError" && error.name !== "NotBeforeError") {
-        console.error("Session revocation failed during logout:", error.message);
-      }
-    }
-  }
   const production = process.env.NODE_ENV === "production";
-  res.clearCookie("amg_session", {
+  const clearSessionCookie = () => res.clearCookie("amg_session", {
     httpOnly: true,
     secure: production,
     sameSite: "lax",
     path: "/"
   });
+
+  if (token) {
+    let decoded;
+    try {
+      if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not configured.");
+      decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ["HS256"] });
+    } catch (error) {
+      // An invalid or expired cookie cannot represent a live authenticated session.
+      if (["TokenExpiredError", "JsonWebTokenError", "NotBeforeError"].includes(error.name)) {
+        clearSessionCookie();
+        return res.status(200).json({ success: true, message: "You have been signed out." });
+      }
+      console.error("Session revocation could not be attempted:", error.message);
+      clearSessionCookie();
+      return res.status(503).json({
+        success: false,
+        message: "This device was signed out locally, but server-side session revocation could not be confirmed. Contact the library administrator if you suspect your account is compromised."
+      });
+    }
+
+    if (decoded.userId) {
+      try {
+        const revoked = await pool.query(
+          "UPDATE users SET session_version = COALESCE(session_version, 0) + 1 WHERE id = $1 RETURNING id",
+          [decoded.userId]
+        );
+        if (!revoked.rowCount) {
+          clearSessionCookie();
+          return res.status(200).json({ success: true, message: "You have been signed out." });
+        }
+        await recordSecurityEvent({ userId: decoded.userId, eventType: "LOGOUT", req });
+      } catch (error) {
+        console.error("Session revocation failed during logout:", error.message);
+        clearSessionCookie();
+        return res.status(503).json({
+          success: false,
+          message: "This device was signed out locally, but server-side session revocation could not be confirmed. Contact the library administrator if you suspect your account is compromised."
+        });
+      }
+    }
+  }
+
+  clearSessionCookie();
   return res.status(200).json({ success: true, message: "You have been signed out." });
 }
 
