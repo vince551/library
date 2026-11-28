@@ -19,6 +19,7 @@ export async function getMembers(req, res, next) {
         u.created_at,
         mp.membership_number,
         mp.phone,
+        mp.date_of_birth,
         mp.address,
         mp.gender,
         mp.school,
@@ -355,6 +356,85 @@ export async function reactivateMember(req, res, next) {
       success: true,
       message: "Member reactivated successfully.",
       member
+    });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    next(error);
+  } finally {
+    client.release();
+  }
+}
+
+
+// Update a member's date of birth. Restricted to authenticated librarians/admins.
+export async function updateMemberDateOfBirth(req, res, next) {
+  const id = z.string().uuid().safeParse(req.params.memberId);
+  const body = z.object({
+    dateOfBirth: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/, "Enter a valid date of birth.")
+  }).safeParse(req.body);
+
+  if (!id.success || !body.success) {
+    return res.status(400).json({
+      success: false,
+      message: "Provide a valid member and date of birth in YYYY-MM-DD format."
+    });
+  }
+
+  const date = body.data.dateOfBirth;
+  const [year, month, day] = date.split("-").map(Number);
+  const parsedDate = new Date(Date.UTC(year, month - 1, day));
+  const isRealDate = parsedDate.getUTCFullYear() === year &&
+    parsedDate.getUTCMonth() === month - 1 &&
+    parsedDate.getUTCDate() === day;
+  const today = new Date().toISOString().slice(0, 10);
+
+  if (!isRealDate || date > today) {
+    return res.status(400).json({
+      success: false,
+      message: "Date of birth must be a real date and cannot be in the future."
+    });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const memberResult = await client.query(
+      `SELECT u.id, u.full_name, mp.date_of_birth
+       FROM users u
+       JOIN member_profiles mp ON mp.user_id = u.id
+       WHERE u.id = $1 AND u.role = 'member'
+       FOR UPDATE OF u, mp`,
+      [id.data]
+    );
+
+    if (memberResult.rowCount === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ success: false, message: "Member not found." });
+    }
+
+    const previousDate = memberResult.rows[0].date_of_birth;
+    await client.query(
+      "UPDATE member_profiles SET date_of_birth = $1::date WHERE user_id = $2",
+      [date, id.data]
+    );
+
+    await client.query(
+      `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details)
+       VALUES ($1, $2, $3, $4, $5::jsonb)`,
+      [
+        req.user.id,
+        "MEMBER_DATE_OF_BIRTH_UPDATED",
+        "user",
+        id.data,
+        JSON.stringify({ previousDate, newDate: date })
+      ]
+    );
+
+    await client.query("COMMIT");
+    return res.json({
+      success: true,
+      message: "Member date of birth updated successfully.",
+      member: { id: id.data, date_of_birth: date }
     });
   } catch (error) {
     await client.query("ROLLBACK");
