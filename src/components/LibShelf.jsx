@@ -22,6 +22,10 @@ export function LibShelf({ active, onOpenAuth }) {
   const [format, setFormat] = useState("All");
   const [stars, setStars] = useState(() => readStars(user?.uid));
   const [selected, setSelected] = useState(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 12;
+
+  useEffect(() => setPage(1), [search, category, format]);
 
   useEffect(() => setStars(readStars(user?.uid)), [user?.uid]);
 
@@ -49,6 +53,12 @@ export function LibShelf({ active, onOpenAuth }) {
       return matchesSearch && matchesCategory && matchesStar && matchesFormat;
     });
   }, [items, search, category, stars, format]);
+
+  const pageCount = Math.max(1, Math.ceil(visible.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const pageItems = visible.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const firstItem = visible.length ? (currentPage - 1) * pageSize + 1 : 0;
+  const lastItem = Math.min(currentPage * pageSize, visible.length);
 
   const isEpub = book => String(book?.fileType || "").toLowerCase().includes("epub") || /\.epub$/i.test(book?.fileName || "");
 
@@ -133,7 +143,7 @@ export function LibShelf({ active, onOpenAuth }) {
             <p>{items.length ? "Try another title, author, category or format." : "The librarian has not published any books or e-books yet. Once resources are added to the catalogue, they will appear here."}</p>
             {(search || category !== "All" || format !== "All") ? <button className="btn btn-outline" type="button" onClick={() => { setSearch(""); setCategory("All"); setFormat("All"); }}>Reset filters</button> : null}
           </div>
-        ) : visible.map(item => {
+        ) : pageItems.map(item => {
           const isEbook = item.catalogueType === "ebook";
           const available = Math.max(0, Number(item.available || 0));
           const starred = stars.includes(item.id);
@@ -167,6 +177,14 @@ export function LibShelf({ active, onOpenAuth }) {
           );
         })}
       </div>
+
+      {visible.length > 0 ? (
+        <nav className="catalogue-pagination" aria-label="Catalogue pages" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: ".8rem", flexWrap: "wrap", margin: "2rem 0" }}>
+          <button className="btn btn-outline" type="button" disabled={currentPage <= 1} onClick={() => setPage(value => Math.max(1, value - 1))}>Previous</button>
+          <span aria-live="polite">Showing {firstItem}–{lastItem} of {visible.length} resources · Page {currentPage} of {pageCount}</span>
+          <button className="btn btn-outline" type="button" disabled={currentPage >= pageCount} onClick={() => setPage(value => Math.min(pageCount, value + 1))}>Next</button>
+        </nav>
+      ) : null}
 
       {selected ? (
         <div className="catalogue-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setSelected(null); }}>
