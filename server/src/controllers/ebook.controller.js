@@ -237,7 +237,8 @@ export async function uploadEbook(req, res, next) {
       if (!allowedCoverTypes.has(input.coverType)) {
         return res.status(400).json({ success: false, message: "Cover images must be JPEG, PNG or WebP." });
       }
-      coverBuffer = decodeBase64(input.coverData, MAX_COVER_BYTES, "Cover image");\n      validateCoverSignature(coverBuffer, input.coverType);
+      coverBuffer = decodeBase64(input.coverData, MAX_COVER_BYTES, "Cover image");
+      validateCoverSignature(coverBuffer, input.coverType);
     }
 
     const id = randomUUID();
