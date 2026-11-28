@@ -27,7 +27,6 @@ export async function authenticate(req, res, next) {
       });
     }
 
-    const token = authorization.slice(7).trim();
     if (!token || token.split(".").length !== 3) {
       return res.status(401).json({
         success: false,
