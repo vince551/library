@@ -1,11 +1,15 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api").replace(/\/+$/, "");
+// In production, route through Vercel so the API cookie remains first-party.
+// Local development can still target the Express server directly.
+const API_BASE_URL = (import.meta.env.DEV
+  ? (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api")
+  : "/api").replace(/\/+$/, "");
 
 export const apiUrl = path => `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 
 function notifyInvalidSession(token, status, message) {
   const accountInactive = status === 403 && message === "This account is not active.";
-  if (!token || (status !== 401 && !accountInactive) || typeof window === "undefined") return;
-  window.dispatchEvent(new CustomEvent("amg:session-invalid", { detail: { token, message } }));
+  if ((status !== 401 && !accountInactive) || typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent("amg:session-invalid", { detail: { token, status, message } }));
 }
 
 function requestError(message, status) {
@@ -22,10 +26,11 @@ export async function apiRequest(path, { token, method = "GET", body, headers = 
       method,
       headers: {
         Accept: "application/json",
+        "X-AMG-Request": "1",
         ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...headers
       },
+      credentials: "include",
       ...(body !== undefined ? { body: JSON.stringify(body) } : {})
     });
   } catch {
@@ -48,8 +53,9 @@ export async function apiFileRequest(path, { token } = {}) {
     response = await fetch(apiUrl(path), {
       headers: {
         Accept: "application/pdf, application/epub+zip, application/octet-stream",
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
-      }
+        "X-AMG-Request": "1"
+      },
+      credentials: "include"
     });
   } catch {
     throw requestError("Cannot reach the AMG Library server.", 0);
