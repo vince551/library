@@ -34,6 +34,7 @@ export function EbooksTab({ active }) {
       author:String(form.get("author") || "").trim(),
       category:String(form.get("category") || "").trim(),
       description:String(form.get("description") || "").trim(),
+      minimumAge:Number(form.get("minimumAge") || 0),
       coverFile:coverFile instanceof File && coverFile.size ? coverFile : null,
       file
     });
@@ -65,6 +66,12 @@ export function EbooksTab({ active }) {
         <label>Author<input name="author" required maxLength="255" placeholder="Enter the author's name" /></label>
         <label>Category<input name="category" required maxLength="80" placeholder="e.g. Primary, Science, Fiction" /></label>
         <label className="full-span">Description (optional)<textarea name="description" rows="3" maxLength="500" placeholder="A short description for readers" /></label>
+        <label>Minimum reader age
+          <select name="minimumAge" defaultValue="0">
+            <option value="0">All ages</option><option value="10">10+</option><option value="13">13+</option><option value="16">16+</option><option value="18">18+</option>
+          </select>
+          <small>Readers below this age will be blocked from opening or downloading the file.</small>
+        </label>
         <label className="full-span ebook-file-picker">
           <span>PDF or EPUB file</span>
           <input name="file" type="file" accept=".pdf,.epub,application/pdf,application/epub+zip" required onChange={event => setFileName(event.target.files?.[0]?.name || "")} />
@@ -87,6 +94,7 @@ export function EbooksTab({ active }) {
               <h4>{book.title}</h4>
               {book.ebookNumber ? <p><strong>{book.ebookNumber}</strong> · Catalogue {book.catalogueNumber || "—"}</p> : null}
               <p>{(book.author || "Unknown author") + " · " + (book.category || "General") + " · " + (book.fileName || "E-book") + " · " + prettySize(book.fileSize || 0)}</p>
+              <p><strong>Age restriction:</strong> {Number(book.minimumAge) > 0 ? Number(book.minimumAge) + "+" : "All ages"}</p>
               {book.description ? <p>{book.description}</p> : null}
               <small>Added {formatDate(book.createdAt)}</small>
             </div>
