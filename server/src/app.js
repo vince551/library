@@ -31,7 +31,8 @@ const apiLimiter = rateLimit({
 });
 
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  referrerPolicy: { policy: "no-referrer" }
 }));
 
 const allowedOrigins = new Set([
@@ -86,7 +87,9 @@ app.use("/api", apiLimiter);
 // Base64 file uploads are JSON-encoded. Keep the limit just above the
 // 30 MB e-book + 5 MB cover allowance after base64 expansion.
 app.use(express.json({ limit: "55mb" }));
-app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+// Never log query strings: they can contain one-time credentials or personal data.
+morgan.token("safe-url", req => req.path);
+app.use(morgan(":remote-addr :method :safe-url :status :res[content-length] - :response-time ms"));
 
 app.get("/api/health", async (req, res) => {
   try {
