@@ -44,7 +44,7 @@ export async function authenticate(req, res, next) {
     }
 
     const result = await pool.query(
-      `SELECT u.id, u.full_name, u.email, u.login_code, u.role, u.status,
+      `SELECT u.id, u.full_name, u.email, u.login_code, u.role, u.status, u.session_version,
               mp.membership_number, mp.date_of_birth, mp.approved_at, mp.phone, mp.address,
               mp.gender, mp.school, mp.study_level, mp.edu_level,
               mp.guardian_name, mp.guardian_relation, mp.guardian_phone, mp.photo_storage_key, mp.avatar_choice
@@ -62,6 +62,13 @@ export async function authenticate(req, res, next) {
     }
 
     const user = result.rows[0];
+
+    if (Number(decoded.sessionVersion ?? 0) !== Number(user.session_version ?? 0)) {
+      return res.status(401).json({
+        success: false,
+        message: "This session has been revoked. Please sign in again."
+      });
+    }
 
     if (user.status !== "active") {
       return res.status(403).json({

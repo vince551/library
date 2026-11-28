@@ -154,16 +154,22 @@ export function AuthProvider({ children }) {
   }, [showToast]);
 
   const logout = useCallback(async () => {
+    let revocationConfirmed = false;
     try {
       await apiRequest("/auth/logout", { method: "POST" });
+      revocationConfirmed = true;
     } catch {
-      // Clear local UI state even if the network is unavailable; the cookie expires naturally.
+      // Always clear the local UI, but do not claim that the server revoked the session.
     }
     setToken("cookie-session");
     setUser(null);
     setProfile(null);
     setReady(true);
-    showToast("You have been signed out.");
+    showToast(
+      revocationConfirmed
+        ? "You have been signed out."
+        : "Signed out on this screen, but server-side session revocation could not be confirmed. Check your connection and sign in again."
+    , revocationConfirmed ? "success" : "error");
   }, [showToast]);
 
   const resetPassword = useCallback(async (email) => {
