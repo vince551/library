@@ -69,14 +69,10 @@ app.use(cors({
   }
 }));
 
-// Cookie-authenticated mutations must come from an explicitly allowed web origin
-// and carry a non-simple custom header. This blocks cross-site form submissions.
+// Every state-changing request must come from an approved web origin and
+// include the custom header. No legacy Bearer-token bypass is permitted.
 app.use((req, res, next) => {
   if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
-  // Keep the current frontend working while Render and Vercel deploy in sequence.
-  // This compatibility path is removed after all clients use cookie sessions.
-  const hasSessionCookie = req.headers.cookie?.split(";").some(part => part.trim().startsWith("amg_session="));
-  if (!hasSessionCookie && req.get("authorization")?.startsWith("Bearer ")) return next();
   const origin = req.get("origin");
   if (!isAllowedOrigin(origin) || req.get("x-amg-request") !== "1") {
     return res.status(403).json({ success: false, message: "This request could not be verified. Refresh the page and try again." });
