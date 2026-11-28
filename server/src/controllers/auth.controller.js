@@ -8,6 +8,23 @@ import { nextAmgNumber } from "../domain/amg-numbering.js";
 
 const MAX_PROFILE_PHOTO_BYTES = 5 * 1024 * 1024;
 const PROFILE_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+// Used for unknown identifiers so failed logins still perform a password-hash
+// comparison, reducing account-enumeration timing differences.
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync("AMG-library-invalid-login-placeholder", 12);
+
+function validateProfilePhotoSignature(buffer, contentType) {
+  const isJpeg = buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+  const isPng = buffer.length >= 8 && buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+  const isWebp = buffer.length >= 12 && buffer.toString("ascii", 0, 4) === "RIFF" && buffer.toString("ascii", 8, 12) === "WEBP";
+  const matches = (contentType === "image/jpeg" && isJpeg) ||
+    (contentType === "image/png" && isPng) ||
+    (contentType === "image/webp" && isWebp);
+  if (!matches) {
+    const error = new Error("The profile photo contents do not match the selected image type.");
+    error.status = 400;
+    throw error;
+  }
+}
 
 function profileStorageConfig() {
   const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_BUCKET } = process.env;
@@ -242,7 +259,7 @@ export async function login(req, res, next) {
     if (result.rows.length === 0) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password."
+        message: "Invalid login ID or password."
       });
     }
 
